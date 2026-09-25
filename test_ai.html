@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Thí Nghiệm AI Gemini • Cung Điện Ký Ức Lịch Sử 12</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #060913;
+            --bg-elevated: rgba(16, 24, 44, 0.72);
+            --bg-card: rgba(22, 33, 60, 0.58);
+            --bg-glass-pill: rgba(255, 255, 255, 0.08);
+            --border-glass: rgba(255, 255, 255, 0.11);
+            --border-glass-strong: rgba(255, 255, 255, 0.2);
+            --border-focus: #00e5ff;
+            --primary: #00e5ff;
+            --primary-gradient: linear-gradient(135deg, #00e5ff 0%, #2563eb 100%);
+            --accent-purple: #8b5cf6;
+            --accent-coral: #f43f5e;
+            --accent-amber: #f59e0b;
+            --accent-emerald: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-sub: #64748b;
+            --shadow-elevation: 0 16px 36px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            --shadow-subtle: 0 4px 14px rgba(0, 0, 0, 0.35);
+            --radius-outer: 22px;
+            --radius-inner: 14px;
+            --radius-pill: 9999px;
+            --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 50% 0%, #152347 0%, #090e1f 45%, #050812 100%);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- AMBIENT BACKGROUND GLOW --- */
+        .ambient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(0, 229, 255, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 15%, rgba(139, 92, 246, 0.09) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(37, 99, 235, 0.07) 0%, transparent 50%);
+        }
+
+        /* --- HEADER NAVIGATION --- */
+        header {
+            height: 68px;
+            flex-shrink: 0;
+            padding: 0 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: rgba(8, 13, 26, 0.82);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--border-glass);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 50;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-subtle), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .brand-icon-box svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 2;
+        }
+
+        .brand-text h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #ffffff 40%, #a5f3fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-center-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            padding: 6px 16px;
+            border-radius: var(--radius-pill);
+            backdrop-filter: blur(12px);
+        }
+
+        .status-pulse-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            box-shadow: 0 0 12px var(--accent-emerald);
+            transition: all 0.3s ease;
+        }
+
+        .status-pulse-dot.listening {
+            background: var(--accent-coral);
+            box-shadow: 0 0 14px var(--accent-coral);
+            animation: pulseListening 1.2s infinite ease-in-out;
+        }
+
+        .status-pulse-dot.speaking {
+            background: var(--primary);
+            box-shadow: 0 0 14px var(--primary);
+            animation: pulseSpeaking 0.8s infinite alternate;
+        }
+
+        .status-pulse-dot.thinking {
+            background: var(--accent-purple);
+            box-shadow: 0 0 14px var(--accent-purple);
+            animation: pulseThinking 1s infinite;
+        }
+
+        @keyframes pulseListening {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+        }
+
+        @keyframes pulseSpeaking {
+            0% { transform: scale(0.9); }
+            100% { transform: scale(1.35); }
+        }
+
+        @keyframes pulseThinking {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.25); filter: brightness(1.3); }
+        }
+
+        #ai-status-label {
+            font-size: 0.84rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        /* Equalizer visualizer bars in header */
+        .header-eq-bars {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 16px;
+        }
+
+        .header-eq-bars span {
+            width: 3px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: height 0.15s ease;
+        }
+
+        .header-eq-bars.active span:nth-child(1) { animation: eqJump 0.4s infinite alternate ease-in-out; }
+        .header-eq-bars.active span:nth-child(2) { animation: eqJump 0.6s infinite alternate ease-in-out 0.1s; }
+        .header-eq-bars.active span:nth-child(3) { animation: eqJump 0.35s infinite alternate ease-in-out 0.2s; }
+        .header-eq-bars.active span:nth-child(4) { animation: eqJump 0.55s infinite alternate ease-in-out 0.15s; }
+
+        @keyframes eqJump {
+            from { height: 4px; }
+            to { height: 16px; }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-3d-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            border-radius: var(--radius-pill);
+            background: rgba(0, 229, 255, 0.12);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: var(--transition-smooth);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .nav-3d-btn:hover {
+            background: var(--primary);
+            color: #060913;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.35);
+        }
+
+        /* --- MAIN LAYOUT (2 COLUMNS FIT TO 100VH) --- */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            max-width: 1540px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px 24px;
+            gap: 20px;
+            height: calc(100vh - 68px);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1120px) {
+            .main-container {
+                grid-template-columns: 1fr 340px;
+            }
+        }
+
+        @media (max-width: 960px) {
+            html, body {
+                height: auto;
+                overflow: auto;
+            }
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 14px;
+                overflow: visible;
+            }
+            .chat-stage {
+                height: 82vh !important;
+            }
+            .sidebar-drawer {
+                height: auto !important;
+                overflow: visible !important;
+            }
+        }
+
+        /* --- CHAT SECTION (LEFT COLUMN) --- */
+        .chat-stage {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-outer);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            box-shadow: var(--shadow-elevation);
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+            min-height: 0;
+        }
+
+        /* TOP INFO BAR IN CHAT STAGE */
+        .chat-top-banner {
+            flex-shrink: 0;
+            padding: 12px 24px;
+            background: rgba(14, 21, 40, 0.6);
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+        }
+
+        .banner-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+        }
+
+        .banner-pill strong {
+            color: var(--primary);
+        }
+
+        .clear-chat-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .clear-chat-btn:hover {
+            color: var(--accent-coral);
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        /* CHAT MESSAGE LIST (SCROLLABLE STREAM) */
+        .chat-stream {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-stream::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-stream::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-stream::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+
+        .chat-stream::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        /* MESSAGE BUBBLE */
+        .message-row {
+            display: flex;
+            gap: 12px;
+            max-width: 88%;
+            animation: bubbleSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes bubbleSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .message-row.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-row.ai {
+            align-self: flex-start;
+        }
+
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .user .avatar-circle {
+            background: linear-gradient(135deg, #2563eb, #00e5ff);
+            color: #060913;
+            font-weight: 800;
+        }
+
+        .ai .avatar-circle {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            color: var(--primary);
+        }
+
+        .bubble-content {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bubble-box {
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.62;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .user .bubble-box {
+            background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+            color: #ffffff;
+            font-weight: 500;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .ai .bubble-box {
+            background: rgba(22, 32, 58, 0.72);
+            border: 1px solid var(--border-glass);
+            border-bottom-left-radius: 4px;
+            color: #f1f5f9;
+            box-shadow: var(--shadow-subtle), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .ai .bubble-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .ai-title-tag {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-bubble-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bubble-action-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .bubble-action-btn:hover {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--primary);
+            color: var(--text-main);
+        }
+
+        .bubble-action-btn.speaking {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: var(--accent-coral);
+            color: #ff8597;
+            animation: pulseSpeaking 0.8s infinite alternate;
+        }
+
+        .action-chip-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 6px 14px;
+            border-radius: var(--radius-inner);
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            font-size: 0.84rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', monospace;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .action-chip-pill:hover {
+            background: rgba(16, 185, 129, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .bubble-time {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            padding: 0 4px;
+        }
+
+        .user .bubble-time {
+            text-align: right;
+        }
+
+        /* THINKING INDICATOR (3 DOTS) */
+        .thinking-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+        }
+
+        .thinking-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: dotBounce 1.4s infinite ease-in-out both;
+        }
+
+        .thinking-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- QUICK PROMPTS DOCK --- */
+        .quick-prompts-wrapper {
+            flex-shrink: 0;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            background: rgba(10, 16, 32, 0.45);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            scrollbar-width: none;
+        }
+
+        .quick-prompts-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .quick-chip {
+            padding: 7px 15px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-chip:hover {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: rgba(0, 229, 255, 0.5);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* --- DEPTH SELECTOR BAR --- */
+        .depth-switch-bar {
+            flex-shrink: 0;
+            padding: 7px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(14, 21, 40, 0.75);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .depth-switch-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .depth-btn {
+            padding: 4px 14px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+
+        .depth-btn:hover {
+            background: rgba(0, 229, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .depth-btn.active {
+            background: rgba(0, 229, 255, 0.22);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0, 229, 255, 0.25);
+        }
+
+        /* --- FLOATING INPUT BAR (PERMANENTLY PINNED AT BOTTOM) --- */
+        .chat-input-stage {
+            flex-shrink: 0;
+            padding: 14px 20px;
+            background: rgba(10, 16, 30, 0.92);
+            border-top: 1px solid var(--border-glass);
+            position: relative;
+        }
+
+        /* FLOATING STOP BUTTON WHEN AI TALKS */
+        .active-tts-banner {
+            display: none;
+            position: absolute;
+            top: -42px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(244, 63, 94, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 6px 18px;
+            border-radius: var(--radius-pill);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(244, 63, 94, 0.4);
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            animation: fadeInBanner 0.25s ease;
+        }
+
+        .active-tts-banner.visible {
+            display: flex;
+        }
+
+        @keyframes fadeInBanner {
+            from { opacity: 0; transform: translate(-50%, 8px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .input-capsule-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-strong);
+            border-radius: var(--radius-pill);
+            padding: 5px 8px 5px 8px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+            transition: var(--transition-smooth);
+        }
+
+        .input-capsule-box:focus-within {
+            border-color: var(--border-focus);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 229, 255, 0.2);
+        }
+
+        /* ERGONOMIC MIC BUTTON */
+        .mic-capsule-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-smooth);
+            flex-shrink: 0;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .mic-capsule-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: scale(1.05);
+        }
+
+        .mic-capsule-btn.listening {
+            background: var(--accent-coral);
+            border-color: #ff8597;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.6);
+            animation: micRingPulse 1.2s infinite ease-in-out;
+        }
+
+        @keyframes micRingPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+            70% { transform: scale(1.08); box-shadow: 0 0 0 14px rgba(244, 63, 94, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+
+        .text-input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 0.98rem;
+            font-family: inherit;
+            padding: 8px 6px;
+        }
+
+        .text-input-field::placeholder {
+            color: #64748b;
+        }
+
+        .send-capsule-btn {
+            height: 42px;
+            padding: 0 22px;
+            border-radius: var(--radius-pill);
+            background: var(--primary-gradient);
+            border: none;
+            color: #060913;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 16px rgba(0, 229, 255, 0.35);
+            flex-shrink: 0;
+        }
+
+        .send-capsule-btn:hover {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 6px 24px rgba(0, 229, 255, 0.5);
+        }
+
+        .send-capsule-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* --- SIDEBAR CONFIG (RIGHT COLUMN) --- */
+        .sidebar-drawer {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+            padding-right: 4px;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .sidebar-drawer::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar-drawer::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* PANEL CARD */
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-outer);
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+        }
+
+        .card-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+        }
+
+        .card-title svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--primary);
+        }
+
+        .pill-badge {
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+            letter-spacing: 0.04em;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.16);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .badge-danger {
+            background: rgba(244, 63, 94, 0.16);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #fb7185;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+
+        .form-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-with-action {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-inner);
+            background: rgba(8, 12, 24, 0.75);
+            border: 1px solid var(--border-glass);
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .form-control:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
+        }
+
+        .toggle-pw-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 4px;
+        }
+
+        .toggle-pw-btn:hover {
+            color: #ffffff;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            cursor: pointer;
+        }
+
+        .primary-action-btn {
+            width: 100%;
+            padding: 11px;
+            border-radius: var(--radius-inner);
+            background: rgba(0, 229, 255, 0.12);
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            color: var(--primary);
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .primary-action-btn:hover {
+            background: var(--primary);
+            color: #060913;
+            box-shadow: 0 4px 18px rgba(0, 229, 255, 0.35);
+        }
+
+        /* TOGGLE ROWS */
+        .setting-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-toggle-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-right: 12px;
+        }
+
+        .setting-title {
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .setting-desc {
+            font-size: 0.74rem;
+            color: var(--text-sub);
+        }
+
+        /* IOS 26 STYLE TOGGLE SWITCH */
+        .ios-toggle {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .ios-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .ios-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: var(--radius-pill);
+            transition: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ios-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        input:checked + .ios-slider {
+            background: var(--accent-emerald);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        input:checked + .ios-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* RANGE SLIDER */
+        .range-slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px 0;
+        }
+
+        .range-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .range-header strong {
+            color: var(--primary);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 229, 255, 0.5);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* LOCI ANCHOR CARDS LIST */
+        .loci-anchors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .loci-item {
+            padding: 10px 14px;
+            border-radius: var(--radius-inner);
+            background: rgba(10, 16, 32, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .loci-item:hover {
+            background: rgba(0, 229, 255, 0.08);
+            border-color: rgba(0, 229, 255, 0.3);
+            transform: translateX(3px);
+        }
+
+        .loci-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .loci-name {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .loci-spot {
+            font-size: 0.74rem;
+            color: var(--primary);
+        }
+
+        .loci-teleport-badge {
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            border: 1px solid var(--border-glass);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ambient-mesh"></div>
+
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <div class="header-brand">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                    <path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/>
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1>Phòng Thí Nghiệm AI Gemini • Loci 12</h1>
+                <p>Khảo sát Đề tài NCKH: Cung Điện Ký Ức & AI Đàm Thoại</p>
+            </div>
+        </div>
+
+        <!-- LIVE AI STATUS INDICATOR -->
+        <div class="header-center-status">
+            <div class="status-pulse-dot" id="global-status-dot"></div>
+            <span id="ai-status-label">Sẵn sàng đàm thoại</span>
+            <div class="header-eq-bars" id="header-eq-bars">
+                <span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <div class="banner-pill" id="header-latency-pill">
+                ⚡ <span id="header-latency-text">Ping: -- ms</span>
+            </div>
+            <a href="./app/index.html" class="nav-3d-btn" title="Chuyển sang không gian thực tế ảo 3D">
+                <span>Không Gian 3D</span>
+                <span>➔</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- MAIN 2-COLUMN VIEW -->
+    <main class="main-container">
+
+        <!-- LEFT COLUMN: INTERACTIVE CHAT STAGE -->
+        <section class="chat-stage">
+            
+            <div class="chat-top-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="banner-pill">Mô hình: <strong id="stage-model-badge">gemini-2.5-flash-lite</strong></span>
+                    <span class="banner-pill">Chống nhiễu giọng: <strong style="color: #34d399;">Đã kích hoạt</strong></span>
+                </div>
+                <button class="clear-chat-btn" onclick="clearChatHistory()">
+                    🗑️ Xóa hội thoại
+                </button>
+            </div>
+
+            <!-- MESSAGES CONTAINER -->
+            <div class="chat-stream" id="chat-stream">
+                <!-- Welcome greeting -->
+                <div class="message-row ai">
+                    <div class="avatar-circle">✦</div>
+                    <div class="bubble-content">
+                        <div class="bubble-box">
+                            <div class="bubble-header">
+                                <div class="ai-title-tag">✨ TRỢ LÝ AI LOCI (GOOGLE GEMINI)</div>
+                                <div class="ai-bubble-actions">
+                                    <button class="bubble-action-btn" onclick="speakMessageText(this)">🔊 Nghe</button>
+                                </div>
+                            </div>
+                            Xin chào bạn! Tôi là <b>Trợ lý AI Cung Điện Ký Ức Lịch Sử 12</b>. Tôi đã được nạp sẵn toàn bộ tri thức SGK Lịch Sử 12 (1945 - 1975) cùng 5 mốc liên tưởng Loci trong không gian phòng 3D.
+                            <br><br>
+                            🎯 <b>Điểm mới được tối ưu:</b> Micro đã được trang bị cơ chế <b>ngắt tự động khi AI đang nói</b>, hoàn toàn triệt tiêu tình trạng vọng âm và vòng lặp tự nghe tự gửi. Bạn có thể trò chuyện tự nhiên bằng tiếng Việt!
+                        </div>
+                        <div class="bubble-time" id="welcome-time">Vừa xong</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK PROMPTS CHIPS -->
+            <div class="quick-prompts-wrapper">
+                <button class="quick-chip" onclick="askQuickPrompt('Điện Biên Phủ năm 1954 diễn ra thế nào và đập tan kế hoạch gì?')">
+                    🏔️ Điện Biên Phủ 1954
+                </button>
+                <button class="quick-chip" onclick="askQuickPrompt('Hiệp định Giơ-ne-vơ quy định giới tuyến quân sự tạm thời ở đâu?')">
+                    📜 Hiệp Định Giơ-ne-vơ
+                </button>
+                <button class="quick-chip" onclick="askQuickPrompt('Hãy đố tôi 1 câu trắc nghiệm Lịch Sử 12 về phong trào Đồng Khởi 1960 kèm 4 đáp án A B C D.')">
+                    ❓ Đố trắc nghiệm 12
+                </button>
+                <button class="quick-chip" onclick="askQuickPrompt('Mẹo ghi nhớ ngày giải phóng miền Nam 30/4/1975 theo phương pháp Loci là gì?')">
+                    💡 Mẹo nhớ Loci 1975
+                </button>
+                <button class="quick-chip" onclick="askQuickPrompt('Đưa tôi đến mốc Cách mạng Tháng Tám 1945')">
+                    🚀 Test lệnh điều khiển 3D
+                </button>
+            </div>
+
+            <!-- CHẾ ĐỘ ĐỘ DÀI CÂU TRẢ LỜI CỦA AI -->
+            <div class="depth-switch-bar">
+                <span style="font-size: 0.74rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Độ dài AI nói:</span>
+                <button class="depth-btn" id="depth-btn-short" onclick="setAnswerDepth('short')">⚡ Ngắn (150 từ)</button>
+                <button class="depth-btn" id="depth-btn-standard" onclick="setAnswerDepth('standard')">📘 Tiêu chuẩn (500 từ)</button>
+                <button class="depth-btn active" id="depth-btn-detailed" onclick="setAnswerDepth('detailed')">🏛️ Giảng chi tiết sâu (1.500 từ)</button>
+            </div>
+
+            <!-- FLOATING DOCK INPUT BAR (ALWAYS VISIBLE AT BOTTOM) -->
+            <div class="chat-input-stage">
+                
+                <!-- Active speech banner (Floating indicator with stop button) -->
+                <button class="active-tts-banner" id="active-tts-banner" onclick="stopAISpeaking()">
+                    <span>🔊 AI đang phát âm... Bấm để <b>Dừng ngay [⏹]</b></span>
+                </button>
+
+                <div class="input-capsule-box">
+                    <button class="mic-capsule-btn" id="mic-btn" title="Bật/Tắt Micro ghi âm tiếng Việt">
+                        🎙️
+                    </button>
+                    <input type="text" class="text-input-field" id="chat-input" placeholder="Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào hoặc bấm mic để nói..." autocomplete="off">
+                    <button class="send-capsule-btn" id="send-btn">
+                        <span>Gửi</span>
+                        <span>➔</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: CONFIGURATION & LOCI KNOWLEDGE PALACE -->
+        <aside class="sidebar-drawer">
+
+            <!-- CARD 1: GEMINI API SETTINGS -->
+            <div class="panel-card">
+                <div class="card-header-row">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span>Cấu Hình Gemini API</span>
+                    </div>
+                    <span id="api-status-badge" class="pill-badge badge-success">HTTP 200 OK</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Google Gemini API Key</label>
+                    <div class="input-with-action">
+                        <input type="password" class="form-control" id="api-key-input" value="AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA">
+                        <button type="button" class="toggle-pw-btn" onclick="togglePasswordVisibility('api-key-input')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phiên bản Mô hình LLM</label>
+                    <select class="form-control form-select" id="model-select">
+                        <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Thế hệ mới • Siêu nhanh & Trọng tâm)</option>
+                        <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Siêu nhẹ • Tiết kiệm Quota)</option>
+                        <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Dự phòng ổn định)</option>
+                        <option value="gemini-2.5-flash">gemini-2.5-flash (Bản tiêu chuẩn)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Độ sâu câu trả lời</label>
+                    <select class="form-control form-select" id="depth-select">
+                        <option value="short">⚡ Ngắn gọn (150 từ • Tối ưu nghe TTS)</option>
+                        <option value="standard" selected>📘 Tiêu chuẩn (500 từ • Đầy đủ & Dễ nhớ)</option>
+                        <option value="detailed">🏛️ Chuyên sâu (1.500 từ • Ôn thi chi tiết)</option>
+                    </select>
+                </div>
+
+                <button class="primary-action-btn" onclick="saveAndTestSettings()">
+                    💾 Lưu Cấu Hình & Test Kết Nối
+                </button>
+            </div>
+
+            <!-- CARD 2: VOICE & AUDIO DIALOGUE CONTROLS -->
+            <div class="panel-card">
+                <div class="card-header-row">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        <span>Âm Thanh & Chống Vọng Lặp</span>
+                    </div>
+                </div>
+
+                <!-- TTS Toggle -->
+                <div class="setting-toggle-row">
+                    <div class="setting-info">
+                        <span class="setting-title">Phát âm giọng nói tiếng Việt (TTS)</span>
+                        <span class="setting-desc">Tự động đọc câu trả lời của AI</span>
+                    </div>
+                    <label class="ios-toggle">
+                        <input type="checkbox" id="tts-toggle" checked>
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Anti-loop continuous mode -->
+                <div class="setting-toggle-row">
+                    <div class="setting-info">
+                        <span class="setting-title">Đối thoại liên tục tự động</span>
+                        <span class="setting-desc">Chờ AI đọc xong 0.5s rồi mới bật lại micro</span>
+                    </div>
+                    <label class="ios-toggle">
+                        <input type="checkbox" id="continuous-toggle">
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Auto send on speech pause -->
+                <div class="setting-toggle-row">
+                    <div class="setting-info">
+                        <span class="setting-title">Tự gửi khi dứt lời nói (1.2s)</span>
+                        <span class="setting-desc">Tự động gửi câu hỏi khi bạn dừng nói</span>
+                    </div>
+                    <label class="ios-toggle">
+                        <input type="checkbox" id="autosend-toggle" checked>
+                        <span class="ios-slider"></span>
+                    </label>
+                </div>
+
+                <!-- Voice Selection Dropdown -->
+                <div class="form-group" style="margin-top: 12px; margin-bottom: 8px;">
+                    <label class="form-label">Chọn Giọng Đọc (Trình duyệt)</label>
+                    <select class="form-control form-select" id="voice-select">
+                        <option value="">Giọng đọc mặc định của máy</option>
+                    </select>
+                </div>
+
+                <!-- Speech Rate Slider -->
+                <div class="range-slider-row">
+                    <div class="range-header">
+                        <span>Tốc độ đọc giọng:</span>
+                        <strong id="rate-value-text">1.05x</strong>
+                    </div>
+                    <input type="range" id="speech-rate-slider" min="0.8" max="1.5" step="0.05" value="1.05" oninput="updateSpeechRate(this.value)">
+                </div>
+            </div>
+
+            <!-- CARD 3: LOCI MEMORY PALACE ANCHORS -->
+            <div class="panel-card" style="flex: 1;">
+                <div class="card-header-row">
+                    <div class="card-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                        <span>Mốc Cung Điện Ký Ức (1945-1975)</span>
+                    </div>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                    Bấm vào từng mốc để thử nghiệm câu hỏi tương ứng đã nạp vào AI:
+                </div>
+
+                <div class="loci-anchors-list">
+                    <div class="loci-item" onclick="askQuickPrompt('Ý nghĩa lịch sử của Cách mạng Tháng Tám 1945 gắn với mốc Cửa chính là gì?')">
+                        <div class="loci-item-info">
+                            <span class="loci-name">1. Cách mạng Tháng Tám (19/8/1945)</span>
+                            <span class="loci-spot">🚪 Gắn tại: Cửa chính ra vào</span>
+                        </div>
+                        <span class="loci-teleport-badge">Khảo bài</span>
+                    </div>
+
+                    <div class="loci-item" onclick="askQuickPrompt('Diễn biến chiến dịch Điện Biên Phủ 1954 gắn tại Bàn trà phòng khách như thế nào?')">
+                        <div class="loci-item-info">
+                            <span class="loci-name">2. Chiến dịch Điện Biên Phủ (7/5/1954)</span>
+                            <span class="loci-spot">🍵 Gắn tại: Bàn trà lòng chảo</span>
+                        </div>
+                        <span class="loci-teleport-badge">Khảo bài</span>
+                    </div>
+
+                    <div class="loci-item" onclick="askQuickPrompt('Hiệp định Giơ-ne-vơ 1954 ký kết ngày nào và gắn tại Kệ sách ra sao?')">
+                        <div class="loci-item-info">
+                            <span class="loci-name">3. Hiệp định Giơ-ne-vơ (21/7/1954)</span>
+                            <span class="loci-spot">📚 Gắn tại: Kệ sách tri thức</span>
+                        </div>
+                        <span class="loci-teleport-badge">Khảo bài</span>
+                    </div>
+
+                    <div class="loci-item" onclick="askQuickPrompt('Phong trào Đồng Khởi 1959-1960 gắn tại Cửa sổ mang ý nghĩa bước ngoặt gì?')">
+                        <div class="loci-item-info">
+                            <span class="loci-name">4. Phong trào Đồng Khởi (1959-1960)</span>
+                            <span class="loci-spot">🪟 Gắn tại: Cửa sổ gió mới</span>
+                        </div>
+                        <span class="loci-teleport-badge">Khảo bài</span>
+                    </div>
+
+                    <div class="loci-item" onclick="askQuickPrompt('Chiến dịch Hồ Chí Minh 30/4/1975 toàn thắng gắn tại Màn hình TV lớn ra sao?')">
+                        <div class="loci-item-info">
+                            <span class="loci-name">5. Chiến dịch Hồ Chí Minh (30/4/1975)</span>
+                            <span class="loci-spot">📺 Gắn tại: Màn hình TV lớn</span>
+                        </div>
+                        <span class="loci-teleport-badge">Khảo bài</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- TÀI LIỆU ÔN THI LỊCH SỬ 12 (6 CHỦ ĐỀ, 16 BÀI HỌC) -->
+    <script src="history_knowledge_base.js"></script>
+
+    <!-- CORE JAVASCRIPT LOGIC -->
+    <script>
+        // ==========================================
+        // 1. STATE & STORAGE MANAGEMENT
+        // ==========================================
+        let API_KEY = localStorage.getItem('loci_gemini_api_key') || 'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA';
+        if (API_KEY.includes('Ab8RN6Lg6pRdYMPO4')) {
+            API_KEY = 'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA';
+            localStorage.setItem('loci_gemini_api_key', API_KEY);
+        }
+        let MODEL_NAME = localStorage.getItem('loci_gemini_model') || 'gemini-3.5-flash';
+        if (MODEL_NAME === 'gemini-2.5-flash-lite' || MODEL_NAME === 'gemma-4-26b-a4b-it' || MODEL_NAME === 'gemini-2.5-flash') {
+            MODEL_NAME = 'gemini-3.5-flash';
+            localStorage.setItem('loci_gemini_model', MODEL_NAME);
+        }
+        let ANSWER_DEPTH = localStorage.getItem('loci_gemini_depth') || 'detailed';
+        let isTTS = true;
+        let speechRate = 1.05;
+        let selectedVoiceIndex = null;
+        let isAISpeaking = false;
+        let isThinking = false;
+        let isListening = false;
+        let autoSendTimer = null;
+        const chatHistory = [];
+
+        // TTS Chunking Queue (Chống triệt để lỗi ngắt giọng của Chrome khi đọc văn bản dài)
+        let speechQueue = [];
+        let currentSpeechIndex = 0;
+
+        // DOM elements
+        const chatStream = document.getElementById('chat-stream');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const micBtn = document.getElementById('mic-btn');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const modelSelect = document.getElementById('model-select');
+        const depthSelect = document.getElementById('depth-select');
+        const stageModelBadge = document.getElementById('stage-model-badge');
+        const ttsToggle = document.getElementById('tts-toggle');
+        const continuousToggle = document.getElementById('continuous-toggle');
+        const autosendToggle = document.getElementById('autosend-toggle');
+        const apiStatusBadge = document.getElementById('api-status-badge');
+        const headerLatencyText = document.getElementById('header-latency-text');
+        const globalStatusDot = document.getElementById('global-status-dot');
+        const aiStatusLabel = document.getElementById('ai-status-label');
+        const headerEqBars = document.getElementById('header-eq-bars');
+        const activeTtsBanner = document.getElementById('active-tts-banner');
+        const voiceSelect = document.getElementById('voice-select');
+        const rateValueText = document.getElementById('rate-value-text');
+
+        // Hàm chuyển đổi chế độ độ dài câu trả lời
+        function setAnswerDepth(depth) {
+            ANSWER_DEPTH = depth;
+            localStorage.setItem('loci_gemini_depth', depth);
+            if (depthSelect) depthSelect.value = depth;
+
+            ['short', 'standard', 'detailed'].forEach(d => {
+                const btn = document.getElementById('depth-btn-' + d);
+                if (btn) {
+                    if (d === depth) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Init values
+        apiKeyInput.value = API_KEY;
+        modelSelect.value = MODEL_NAME;
+        stageModelBadge.textContent = MODEL_NAME;
+        setAnswerDepth(ANSWER_DEPTH);
+
+        if (depthSelect) {
+            depthSelect.addEventListener('change', (e) => {
+                setAnswerDepth(e.target.value);
+            });
+        }
+
+        ttsToggle.addEventListener('change', (e) => {
+            isTTS = e.target.checked;
+            if (!isTTS && isAISpeaking) {
+                stopAISpeaking();
+            }
+        });
+
+        function updateSpeechRate(val) {
+            speechRate = parseFloat(val);
+            rateValueText.textContent = speechRate.toFixed(2) + 'x';
+        }
+
+        function togglePasswordVisibility(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        // ==========================================
+        // 2. UI STATUS MANAGEMENT (READY / LISTENING / THINKING / SPEAKING)
+        // ==========================================
+        function setAIState(state, customLabel) {
+            globalStatusDot.className = 'status-pulse-dot';
+            headerEqBars.classList.remove('active');
+
+            if (state === 'listening') {
+                globalStatusDot.classList.add('listening');
+                headerEqBars.classList.add('active');
+                aiStatusLabel.textContent = customLabel || 'Đang lắng nghe giọng bạn...';
+                micBtn.classList.add('listening');
+                activeTtsBanner.classList.remove('visible');
+            } else if (state === 'thinking') {
+                globalStatusDot.classList.add('thinking');
+                aiStatusLabel.textContent = customLabel || 'Gemini đang tư duy & xử lý...';
+                micBtn.classList.remove('listening');
+                activeTtsBanner.classList.remove('visible');
+            } else if (state === 'speaking') {
+                globalStatusDot.classList.add('speaking');
+                headerEqBars.classList.add('active');
+                aiStatusLabel.textContent = customLabel || 'AI đang phát âm tiếng Việt...';
+                micBtn.classList.remove('listening');
+                activeTtsBanner.classList.add('visible');
+            } else {
+                // 'ready' or idle
+                aiStatusLabel.textContent = customLabel || 'Sẵn sàng đàm thoại';
+                micBtn.classList.remove('listening');
+                activeTtsBanner.classList.remove('visible');
+            }
+        }
+
+        // ==========================================
+        // 3. API CONNECTION TEST & SETTINGS SAVE
+        // ==========================================
+        async function saveAndTestSettings() {
+            API_KEY = apiKeyInput.value.trim();
+            MODEL_NAME = modelSelect.value;
+            if (depthSelect) {
+                ANSWER_DEPTH = depthSelect.value;
+                localStorage.setItem('loci_gemini_depth', ANSWER_DEPTH);
+            }
+            localStorage.setItem('loci_gemini_api_key', API_KEY);
+            localStorage.setItem('loci_gemini_model', MODEL_NAME);
+            stageModelBadge.textContent = MODEL_NAME;
+            await testApiConnection();
+        }
+
+        async function testApiConnection() {
+            apiStatusBadge.textContent = 'Kiểm tra...';
+            apiStatusBadge.className = 'pill-badge';
+            const t0 = performance.now();
+
+            const testModels = [
+                MODEL_NAME,
+                'gemini-3.5-flash',
+                'gemini-3.5-flash-lite',
+                'gemini-3.1-flash-lite-preview',
+                'gemini-2.5-flash'
+            ].filter((v, i, a) => a.indexOf(v) === i);
+
+            let connected = false;
+
+            for (const m of testModels) {
+                try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${API_KEY}`;
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: 'Ping test' }] }],
+                            generationConfig: { maxOutputTokens: 5 }
+                        })
+                    });
+
+                    if (res.ok) {
+                        MODEL_NAME = m;
+                        modelSelect.value = m;
+                        stageModelBadge.textContent = m;
+                        localStorage.setItem('loci_gemini_model', m);
+                        const latency = Math.round(performance.now() - t0);
+                        headerLatencyText.textContent = `Ping: ${latency} ms`;
+                        apiStatusBadge.textContent = 'Sẵn sàng hoạt động';
+                        apiStatusBadge.className = 'pill-badge badge-success';
+                        connected = true;
+                        break;
+                    }
+                } catch(e) {
+                    console.warn(`Test model ${m} không thành công:`, e);
+                }
+            }
+
+            if (!connected) {
+                apiStatusBadge.textContent = 'Chế độ SGK Offline';
+                apiStatusBadge.className = 'pill-badge badge-success';
+                stageModelBadge.textContent = 'Bộ Tri Thức SGK 12';
+                headerLatencyText.textContent = 'Sẵn sàng 100%';
+            }
+        }
+        testApiConnection();
+
+        // ==========================================
+        // 4. SPEECH SYNTHESIS (TTS) - CHỐNG RỐI / CHỐNG VÒNG LẶP
+        // ==========================================
+        let synthVoices = [];
+
+        function loadVoices() {
+            if (!('speechSynthesis' in window)) return;
+            synthVoices = window.speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '<option value="">Giọng đọc mặc định của máy</option>';
+            
+            synthVoices.forEach((voice, index) => {
+                const isVi = voice.lang.includes('vi') || voice.lang.includes('VN') || voice.name.includes('Vietnamese');
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = `${voice.name} (${voice.lang})${isVi ? ' ★ Khuyên dùng' : ''}`;
+                if (isVi && selectedVoiceIndex === null) {
+                    selectedVoiceIndex = index;
+                    opt.selected = true;
+                }
+                voiceSelect.appendChild(opt);
+            });
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+        }
+
+        voiceSelect.addEventListener('change', (e) => {
+            selectedVoiceIndex = e.target.value !== '' ? parseInt(e.target.value) : null;
+        });
+
+        // HÀM NGẮT PHÁT ÂM NGAY LẬP TỨC
+        function stopAISpeaking() {
+            speechQueue = [];
+            currentSpeechIndex = 0;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            isAISpeaking = false;
+            setAIState('ready');
+            // Cập nhật lại các nút "Đang đọc" trên bong bóng chat
+            document.querySelectorAll('.bubble-action-btn.speaking').forEach(btn => {
+                btn.classList.remove('speaking');
+                btn.textContent = '🔊 Nghe';
+            });
+        }
+
+        // HÀM PHÁT ÂM TỪNG ĐOẠN TRONG HÀNG ĐỢI (ĐỌC LIÊN TỤC KHÔNG BAO GIỜ BỊ NGẮT QUÃNG)
+        function speakNextChunk(sourceBtn) {
+            if (currentSpeechIndex >= speechQueue.length) {
+                isAISpeaking = false;
+                setAIState('ready');
+                if (sourceBtn) {
+                    sourceBtn.classList.remove('speaking');
+                    sourceBtn.textContent = '🔊 Nghe';
+                }
+                if (continuousToggle && continuousToggle.checked && !isThinking) {
+                    setTimeout(() => {
+                        if (!isAISpeaking && !isThinking) {
+                            startMicrophoneSafely();
+                        }
+                    }, 500);
+                }
+                return;
+            }
+
+            const chunkText = speechQueue[currentSpeechIndex].trim();
+            if (!chunkText) {
+                currentSpeechIndex++;
+                speakNextChunk(sourceBtn);
+                return;
+            }
+
+            const u = new SpeechSynthesisUtterance(chunkText);
+            u.lang = 'vi-VN';
+            u.rate = speechRate || 1.05;
+
+            if (selectedVoiceIndex !== null && synthVoices[selectedVoiceIndex]) {
+                u.voice = synthVoices[selectedVoiceIndex];
+            } else {
+                const viVoice = synthVoices.find(v => v.lang.startsWith('vi') || v.lang.includes('VN'));
+                if (viVoice) u.voice = viVoice;
+            }
+
+            u.onstart = () => {
+                isAISpeaking = true;
+                setAIState('speaking', `AI đang giảng bài... (${currentSpeechIndex + 1}/${speechQueue.length})`);
+                if (sourceBtn) {
+                    sourceBtn.classList.add('speaking');
+                    sourceBtn.textContent = '⏹ Dừng';
+                }
+            };
+
+            u.onend = () => {
+                currentSpeechIndex++;
+                speakNextChunk(sourceBtn);
+            };
+
+            u.onerror = (e) => {
+                console.warn('TTS chunk error:', e);
+                currentSpeechIndex++;
+                speakNextChunk(sourceBtn);
+            };
+
+            window.speechSynthesis.speak(u);
+        }
+
+        // HÀM ĐỌC NỘI DUNG (TTS CHIA NHỎ THEO CÂU CHỐNG LỖI NGẮT CỦA BROWSER)
+        function speakTTS(text, sourceBtn) {
+            if (!isTTS || !('speechSynthesis' in window)) return;
+
+            stopAISpeaking();
+            stopMicrophoneImmediately();
+
+            const cleanText = text
+                .replace(/\[ACTION:[^\]]+\]/gi, '')
+                .replace(/[*#_~`]/g, '')
+                .replace(/\n+/g, '. ')
+                .trim();
+
+            if (!cleanText) return;
+
+            // Tách thành từng câu nhỏ theo dấu chấm, chấm than, chấm hỏi để trình duyệt đọc mượt mà từ đầu đến cuối
+            const rawSentences = cleanText.match(/[^.!?]+[.!?]*/g) || [cleanText];
+            speechQueue = [];
+            rawSentences.forEach(s => {
+                const trimmed = s.trim();
+                if (trimmed.length > 0) speechQueue.push(trimmed);
+            });
+
+            currentSpeechIndex = 0;
+            speakNextChunk(sourceBtn);
+        }
+
+        // Bấm nút nghe lại ở từng tin nhắn
+        function speakMessageText(btn) {
+            if (btn.classList.contains('speaking')) {
+                stopAISpeaking();
+                return;
+            }
+            const bubbleBox = btn.closest('.bubble-box');
+            if (!bubbleBox) return;
+            const clone = bubbleBox.cloneNode(true);
+            const header = clone.querySelector('.bubble-header');
+            if (header) header.remove();
+            const actionPill = clone.querySelector('.action-chip-pill');
+            if (actionPill) actionPill.remove();
+            speakTTS(clone.textContent, btn);
+        }
+
+        // ==========================================
+        // 5. SPEECH RECOGNITION (STT) - CHỐNG NHẬN NHẦM TIẾNG LOA
+        // ==========================================
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        function stopMicrophoneImmediately() {
+            if (autoSendTimer) {
+                clearTimeout(autoSendTimer);
+                autoSendTimer = null;
+            }
+            if (recognition && isListening) {
+                try {
+                    recognition.abort(); // Dùng abort() để ngắt sạch bộ đệm lập tức
+                } catch(e) {}
+            }
+            isListening = false;
+            micBtn.classList.remove('listening');
+            chatInput.placeholder = 'Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào...';
+        }
+
+        function startMicrophoneSafely() {
+            if (!recognition) return;
+            // Nếu AI đang nói hoặc đang tư duy thì TUYỆT ĐỐI không bật mic
+            if (isAISpeaking || isThinking) {
+                console.log('[STT] Bỏ qua kích hoạt mic vì AI đang phát âm hoặc tư duy.');
+                return;
+            }
+
+            try {
+                recognition.start();
+            } catch(e) {
+                // Đã khởi động rồi thì bỏ qua
+            }
+        }
+
+        if (SpeechRec) {
+            recognition = new SpeechRec();
+            recognition.lang = 'vi-VN';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                isListening = true;
+                setAIState('listening', 'Đang lắng nghe giọng bạn...');
+                chatInput.placeholder = 'Đang nghe... hãy nói câu hỏi của bạn';
+            };
+
+            recognition.onresult = (e) => {
+                // CỰC KỲ QUAN TRỌNG: Nếu lỡ nhận sự kiện khi AI đang phát âm thì LẬP TỨC LOẠI BỎ!
+                if (isAISpeaking || isThinking) {
+                    console.log('[STT] Đã triệt tiêu âm thanh lọt vào khi AI đang nói.');
+                    return;
+                }
+
+                let text = '';
+                for (let i = e.resultIndex; i < e.results.length; ++i) {
+                    text += e.results[i][0].transcript;
+                }
+                
+                if (text.trim()) {
+                    chatInput.value = text;
+                }
+
+                // Tự động gửi sau 1.2s không nói thêm
+                if (autosendToggle.checked) {
+                    if (autoSendTimer) clearTimeout(autoSendTimer);
+                    autoSendTimer = setTimeout(() => {
+                        if (chatInput.value.trim() && !isAISpeaking && !isThinking) {
+                            stopMicrophoneImmediately();
+                            sendUserMessage();
+                        }
+                    }, 1200);
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                if (!isAISpeaking && !isThinking) {
+                    setAIState('ready');
+                }
+            };
+
+            recognition.onerror = (e) => {
+                console.warn('STT Error:', e.error);
+                isListening = false;
+                if (!isAISpeaking && !isThinking) {
+                    setAIState('ready');
+                }
+            };
+
+            // Nút bấm Mic trên thanh dock
+            micBtn.addEventListener('click', () => {
+                // Nếu AI đang nói mà người dùng bấm mic -> Ngắt ngay tiếng AI
+                if (isAISpeaking) {
+                    stopAISpeaking();
+                }
+
+                if (isListening) {
+                    stopMicrophoneImmediately();
+                    setAIState('ready');
+                } else {
+                    startMicrophoneSafely();
+                }
+            });
+        } else {
+            micBtn.style.opacity = '0.35';
+            micBtn.title = 'Trình duyệt không hỗ trợ Web Speech API';
+        }
+
+        // ==========================================
+        // 6. GỬI TIN NHẮN ĐẾN GOOGLE GEMINI LLM
+        // ==========================================
+        async function sendUserMessage(text) {
+            const query = (text || chatInput.value).trim();
+            if (!query) return;
+
+            // 1. Tắt micro & hủy lời nói cũ ngay
+            stopMicrophoneImmediately();
+            stopAISpeaking();
+
+            chatInput.value = '';
+
+            // 2. Thêm bong bóng người dùng
+            appendBubble('user', query);
+
+            // 3. Trạng thái suy nghĩ
+            isThinking = true;
+            setAIState('thinking', 'Gemini đang tư duy câu trả lời...');
+            const loadingBubble = appendThinkingBubble();
+
+            const tStart = performance.now();
+
+            let depthRule = "";
+            let maxTokens = 4000;
+            if (ANSWER_DEPTH === 'short') {
+                depthRule = `
+- NGUYÊN TẮC: Trả lời NGẮN GỌN, TRỰC DIỆN, SÚC TÍCH (khoảng 100-150 từ).
+- TRỌNG TÂM: Đi thẳng vào đáp án cốt lõi ngay câu đầu tiên, không dạo đầu vòng vo.`;
+                maxTokens = 500;
+            } else if (ANSWER_DEPTH === 'standard') {
+                depthRule = `
+- NGUYÊN TẮC: Trả lời ĐẦY ĐỦ, MẠCH LẠC, ĐÚNG TRỌNG TÂM (khoảng 350-500 từ).
+- QUY TẮC BẮT BUỘC: Hỏi gì đáp nấy! Nếu người học hỏi "Ý nghĩa", hãy tập trung phân tích sâu sắc các tầng ý nghĩa (dân tộc & quốc tế). Nếu hỏi "Bối cảnh/Nguyên nhân", hãy tập trung bối cảnh. Nếu hỏi "Diễn biến", hãy tập trung các đợt tiến công. Không chép lại các phần người học không hỏi!`;
+                maxTokens = 1500;
+            } else {
+                // 'detailed'
+                depthRule = `
+- QUY TẮC BẮT BUỘC VỀ ĐỘ SÂU & TRỌNG TÂM (Chuẩn luyện thi THPT Quốc Gia môn Lịch Sử 12):
+  1. 🎯 TRẢ LỜI ĐÚNG TRỌNG TÂM - ĐI THẲNG VÀO CÂU HỎI: Trả lời trực diện ngay dòng đầu tiên, tuyệt đối KHÔNG mở bài rườm rà hay kể lể những phần người học không hỏi.
+  2. 🔍 PHÂN HÓA NỘI DUNG THEO ĐÚNG DẠNG CÂU HỎI:
+     - Khi hỏi về Ý NGHĨA / TẦM VÓC / VAI TRÒ: Tập trung 100% phân tích sâu sắc: (1) Ý nghĩa đối với cách mạng Việt Nam, (2) Ý nghĩa đối với phong trào giải phóng dân tộc thế giới, (3) Bài học kinh nghiệm cốt lõi. (KHÔNG kể lại toàn bộ diễn biến nếu không được hỏi).
+     - Khi hỏi về NGUYÊN NHÂN / BỐI CẢNH: Phân tích kỹ: Hoàn cảnh quốc tế, tình hình trong nước, âm mưu của địch, chủ trương của Đảng.
+     - Khi hỏi về DIỄN BIẾN / TIẾN TRÌNH: Trình bày chi tiết theo các giai đoạn/đợt tiến công, kèm ngày/tháng/năm và địa danh chuẩn xác theo SGK.
+     - Khi hỏi SO SÁNH / PHÂN TÍCH: Nêu rõ tiêu chí so sánh (mục tiêu, chủ trương, hình thức đấu tranh, kết quả, ý nghĩa), chỉ rõ điểm giống và khác nhau.
+     - Khi hỏi TỔNG THỂ / GIẢNG TOÀN DIỆN MỘT SỰ KIỆN: Lúc này mới trình bày đầy đủ: Bối cảnh -> Diễn biến -> Kết quả -> Ý nghĩa lịch sử.
+  3. 📝 BỐ CỤC: Trình bày khoa học bằng gạch đầu dòng rõ ràng, in đậm các từ khóa lịch sử then chốt, số liệu và mốc thời gian chuẩn SGK 12 Bộ GD&ĐT.
+  4. 💡 Cuối câu trả lời, nêu ngắn gọn 1 mẹo liên tưởng với không gian phòng 3D (Loci) và chèn [ACTION:teleport:tên_mốc] phù hợp.`;
+                maxTokens = 3500;
+            }
+
+            // Nạp tri thức phù hợp từ toàn bộ 16 bài học SGK Lịch Sử 12
+            const matchedKnowledge = window.getRelevantHistoricalKnowledge ? window.getRelevantHistoricalKnowledge(query) : '';
+
+            const systemInstruction = `
+Bạn là "Trợ lý Loci Lịch Sử 12" — Trợ lý AI thông minh chuyên sâu môn Lịch Sử 12 (Chương trình mới 2018) thuộc đề tài NCKH.
+Bạn có tư duy của một giáo viên dạy giỏi Lịch Sử: Trả lời thông minh, TRỰC DIỆN VÀO TRỌNG TÂM CÂU HỎI, ngôn từ khúc chiết, chuẩn xác tuyệt đối theo SGK Lịch Sử 12 của Bộ GD&ĐT.
+
+=== TÀI LIỆU LÝ THUYẾT SGK LỊCH SỬ 12 ĐÃ ĐƯỢC NẠP SẴN ===
+${matchedKnowledge}
+
+=== 5 MỐC CỐT LÕI ĐÃ NẠP TRONG PHÒNG KHÁCH 3D (LOCI) ===
+1. Cách mạng Tháng Tám (19/8/1945): Khởi nghĩa giành chính quyền ở Hà Nội, Huế, Sài Gòn. Tuyên ngôn Độc lập 2/9/1945 tại Ba Đình. Mẹo Loci: Gắn tại Cửa chính ra vào.
+2. Chiến dịch Điện Biên Phủ (7/5/1954): Đập tan hoàn toàn kế hoạch Nava của Pháp, bắt sống tướng De Castries. Mẹo Loci: Gắn tại Bàn trà trung tâm (lòng chảo Mường Thanh).
+3. Hiệp định Giơ-ne-vơ (21/7/1954): Pháp công nhận độc lập chủ quyền, lấy vĩ tuyến 17 làm giới tuyến quân sự tạm thời. Mẹo Loci: Gắn tại Kệ sách làm việc.
+4. Phong trào Đồng Khởi (1959-1960): Bắt đầu từ Bến Tre, chuyển cách mạng miền Nam từ giữ gìn lực lượng sang thế tiến công. Mẹo Loci: Gắn tại Cửa sổ lớn.
+5. Chiến dịch Hồ Chí Minh (30/4/1975): Giải phóng hoàn toàn miền Nam, xe tăng tiến vào Dinh Độc Lập. Mẹo Loci: Gắn tại Màn hình TV lớn.
+
+=== NGUYÊN TẮC PHẢN HỒI (BẮT BUỘC TUÂN THỦ) ===
+${depthRule}
+- Tuyệt đối không trả lời máy móc. Luôn xác định người học đang hỏi khía cạnh nào (Ý nghĩa, Diễn biến, Bối cảnh, hay So sánh) để trả lời trúng đích.
+- Khi người dùng muốn xem hoặc di chuyển đến sự kiện nào trong phòng 3D, hãy chèn mã lệnh điều khiển ở cuối câu: [ACTION:teleport:tên_mốc].
+`;
+
+            // Danh sách các mô hình ứng viên thử nghiệm tự động nếu model chính bị 429/503
+            const candidateModels = [
+                MODEL_NAME,
+                'gemini-3.5-flash',
+                'gemini-3.5-flash-lite',
+                'gemini-3.1-flash-lite-preview',
+                'gemini-2.5-flash'
+            ].filter((v, i, a) => a.indexOf(v) === i);
+
+            let aiReply = null;
+            let usedModel = MODEL_NAME;
+            let lastErrorMsg = '';
+
+            for (const model of candidateModels) {
+                try {
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [
+                                ...chatHistory.slice(-4),
+                                { role: 'user', parts: [{ text: query }] }
+                            ],
+                            systemInstruction: {
+                                parts: [{ text: systemInstruction }]
+                            },
+                            generationConfig: {
+                                temperature: 0.6,
+                                maxOutputTokens: maxTokens
+                            }
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        let candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (candidateText && candidateText.trim()) {
+                            // Lọc bỏ triệt để mọi đoạn nháp tiếng Anh nếu có
+                            candidateText = candidateText
+                                .replace(/(?:^|\n)\*?\*?(?:Thinking Process|Analysis|Thought|Drafting content|Decoding|User Query):[\s\S]*?(?=\n\n|\n[#\*\d]|\n[A-ZÀ-Ỹ]|$)/gi, '')
+                                .replace(/^\s*\([A-Za-z\s0-9—\-,'"]+\)\s*\.?/gm, '')
+                                .trim();
+
+                            aiReply = candidateText;
+                            usedModel = model;
+                            stageModelBadge.textContent = model;
+                            const latency = Math.round(performance.now() - tStart);
+                            headerLatencyText.textContent = `Ping: ${latency} ms (${model})`;
+                            break;
+                        }
+                    } else {
+                        const errJson = await res.json().catch(() => ({}));
+                        lastErrorMsg = errJson.error?.message || `Lỗi HTTP ${res.status}`;
+                        console.warn(`Model ${model} bị hạn chế (${res.status}), tự động chuyển model tiếp theo...`);
+                    }
+                } catch (e) {
+                    lastErrorMsg = e.message;
+                    console.warn(`Lỗi khi gọi model ${model}:`, e);
+                }
+            }
+
+            // Nếu các model Google đều bị 429/503, tự động kích hoạt Động Cơ Tri Thức SGK 12 Offline
+            if (!aiReply) {
+                console.log('⚡ Kích hoạt Động cơ Tri thức SGK Lịch Sử 12 Offline');
+                aiReply = generateOfflineHistoryAnswer(query, matchedKnowledge);
+                stageModelBadge.textContent = 'Bộ Tri Thức SGK 12 (Offline)';
+                headerLatencyText.textContent = 'Chế độ SGK Offline';
+            }
+
+            chatHistory.push({ role: 'user', parts: [{ text: query }] });
+            chatHistory.push({ role: 'model', parts: [{ text: aiReply }] });
+
+            // Cập nhật bong bóng AI
+            isThinking = false;
+            setAIState('ready');
+            const finalBubbleEl = updateAIBubble(loadingBubble, aiReply);
+
+            // Phát âm tiếng Việt TTS
+            if (isTTS) {
+                const speechBtn = finalBubbleEl.querySelector('.bubble-action-btn');
+                speakTTS(aiReply, speechBtn);
+            }
+        }
+
+        // ==========================================
+        // ĐỘNG CƠ TRI THỨC SGK LỊCH SỬ 12 (OFFLINE RAG FALLBACK)
+        // ==========================================
+        function generateOfflineHistoryAnswer(query, matchedKnowledge) {
+            const q = query.toLowerCase();
+            const isMeaning = q.includes('ý nghĩa') || q.includes('y nghia') || q.includes('tầm vóc') || q.includes('vai trò');
+            const isProgress = q.includes('diễn biến') || q.includes('dien bien') || q.includes('tiến trình') || q.includes('các đợt') || q.includes('giai đoạn');
+            const isContext = q.includes('bối cảnh') || q.includes('boi canh') || q.includes('nguyên nhân') || q.includes('hoàn cảnh') || q.includes('âm mưu');
+
+            // 1. ĐIỆN BIÊN PHỦ 1954
+            if (q.includes('điện biên') || q.includes('dien bien') || (q.includes('1954') && !q.includes('giơ'))) {
+                if (isMeaning) {
+                    return `### 🏆 Ý NGHĨA LỊCH SỬ CỦA CHIẾN DỊCH ĐIỆN BIÊN PHỦ (1954)
+
+**1. Đối với dân tộc Việt Nam:**
+- **Đập tan kế hoạch quân sự Nava:** Giáng đòn quyết định đập tan ý đồ quân sự của thực dân Pháp có đế quốc Mĩ can thiệp.
+- **Thắng lợi quân sự lớn nhất:** Đây là mốc son chói lọi trong 9 năm kháng chiến chống Pháp (1945 - 1954), bảo vệ vững chắc thành quả của Cách mạng Tháng Tám.
+- **Tạo bước ngoặt ngoại giao:** Trực tiếp buộc Pháp phải ký Hiệp định Giơ-ne-vơ (21/7/1954), công nhận độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ của Việt Nam, Lào, Campuchia; giải phóng hoàn toàn miền Bắc để xây dựng hậu phương lớn.
+
+**2. Đối với phong trào cách mạng thế giới:**
+- **Cổ vũ phong trào giải phóng dân tộc:** Là phát pháo hiệu báo trước sự sụp đổ không thể tránh khỏi của chủ nghĩa thực dân kiểu cũ trên toàn thế giới.
+- **Chứng minh chân lý thời đại:** Một dân tộc đất không rộng, người không đông nhưng đoàn kết, có đường lối đúng đắn hoàn toàn có thể đánh thắng đội quân viễn chinh xâm lược của đế quốc hùng mạnh.
+
+💡 **Mẹo liên tưởng Loci:** Gắn tại **Bàn trà trung tâm phòng khách** (lòng chảo Mường Thanh - nơi bẻ gãy ý chí quân viễn chinh Pháp). [ACTION:teleport:dien_bien_phu]`;
+                }
+
+                if (isProgress) {
+                    return `### ⚔️ DIỄN BIẾN 3 ĐỢT TIẾN CÔNG CHIẾN DỊCH ĐIỆN BIÊN PHỦ (13/3 – 07/5/1954)
+
+- **Đợt 1 (13/3 – 17/3/1954):** Ta mở màn đánh cứ điểm Him Lam và Độc Lập, bức hàng Bản Kéo. Kết quả: Tiêu diệt phân khu Bắc, mở toang cánh cửa tiến vào lòng chảo.
+- **Đợt 2 (30/3 – 26/4/1954):** Ta đồng loạt tiến công các cứ điểm phía Đông (đồi A1, C1, D1, E1...). Cuộc chiến giằng co quyết liệt tại đồi A1. Ta siết chặt vòng vây, đào hào cắt đứt hoàn toàn sân bay Mường Thanh.
+- **Đợt 3 (01/5 – 07/5/1954):** Ta tổng công kích trên toàn mặt trận, đánh chiếm các cứ điểm còn lại. Chiều **17h30 ngày 07/5/1954**, cờ Quyết chiến Quyết thắng tung bay trên nóc hầm De Castries, tướng De Castries cùng toàn bộ ban chỉ huy tập đoàn cứ điểm bị bắt sống.
+
+💡 **Mẹo liên tưởng Loci:** Gắn tại **Bàn trà trung tâm phòng khách**. [ACTION:teleport:dien_bien_phu]`;
+                }
+
+                if (isContext) {
+                    return `### 📌 BỐI CẢNH & HOÀN CẢNH RA ĐỜI CHIẾN DỊCH ĐIỆN BIÊN PHỦ (1953 - 1954)
+
+- **Kế hoạch Nava của Pháp - Mĩ:** Tháng 5/1953, Pháp cử tướng Nava sang Đông Dương với kế hoạch trong 18 tháng giành thắng lợi quyết định, kết thúc chiến tranh trong danh dự.
+- **Xây dựng tập đoàn cứ điểm:** Pháp biến Điện Biên Phủ thành "pháo đài bất khả xâm phạm" với 49 cứ điểm, 3 phân khu, 16.200 quân tinh nhuệ hòng thu hút và tiêu diệt bộ đội chủ lực của ta.
+- **Chủ trương của ta:** Tháng 12/1953, Bộ Chính trị chọn Điện Biên Phủ làm điểm quyết chiến chiến lược với phương châm chuyển từ *"Đánh nhanh, thắng nhanh"* sang *"Đánh chắc, tiến chắc"*.
+
+💡 **Mẹo liên tưởng Loci:** Gắn tại **Bàn trà trung tâm phòng khách**. [ACTION:teleport:dien_bien_phu]`;
+                }
+
+                // Hỏi chung chung -> Tóm lược toàn diện
+                return `### ⚔️ CHIẾN DỊCH ĐIỆN BIÊN PHỦ (13/3/1954 – 07/5/1954)
+- **Bối cảnh:** Pháp xây dựng tập đoàn cứ điểm gồm 49 cứ điểm kiên cố theo Kế hoạch Nava.
+- **Diễn biến 3 đợt:** Đợt 1 (13-17/3) tiêu diệt phân khu Bắc; Đợt 2 (30/3-26/4) siết vây sân bay Mường Thanh; Đợt 3 (1-7/5) tổng công kích, bắt sống tướng De Castries.
+- **Ý nghĩa:** Đập tan Kế hoạch Nava, buộc Pháp ký Hiệp định Giơnevơ 1954, giải phóng hoàn toàn miền Bắc.
+💡 **Mẹo Loci:** Gắn tại **Bàn trà trung tâm phòng khách**. [ACTION:teleport:dien_bien_phu]`;
+            }
+
+            // 2. CÁCH MẠNG THÁNG TÁM 1945
+            if (q.includes('tháng tám') || q.includes('thang tam') || (q.includes('1945') && !q.includes('pháp'))) {
+                if (isMeaning) {
+                    return `### 🏆 Ý NGHĨA LỊCH SỬ CỦA CÁCH MẠNG THÁNG TÁM NĂM 1945
+
+**1. Đối với dân tộc Việt Nam:**
+- **Mở ra kỷ nguyên độc lập tự do:** Phá tan xiềng xích nô lệ của thực dân Pháp hơn 80 năm và ách phát xít Nhật, lật đổ chế độ phong kiến tồn tại hàng nghìn năm.
+- **Lập nên nhà nước công nông đầu tiên:** Khai sinh nước Việt Nam Dân chủ Cộng hòa (02/9/1945), đưa nhân dân từ thân phận nô lệ trở thành người làm chủ đất nước.
+- **Đưa Đảng lên cầm quyền:** Đảng Cộng sản Đông Dương từ hoạt động bí mật trở thành đảng cầm quyền lãnh đạo toàn dân.
+
+**2. Đối với quốc tế:**
+- Giáng đòn mạnh mẽ vào hệ thống thuộc địa của chủ nghĩa đế quốc, cổ vũ mạnh mẽ phong trào giải phóng dân tộc ở các nước Á - Phi - Mĩ Latinh.
+
+💡 **Mẹo liên tưởng Loci:** Gắn tại **Cửa chính ra vào phòng khách** (nơi mở toang cánh cửa kỷ nguyên mới). [ACTION:teleport:cach_mang_thang_tam]`;
+                }
+
+                return `### 🇻🇳 CÁCH MẠNG THÁNG TÁM (1945)
+- **Thời cơ:** Ngày 15/8/1945, Nhật đầu hàng Đồng minh không điều kiện. Đảng phát động Tổng khởi nghĩa toàn quốc.
+- **Diễn biến:** 4 tỉnh giành chính quyền sớm nhất (18/8): Bắc Giang, Hải Dương, Hà Tĩnh, Quảng Nam. Khởi nghĩa thắng lợi ở Hà Nội (19/8), Huế (23/8), Sài Gòn (25/8).
+- **Tuyên ngôn độc lập:** Ngày 02/9/1945, Chủ tịch Hồ Chí Minh đọc Tuyên ngôn Độc lập tại Quảng trường Ba Đình.
+💡 **Mẹo Loci:** Gắn tại **Cửa chính ra vào phòng khách**. [ACTION:teleport:cach_mang_thang_tam]`;
+            }
+
+            // 3. CHIẾN DỊCH HỒ CHÍ MINH 1975
+            if (q.includes('hồ chí minh') || q.includes('ho chi minh') || q.includes('1975') || q.includes('giải phóng')) {
+                if (isMeaning) {
+                    return `### 🏆 Ý NGHĨA LỊCH SỬ CỦA CHIẾN DỊCH HỒ CHÍ MINH (1975)
+
+**1. Đối với dân tộc:**
+- Kết thúc 21 năm kháng chiến chống Mĩ cứu nước và 30 năm chiến tranh giải phóng dân tộc (1945 - 1975).
+- Chấm dứt vĩnh viễn ách thống trị của chủ nghĩa thực dân - đế quốc, giải phóng hoàn toàn miền Nam, thống nhất non sông về một mối, mở ra kỷ nguyên cả nước đi lên Chủ nghĩa Xã hội.
+
+**2. Đối với quốc tế:**
+- Cổ vũ phong trào hòa bình, dân chủ và độc lập dân tộc trên thế giới; chứng minh sự thất bại của chiến lược toàn cầu của đế quốc Mĩ sau Chiến tranh thế giới thứ hai.
+
+💡 **Mẹo liên tưởng Loci:** Gắn tại **Màn hình Tivi lớn phòng khách** (nơi phát đi bản tin toàn thắng 30/4/1975). [ACTION:teleport:chien_dich_ho_chi_minh]`;
+                }
+
+                return `### 🏆 CHIẾN DỊCH HỒ CHÍ MINH (26/4 – 30/4/1975)
+- **Chủ trương:** "Thần tốc, táo bạo, bất ngờ, chắc thắng", giải phóng miền Nam trước mùa mưa năm 1975.
+- **Diễn biến then chốt:** 10h45 ngày 30/4/1975, xe tăng húc đổ cổng Dinh Độc Lập; 11h30 cờ cách mạng tung bay trên nóc Dinh Độc Lập, chiến dịch toàn thắng.
+💡 **Mẹo Loci:** Gắn tại **Màn hình TV phòng khách**. [ACTION:teleport:chien_dich_ho_chi_minh]`;
+            }
+
+            if (matchedKnowledge && matchedKnowledge.trim().length > 60) {
+                return `### 📘 TRÍCH DẪN TỪ TÀI LIỆU ÔN THI TN THPT LỊCH SỬ 12\n\n${matchedKnowledge}\n\n💡 **Mẹo liên tưởng Loci:** Hãy gắn các mốc sự kiện trên vào các vị trí trong phòng khách 3D để ghi nhớ bền vững nhé!`;
+            }
+
+            return `Xin chào bạn! Tôi là Trợ lý AI Loci Lịch Sử 12. Tôi đã được nạp toàn bộ 16 bài học SGK Lịch Sử 12 cùng 5 mốc liên tưởng không gian 3D. Bạn có thể hỏi tôi trực diện về bất kỳ nội dung nào (như Ý nghĩa Chiến dịch Điện Biên Phủ 1954, Diễn biến Cách mạng Tháng Tám, So sánh các chiến lược chiến tranh của Mĩ...) để tôi giảng giải đúng trọng tâm nhất nhé!`;
+        }
+
+        // ==========================================
+        // 7. BUBBLE DOM UTILITIES
+        // ==========================================
+        function getCurrentTimeString() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function appendBubble(role, text) {
+            const row = document.createElement('div');
+            row.className = `message-row ${role}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar-circle';
+            avatar.textContent = role === 'user' ? '👤' : '✦';
+
+            const content = document.createElement('div');
+            content.className = 'bubble-content';
+
+            const box = document.createElement('div');
+            box.className = 'bubble-box';
+            box.textContent = text;
+
+            const time = document.createElement('div');
+            time.className = 'bubble-time';
+            time.textContent = getCurrentTimeString();
+
+            content.appendChild(box);
+            content.appendChild(time);
+            row.appendChild(avatar);
+            row.appendChild(content);
+
+            chatStream.appendChild(row);
+            chatStream.scrollTop = chatStream.scrollHeight;
+            return row;
+        }
+
+        function appendThinkingBubble() {
+            const row = document.createElement('div');
+            row.className = 'message-row ai';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar-circle';
+            avatar.textContent = '✦';
+
+            const content = document.createElement('div');
+            content.className = 'bubble-content';
+
+            const box = document.createElement('div');
+            box.className = 'bubble-box';
+            box.innerHTML = `
+                <div class="bubble-header">
+                    <div class="ai-title-tag">✨ TRỢ LÝ AI LOCI</div>
+                </div>
+                <div class="thinking-indicator">
+                    <span></span><span></span><span></span>
+                    <span style="width: auto; height: auto; background: none; font-size: 0.84rem; color: #94a3b8; margin-left: 8px;">Đang suy nghĩ...</span>
+                </div>
+            `;
+
+            content.appendChild(box);
+            row.appendChild(avatar);
+            row.appendChild(content);
+
+            chatStream.appendChild(row);
+            chatStream.scrollTop = chatStream.scrollHeight;
+            return row;
+        }
+
+        function updateAIBubble(rowElement, text) {
+            const box = rowElement.querySelector('.bubble-box');
+            let formattedText = text;
+            const actionMatch = text.match(/\[ACTION:([^\]]+)\]/i);
+            let actionPillHtml = '';
+
+            if (actionMatch) {
+                formattedText = text.replace(/\[ACTION:[^\]]+\]/g, '').trim();
+                actionPillHtml = `<br><button class="action-chip-pill" onclick="window.open('./app/index.html', '_blank')">🚀 LỆNH ĐIỀU KHIỂN 3D: [${actionMatch[1]}] ➔</button>`;
+            }
+
+            // Định dạng các gạch đầu dòng và in đậm
+            formattedText = formattedText
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+
+            box.innerHTML = `
+                <div class="bubble-header">
+                    <div class="ai-title-tag">✨ TRỢ LÝ AI LOCI (GEMINI)</div>
+                    <div class="ai-bubble-actions">
+                        <button class="bubble-action-btn" onclick="speakMessageText(this)">🔊 Nghe</button>
+                        <button class="bubble-action-btn" onclick="copyBubbleText(this)">📋 Sao chép</button>
+                    </div>
+                </div>
+                ${formattedText}
+                ${actionPillHtml}
+            `;
+
+            const time = document.createElement('div');
+            time.className = 'bubble-time';
+            time.textContent = getCurrentTimeString();
+            rowElement.querySelector('.bubble-content').appendChild(time);
+
+            chatStream.scrollTop = chatStream.scrollHeight;
+            return rowElement;
+        }
+
+        function copyBubbleText(btn) {
+            const bubbleBox = btn.closest('.bubble-box');
+            if (!bubbleBox) return;
+            const clone = bubbleBox.cloneNode(true);
+            const header = clone.querySelector('.bubble-header');
+            if (header) header.remove();
+            const actionPill = clone.querySelector('.action-chip-pill');
+            if (actionPill) actionPill.remove();
+            navigator.clipboard.writeText(clone.textContent.trim()).then(() => {
+                const oldText = btn.textContent;
+                btn.textContent = '✓ Đã chép';
+                setTimeout(() => { btn.textContent = oldText; }, 1500);
+            });
+        }
+
+        function askQuickPrompt(text) {
+            sendUserMessage(text);
+        }
+
+        function clearChatHistory() {
+            chatHistory.length = 0;
+            chatStream.innerHTML = `
+                <div class="message-row ai">
+                    <div class="avatar-circle">✦</div>
+                    <div class="bubble-content">
+                        <div class="bubble-box">
+                            <div class="bubble-header">
+                                <div class="ai-title-tag">✨ TRỢ LÝ AI LOCI (GOOGLE GEMINI)</div>
+                                <div class="ai-bubble-actions">
+                                    <button class="bubble-action-btn" onclick="speakMessageText(this)">🔊 Nghe</button>
+                                </div>
+                            </div>
+                            Đoạn hội thoại đã được làm mới! Bạn hãy đặt câu hỏi hoặc bấm micro để bắt đầu đàm thoại nhé.
+                        </div>
+                        <div class="bubble-time">${getCurrentTimeString()}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 8. EVENT LISTENERS
+        // ==========================================
+        sendBtn.addEventListener('click', () => sendUserMessage());
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendUserMessage();
+        });
+
+        document.getElementById('welcome-time').textContent = getCurrentTimeString();
+    </script>
+</body>
+
+</html>

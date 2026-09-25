@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VR 3D Tester & Meta Quest 2 Simulator | Cung Điện Ký Ức</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --panel-bg: rgba(13, 20, 36, 0.85);
+      --panel-border: rgba(0, 242, 254, 0.25);
+      --primary: #00f2fe;
+      --primary-glow: rgba(0, 242, 254, 0.4);
+      --accent: #4facfe;
+      --success: #00e676;
+      --warning: #ffab00;
+      --danger: #ff5252;
+      --text: #f0f4ff;
+      --text-dim: rgba(240, 244, 255, 0.6);
+      --lens-radius: 46%;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- TOP BAR (LINK INPUT & CONTROLS) --- */
+    #top-bar {
+      height: 64px;
+      background: rgba(10, 16, 30, 0.95);
+      border-bottom: 1px solid var(--panel-border);
+      backdrop-filter: blur(20px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      gap: 12px;
+      z-index: 100;
+      flex-shrink: 0;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .brand-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      color: #fff;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--primary);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* URL Input Box */
+    .url-box-wrap {
+      flex: 1;
+      max-width: 620px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      padding: 4px 6px 4px 14px;
+      transition: all 0.25s;
+    }
+
+    .url-box-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 16px var(--primary-glow);
+      background: rgba(255, 255, 255, 0.09);
+    }
+
+    .url-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 13px;
+      font-family: monospace;
+    }
+
+    .url-input::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .action-btn {
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      color: var(--primary);
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: var(--primary);
+      color: #050d1a;
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 6px;
+    }
+
+    .quick-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-dim);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+
+    .quick-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Mode Selectors */
+    .mode-switch {
+      display: flex;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .mode-tab {
+      padding: 6px 12px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: 0.2s;
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #040914;
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    /* --- MAIN STAGE VIEWPORT --- */
+    #viewport-stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #020408;
+      overflow: hidden;
+    }
+
+    /* Single Viewport Mode */
+    .viewport-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Dual-Eye Stereoscopic Mode (Kính VR 2 mắt) */
+    .dual-eyes-wrap {
+      display: none;
+      width: 100%;
+      height: 100%;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      background: #000;
+    }
+
+    .eye-frame-box {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+
+    .eye-mask {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: inset 0 0 120px 40px rgba(0, 0, 0, 0.95);
+      border-radius: var(--lens-radius);
+      border: 3px solid rgba(0, 242, 254, 0.15);
+    }
+
+    .eye-label {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      z-index: 20;
+      font-size: 11px;
+      font-weight: 800;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    /* Middle IPD Divider Line */
+    .ipd-divider {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      background: linear-gradient(180deg, transparent, rgba(0, 242, 254, 0.5), transparent);
+      z-index: 25;
+      transform: translateX(-50%);
+    }
+
+    /* Reticle / Lens Crosshair for Eye Alignment */
+    .lens-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+      border: 1px dashed rgba(0, 242, 254, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .lens-crosshair::before, .lens-crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(0, 242, 254, 0.4);
+    }
+
+    .lens-crosshair::before {
+      top: 50%; left: 0; right: 0; height: 1px;
+    }
+    .lens-crosshair::after {
+      left: 50%; top: 0; bottom: 0; width: 1px;
+    }
+
+    /* The actual test iframes */
+    .test-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #0a0f1d;
+    }
+
+    /* Simulated Quest 2 Preset Device Frame */
+    .device-quest-frame {
+      width: min(96vw, 1280px);
+      height: min(88vh, 760px);
+      border-radius: 28px;
+      overflow: hidden;
+      border: 2px solid rgba(0, 242, 254, 0.3);
+      box-shadow: 0 16px 60px rgba(0, 0, 0, 0.8), 0 0 35px var(--primary-glow);
+      position: relative;
+    }
+
+    /* --- VIRTUAL META QUEST 2 CONTROLLERS HUD OVERLAY --- */
+    #vr-controllers-hud {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 24px;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .controller-panel {
+      pointer-events: auto;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 14px 18px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      width: 310px;
+      transition: all 0.25s;
+    }
+
+    .controller-panel:hover {
+      border-color: var(--primary);
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.8), 0 0 20px var(--primary-glow);
+    }
+
+    .controller-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .controller-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .controller-sub {
+      font-size: 10px;
+      color: var(--primary);
+      background: rgba(0, 242, 254, 0.12);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .controller-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .ctrl-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 10px 8px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(0, 242, 254, 0.2);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .ctrl-btn:active, .ctrl-btn.pressed {
+      background: var(--primary);
+      color: #040814;
+      transform: scale(0.95);
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+
+    .ctrl-btn.btn-ai-highlight {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(79, 172, 254, 0.3));
+      border: 1.5px solid var(--primary);
+      color: #fff;
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+
+    .ctrl-btn.btn-ai-highlight:hover {
+      background: var(--primary);
+      color: #040814;
+    }
+
+    .ctrl-key-badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.4);
+      color: rgba(255, 255, 255, 0.7);
+      font-family: monospace;
+    }
+
+    .ctrl-btn:active .ctrl-key-badge, .ctrl-btn.pressed .ctrl-key-badge {
+      background: #040814;
+      color: #00f2fe;
+    }
+
+    /* Thumbstick visual widget */
+    .stick-widget {
+      grid-column: span 2;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stick-pad {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stick-thumb {
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--primary-glow);
+      transition: transform 0.1s;
+    }
+
+    .stick-info {
+      text-align: right;
+    }
+
+    .stick-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stick-hint {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* --- STATUS & DIAGNOSTICS HUD BAR (FLOATING TOP RIGHT) --- */
+    #diag-panel {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      backdrop-filter: blur(16px);
+      z-index: 60;
+      width: 250px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .diag-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .diag-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .diag-item:last-child {
+      border-bottom: none;
+    }
+
+    .diag-val {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .diag-val.ok {
+      color: var(--success);
+    }
+
+    .diag-val.warn {
+      color: var(--warning);
+    }
+
+    /* Toast Notification */
+    #vr-toast {
+      position: absolute;
+      top: 84px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      opacity: 0;
+      background: rgba(8, 14, 28, 0.95);
+      border: 1px solid var(--primary);
+      border-radius: 20px;
+      padding: 10px 22px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--primary-glow);
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 120;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #vr-toast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Laser Reticle Simulator */
+    #laser-pointer-sim {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--primary);
+      background: rgba(0, 242, 254, 0.4);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 80;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 12px var(--primary);
+      display: none;
+      transition: width 0.1s, height 0.1s;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <header id="top-bar">
+    <div class="brand-wrap">
+      <div class="brand-badge">🥽</div>
+      <div>
+        <div class="brand-title">VR 3D LAB TESTER</div>
+        <div class="brand-sub">Meta Quest 2 • Simulator</div>
+      </div>
+    </div>
+
+    <!-- URL Input -->
+    <div class="url-box-wrap">
+      <span style="margin-right:8px; font-size:14px; opacity:0.6;">🌐</span>
+      <input type="text" id="url-input" class="url-input" placeholder="Dán link web của bạn (VD: http://localhost:3000 hoặc link Netlify)..." value="./app/index.html" />
+      <button class="action-btn" id="load-url-btn" title="Nạp link vào môi trường test">
+        <span>Nạp Link 🚀</span>
+      </button>
+    </div>
+
+    <!-- Quick Buttons -->
+    <div class="quick-links">
+      <button class="quick-btn" id="quick-app-btn">Loft Room (app/index.html)</button>
+      <button class="quick-btn" id="quick-test-ai-btn">Test AI (test_ai.html)</button>
+      <button class="quick-btn" id="quick-root-btn">Root (index.html)</button>
+    </div>
+
+    <!-- View Mode Switch -->
+    <div class="mode-switch">
+      <button class="mode-tab active" data-mode="device">📱 Kính Meta Quest</button>
+      <button class="mode-tab" data-mode="dual">👀 2 Mắt VR</button>
+      <button class="mode-tab" data-mode="full">🖥️ Toàn màn hình</button>
+    </div>
+
+    <button class="action-btn" id="reload-btn" title="Tải lại trang">🔄</button>
+    <button class="action-btn" id="new-tab-btn" title="Mở trang trong tab mới">↗</button>
+  </header>
+
+  <!-- MAIN STAGE -->
+  <main id="viewport-stage">
+    
+    <!-- 1. Single / Device Mode Viewport -->
+    <div class="viewport-container" id="single-viewport">
+      <div class="device-quest-frame" id="device-frame">
+        <iframe id="test-frame-main" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+      </div>
+    </div>
+
+    <!-- 2. Stereoscopic Dual-Lens Mode Viewport -->
+    <div class="dual-eyes-wrap" id="dual-viewport">
+      <div class="ipd-divider"></div>
+      
+      <!-- Left Eye -->
+      <div class="eye-frame-box">
+        <div class="eye-mask"></div>
+        <div class="lens-crosshair"></div>
+        <div class="eye-label">MẮT TRÁI (LEFT EYE • 1832x1920)</div>
+        <iframe id="test-frame-left" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+      </div>
+
+      <!-- Right Eye -->
+      <div class="eye-frame-box">
+        <div class="eye-mask"></div>
+        <div class="lens-crosshair"></div>
+        <div class="eye-label">MẮT PHẢI (RIGHT EYE • 1832x1920)</div>
+        <iframe id="test-frame-right" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+      </div>
+    </div>
+
+    <!-- Simulated Laser Pointer Dot -->
+    <div id="laser-pointer-sim"></div>
+
+    <!-- Toast Notification -->
+    <div id="vr-toast">
+      <span id="toast-icon">⚡</span>
+      <span id="toast-msg">Đã gửi lệnh</span>
+    </div>
+
+    <!-- FLOATING DIAGNOSTICS PANEL -->
+    <div id="diag-panel">
+      <div class="diag-title">
+        <span>⚡ THÔNG SỐ TEST VR</span>
+      </div>
+      <div class="diag-item">
+        <span>Độ phân giải:</span>
+        <span class="diag-val" id="diag-res">1832 x 1920</span>
+      </div>
+      <div class="diag-item">
+        <span>Tần số quét ảo:</span>
+        <span class="diag-val ok" id="diag-fps">90 / 120 Hz</span>
+      </div>
+      <div class="diag-item">
+        <span>WebXR Hỗ trợ:</span>
+        <span class="diag-val ok" id="diag-xr">Sẵn sàng</span>
+      </div>
+      <div class="diag-item">
+        <span>Trợ lý AI Loci:</span>
+        <span class="diag-val ok" id="diag-ai">Nút B / Y</span>
+      </div>
+      <div class="diag-item">
+        <span>Lộ trình Ký ức:</span>
+        <span class="diag-val ok">5 Mốc Chuẩn SGK</span>
+      </div>
+    </div>
+
+    <!-- VIRTUAL META QUEST 2 CONTROLLERS HUD -->
+    <div id="vr-controllers-hud">
+      
+      <!-- LEFT CONTROLLER (TAY CẦM TRÁI) -->
+      <div class="controller-panel" id="left-controller">
+        <div class="controller-header">
+          <div class="controller-title">
+            <span>🎮 TAY CẦM TRÁI</span>
+          </div>
+          <div class="controller-sub">LOCOMOTION & HUD</div>
+        </div>
+
+        <div class="controller-grid">
+          <!-- Button X -->
+          <button class="ctrl-btn" id="btn-x" data-key="KeyX" title="Đóng tất cả HUD trong VR">
+            <span>✕ Nút X</span>
+            <span class="ctrl-key-badge">[Phím X] Đóng</span>
+          </button>
+
+          <!-- Button Y (Calls AI as well) -->
+          <button class="ctrl-btn btn-ai-highlight" id="btn-y" data-key="KeyY" title="Mở Trợ lý AI hoặc Danh sách mốc">
+            <span>🤖 Nút Y</span>
+            <span class="ctrl-key-badge">[Phím Y] Gọi AI</span>
+          </button>
+
+          <!-- Thumbstick (Move WASD) -->
+          <div class="stick-widget">
+            <div class="stick-pad" id="stick-pad-left">
+              <div class="stick-thumb" id="stick-thumb-left"></div>
+            </div>
+            <div class="stick-info">
+              <div class="stick-name">Cần Gạt Trái (WASD)</div>
+              <div class="stick-hint">Di chuyển theo lộ trình</div>
+            </div>
+          </div>
+
+          <!-- Trigger Left -->
+          <button class="ctrl-btn" id="btn-trigger-left" data-key="Space" title="Bóp cò tay trái">
+            <span>🎯 Bóp Cò (Trigger)</span>
+            <span class="ctrl-key-badge">[Space] Chọn mốc</span>
+          </button>
+
+          <!-- Grip Left -->
+          <button class="ctrl-btn" id="btn-grip-left" data-key="KeyG" title="Bóp tay cầm trái mở danh sách mốc">
+            <span>✊ Bóp Tay Cầm (Grip)</span>
+            <span class="ctrl-key-badge">[G] DS Mốc</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT CONTROLLER (TAY CẦM PHẢI) -->
+      <div class="controller-panel" id="right-controller">
+        <div class="controller-header">
+          <div class="controller-title">
+            <span>🎮 TAY CẦM PHẢI</span>
+          </div>
+          <div class="controller-sub">AI & LASER POINTER</div>
+        </div>
+
+        <div class="controller-grid">
+          <!-- Button A -->
+          <button class="ctrl-btn" id="btn-a" data-key="KeyA" title="Thêm mốc ký ức tại điểm nhìn">
+            <span>📍 Nút A</span>
+            <span class="ctrl-key-badge">[Phím A] Thêm mốc</span>
+          </button>
+
+          <!-- Button B: GỌI AI TRỢ LÝ -->
+          <button class="ctrl-btn btn-ai-highlight" id="btn-b" data-key="KeyB" title="GỌI TRỢ LÝ AI TRONG VR">
+            <span>✨ Nút B (AI Loci)</span>
+            <span class="ctrl-key-badge" style="background:#00f2fe; color:#000; font-weight:800;">[Phím B] GỌI AI</span>
+          </button>
+
+          <!-- Thumbstick (Snap turn 30°) -->
+          <div class="stick-widget">
+            <div class="stick-pad" id="stick-pad-right">
+              <div class="stick-thumb" id="stick-thumb-right"></div>
+            </div>
+            <div class="stick-info">
+              <div class="stick-name">Cần Gạt Phải (Xoay)</div>
+              <div class="stick-hint">Snap Turn 30° / Nhìn quanh</div>
+            </div>
+          </div>
+
+          <!-- Trigger Right (Laser Click) -->
+          <button class="ctrl-btn" id="btn-trigger-right" data-key="KeyE" title="Bóp cò bắn laser bấm nút 3D">
+            <span>🔫 Cò Laser (Select)</span>
+            <span class="ctrl-key-badge">[E / Click] Bấm nút</span>
+          </button>
+
+          <!-- Grip Right (Summon AI) -->
+          <button class="ctrl-btn btn-ai-highlight" id="btn-grip-right" data-key="KeyB" title="Bóp tay cầm phải gọi AI">
+            <span>✊ Bóp Tay Cầm (Grip)</span>
+            <span class="ctrl-key-badge">Gọi AI tức thì</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // Elements
+    const urlInput = document.getElementById('url-input');
+    const loadUrlBtn = document.getElementById('load-url-btn');
+    const reloadBtn = document.getElementById('reload-btn');
+    const newTabBtn = document.getElementById('new-tab-btn');
+    const quickAppBtn = document.getElementById('quick-app-btn');
+    const quickTestAiBtn = document.getElementById('quick-test-ai-btn');
+    const quickRootBtn = document.getElementById('quick-root-btn');
+
+    const singleViewport = document.getElementById('single-viewport');
+    const dualViewport = document.getElementById('dual-viewport');
+    const deviceFrame = document.getElementById('device-frame');
+    const testFrameMain = document.getElementById('test-frame-main');
+    const testFrameLeft = document.getElementById('test-frame-left');
+    const testFrameRight = document.getElementById('test-frame-right');
+
+    const vrToast = document.getElementById('vr-toast');
+    const toastIcon = document.getElementById('toast-icon');
+    const toastMsg = document.getElementById('toast-msg');
+    const laserSim = document.getElementById('laser-pointer-sim');
+
+    let currentUrl = './app/index.html';
+    let toastTimer = null;
+
+    function showToast(msg, icon = '⚡') {
+      toastMsg.textContent = msg;
+      toastIcon.textContent = icon;
+      vrToast.classList.add('visible');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => vrToast.classList.remove('visible'), 2200);
+    }
+
+    // Load URL into iframes
+    function loadTargetUrl(targetUrl) {
+      if (!targetUrl) return;
+      currentUrl = targetUrl;
+      urlInput.value = targetUrl;
+      
+      testFrameMain.src = targetUrl;
+      if (dualViewport.style.display === 'grid') {
+        testFrameLeft.src = targetUrl;
+        testFrameRight.src = targetUrl;
+      }
+      showToast('Đang nạp: ' + targetUrl, '🚀');
+    }
+
+    loadUrlBtn.addEventListener('click', () => loadTargetUrl(urlInput.value.trim()));
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') loadTargetUrl(urlInput.value.trim());
+    });
+
+    reloadBtn.addEventListener('click', () => {
+      testFrameMain.src = currentUrl;
+      if (dualViewport.style.display === 'grid') {
+        testFrameLeft.src = currentUrl;
+        testFrameRight.src = currentUrl;
+      }
+      showToast('Đã tải lại trang!', '🔄');
+    });
+
+    newTabBtn.addEventListener('click', () => {
+      window.open(currentUrl, '_blank');
+    });
+
+    // Quick presets
+    quickAppBtn.addEventListener('click', () => loadTargetUrl('./app/index.html'));
+    quickTestAiBtn.addEventListener('click', () => loadTargetUrl('./test_ai.html'));
+    quickRootBtn.addEventListener('click', () => loadTargetUrl('./index.html'));
+
+    // Mode Switcher
+    const modeTabs = document.querySelectorAll('.mode-tab');
+    modeTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        modeTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const mode = tab.dataset.mode;
+
+        if (mode === 'dual') {
+          singleViewport.style.display = 'none';
+          dualViewport.style.display = 'grid';
+          testFrameLeft.src = currentUrl;
+          testFrameRight.src = currentUrl;
+          showToast('Chế độ 2 Mắt Kính VR (Stereoscopic Side-by-Side)', '👀');
+        } else if (mode === 'device') {
+          dualViewport.style.display = 'none';
+          singleViewport.style.display = 'flex';
+          deviceFrame.className = 'device-quest-frame';
+          deviceFrame.style.width = 'min(96vw, 1280px)';
+          deviceFrame.style.height = 'min(88vh, 760px)';
+          showToast('Chế độ Khung Kính Meta Quest 2 Viewport', '📱');
+        } else if (mode === 'full') {
+          dualViewport.style.display = 'none';
+          singleViewport.style.display = 'flex';
+          deviceFrame.className = '';
+          deviceFrame.style.width = '100%';
+          deviceFrame.style.height = '100%';
+          showToast('Chế độ Toàn màn hình', '🖥️');
+        }
+      });
+    });
+
+    /* --- VIRTUAL CONTROLLER SIGNALS & BRIDGING --- */
+    function getActiveFrames() {
+      if (dualViewport.style.display === 'grid') {
+        return [testFrameLeft, testFrameRight];
+      }
+      return [testFrameMain];
+    }
+
+    function dispatchVRSignal(actionName, codeKey, description) {
+      showToast(description, '🎮');
+      
+      const frames = getActiveFrames();
+      frames.forEach(frame => {
+        try {
+          // 1. PostMessage Bridge
+          if (frame.contentWindow) {
+            frame.contentWindow.postMessage({
+              type: 'vr_sim_input',
+              action: actionName,
+              key: codeKey
+            }, '*');
+
+            // 2. Synthetic Keyboard Event Dispatch
+            if (codeKey) {
+              const downEvt = new frame.contentWindow.KeyboardEvent('keydown', {
+                code: codeKey,
+                key: codeKey.replace('Key', ''),
+                bubbles: true
+              });
+              frame.contentWindow.document.dispatchEvent(downEvt);
+
+              setTimeout(() => {
+                const upEvt = new frame.contentWindow.KeyboardEvent('keyup', {
+                  code: codeKey,
+                  key: codeKey.replace('Key', ''),
+                  bubbles: true
+                });
+                frame.contentWindow.document.dispatchEvent(upEvt);
+              }, 120);
+            }
+          }
+        } catch (e) {
+          console.warn('Cross-origin frame dispatch:', e);
+        }
+      });
+    }
+
+    // Button B: Gọi Trợ Lý AI Loci
+    document.getElementById('btn-b').addEventListener('click', () => {
+      dispatchVRSignal('button_b', 'KeyB', '✨ Nút B: Đã kích hoạt Trợ lý AI Hologram VR!');
+    });
+
+    // Grip Right: Gọi Trợ Lý AI
+    document.getElementById('btn-grip-right').addEventListener('click', () => {
+      dispatchVRSignal('button_b', 'KeyB', '✊ Bóp Grip Phải: Đã gọi Trợ lý AI VR!');
+    });
+
+    // Button Y: Gọi Trợ Lý AI / Danh Sách
+    document.getElementById('btn-y').addEventListener('click', () => {
+      dispatchVRSignal('button_y', 'KeyY', '🤖 Nút Y: Đã mở Trợ lý AI / Menu!');
+    });
+
+    // Button A: Thêm mốc
+    document.getElementById('btn-a').addEventListener('click', () => {
+      dispatchVRSignal('button_a', 'KeyA', '📍 Nút A: Đặt mốc tại điểm nhìn!');
+    });
+
+    // Button X: Đóng HUD
+    document.getElementById('btn-x').addEventListener('click', () => {
+      dispatchVRSignal('button_x', 'KeyX', '✕ Nút X: Đóng tất cả bảng VR!');
+    });
+
+    // Trigger Right: Bóp cò laser
+    document.getElementById('btn-trigger-right').addEventListener('click', () => {
+      dispatchVRSignal('trigger_right', 'KeyE', '🔫 Bóp cò Laser: Chọn nút / mốc!');
+    });
+
+    // Trigger Left: Chọn mốc
+    document.getElementById('btn-trigger-left').addEventListener('click', () => {
+      dispatchVRSignal('trigger_left', 'Space', '🎯 Bóp cò Trái: Tiến mốc kế tiếp!');
+    });
+
+    // Grip Left: Danh sách mốc
+    document.getElementById('btn-grip-left').addEventListener('click', () => {
+      dispatchVRSignal('grip_left', 'KeyG', '✊ Bóp Grip Trái: Mở danh sách mốc!');
+    });
+
+    // Keyboard Shortcuts for Simulator
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT') return;
+
+      if (e.code === 'KeyB') {
+        const btnB = document.getElementById('btn-b');
+        btnB.classList.add('pressed');
+        btnB.click();
+        setTimeout(() => btnB.classList.remove('pressed'), 200);
+      }
+      if (e.code === 'KeyY') {
+        const btnY = document.getElementById('btn-y');
+        btnY.classList.add('pressed');
+        btnY.click();
+        setTimeout(() => btnY.classList.remove('pressed'), 200);
+      }
+      if (e.code === 'KeyA') {
+        const btnA = document.getElementById('btn-a');
+        btnA.classList.add('pressed');
+        btnA.click();
+        setTimeout(() => btnA.classList.remove('pressed'), 200);
+      }
+      if (e.code === 'KeyX') {
+        const btnX = document.getElementById('btn-x');
+        btnX.classList.add('pressed');
+        btnX.click();
+        setTimeout(() => btnX.classList.remove('pressed'), 200);
+      }
+    });
+
+    // Laser Pointer Simulator on mousemove over stage
+    const viewportStage = document.getElementById('viewport-stage');
+    viewportStage.addEventListener('mousemove', (e) => {
+      laserSim.style.display = 'block';
+      laserSim.style.left = e.clientX + 'px';
+      laserSim.style.top = e.clientY + 'px';
+    });
+    viewportStage.addEventListener('mouseleave', () => {
+      laserSim.style.display = 'none';
+    });
+  </script>
+</body>
+
+</html>

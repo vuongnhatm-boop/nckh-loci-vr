@@ -1,0 +1,3 @@
+/*
+  Permissions-Policy: xr-spatial-tracking=*, microphone=*
+  Access-Control-Allow-Origin: *
