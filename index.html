@@ -251,10 +251,13 @@
     }
 
     @keyframes micGlowPulse {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: 0 0 15px rgba(0, 242, 254, 0.5);
         transform: scale(1);
       }
+
       50% {
         box-shadow: 0 0 30px rgba(0, 242, 254, 0.9), 0 0 45px rgba(79, 172, 254, 0.4);
         transform: scale(1.06);
@@ -349,8 +352,17 @@
     }
 
     @keyframes micDotBlink {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.8);
+      }
     }
 
     /* Top Navigation HUD */
@@ -433,7 +445,7 @@
       cursor: pointer;
       backdrop-filter: blur(20px) saturate(1.8);
       -webkit-backdrop-filter: blur(20px) saturate(1.8);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.18);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       letter-spacing: 0.01em;
     }
@@ -443,20 +455,20 @@
       position: absolute;
       inset: 0;
       border-radius: 22px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.13) 0%, transparent 60%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.13) 0%, transparent 60%);
       pointer-events: none;
     }
 
     .action-btn:hover {
       background: rgba(255, 255, 255, 0.17);
       border-color: rgba(255, 255, 255, 0.35);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
       transform: translateY(-1px);
     }
 
     .action-btn:active {
       transform: scale(0.96);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
 
     .action-btn:disabled {
@@ -493,12 +505,12 @@
       cursor: pointer;
       backdrop-filter: blur(20px) saturate(1.8);
       -webkit-backdrop-filter: blur(20px) saturate(1.8);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.18);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       z-index: 2;
       user-select: none;
-      letter-spacing: 0.01em;
+      1 letter-spacing: 0.01em;
     }
 
     #marker-tab-toggle::before {
@@ -506,7 +518,7 @@
       position: absolute;
       inset: 0;
       border-radius: 22px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, transparent 55%);
       pointer-events: none;
     }
 
@@ -546,8 +558,8 @@
       opacity: 0;
       transform: translateY(8px);
       transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                  opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       margin-bottom: 6px;
       pointer-events: none;
     }
@@ -564,17 +576,19 @@
       gap: 6px;
       padding: 10px 12px;
       background: rgba(10, 16, 30, 0.72);
-      border: 1px solid rgba(255,255,255,0.13);
+      border: 1px solid rgba(255, 255, 255, 0.13);
       border-radius: 18px;
       backdrop-filter: blur(24px) saturate(1.6);
       -webkit-backdrop-filter: blur(24px) saturate(1.6);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       overflow-x: auto;
       max-width: min(90vw, 680px);
       scrollbar-width: none;
     }
 
-    #marker-strip::-webkit-scrollbar { display: none; }
+    #marker-strip::-webkit-scrollbar {
+      display: none;
+    }
 
     .locus-pill {
       background: rgba(255, 255, 255, 0.08);
@@ -583,7 +597,7 @@
       border-radius: 14px;
       font-size: 12px;
       font-weight: 600;
-      color: rgba(255,255,255,0.88);
+      color: rgba(255, 255, 255, 0.88);
       white-space: nowrap;
       cursor: pointer;
       backdrop-filter: blur(8px);
@@ -599,7 +613,7 @@
       position: absolute;
       inset: 0;
       border-radius: 14px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 55%);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 55%);
       pointer-events: none;
     }
 
@@ -607,7 +621,7 @@
       background: rgba(0, 242, 254, 0.13);
       border-color: rgba(0, 242, 254, 0.4);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .status-dot {
@@ -617,9 +631,20 @@
       flex-shrink: 0;
     }
 
-    .status-dot.red   { background: #ff5252; box-shadow: 0 0 4px rgba(255,82,82,0.7); }
-    .status-dot.yellow{ background: #ffab00; box-shadow: 0 0 4px rgba(255,171,0,0.7); }
-    .status-dot.green { background: #00e676; box-shadow: 0 0 4px rgba(0,230,118,0.7); }
+    .status-dot.red {
+      background: #ff5252;
+      box-shadow: 0 0 4px rgba(255, 82, 82, 0.7);
+    }
+
+    .status-dot.yellow {
+      background: #ffab00;
+      box-shadow: 0 0 4px rgba(255, 171, 0, 0.7);
+    }
+
+    .status-dot.green {
+      background: #00e676;
+      box-shadow: 0 0 4px rgba(0, 230, 118, 0.7);
+    }
 
     /* Memory Anchor Detail Modal - Modern Minimalist */
     #locus-modal {
@@ -879,7 +904,8 @@
       background: rgba(255, 255, 255, 0.015);
     }
 
-    .footer-left, .footer-right {
+    .footer-left,
+    .footer-right {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -957,7 +983,9 @@
       color: #fff;
     }
 
-    .k-btn.hidden, .knowledge-edit-input.hidden, .knowledge-edit-textarea.hidden {
+    .k-btn.hidden,
+    .knowledge-edit-input.hidden,
+    .knowledge-edit-textarea.hidden {
       display: none !important;
     }
 
@@ -1147,8 +1175,15 @@
     }
 
     @keyframes pulseDot {
-      from { opacity: 0.5; transform: scale(0.85); }
-      to { opacity: 1; transform: scale(1.2); }
+      from {
+        opacity: 0.5;
+        transform: scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1.2);
+      }
     }
 
     /* --- FLOATING MEMORY JOURNEY ROUTE CONTROLLER (Bottom Center Minimal Dock) --- */
@@ -1302,7 +1337,8 @@
     }
 
     /* Hide legacy cluttered elements */
-    #marker-dock, .plasma-float-toggle {
+    #marker-dock,
+    .plasma-float-toggle {
       display: none !important;
     }
 
@@ -1314,8 +1350,13 @@
     }
 
     @keyframes pulseAutoBtn {
-      from { box-shadow: 0 0 6px rgba(255, 171, 0, 0.3); }
-      to { box-shadow: 0 0 16px rgba(255, 171, 0, 0.7); }
+      from {
+        box-shadow: 0 0 6px rgba(255, 171, 0, 0.3);
+      }
+
+      to {
+        box-shadow: 0 0 16px rgba(255, 171, 0, 0.7);
+      }
     }
 
     /* Modal Delete Button */
@@ -1444,14 +1485,30 @@
       transition: height 0.15s ease;
     }
 
-    .ai-eq-bars.active span:nth-child(1) { animation: eqJump 0.4s infinite alternate ease-in-out; }
-    .ai-eq-bars.active span:nth-child(2) { animation: eqJump 0.6s infinite alternate ease-in-out 0.1s; }
-    .ai-eq-bars.active span:nth-child(3) { animation: eqJump 0.35s infinite alternate ease-in-out 0.2s; }
-    .ai-eq-bars.active span:nth-child(4) { animation: eqJump 0.55s infinite alternate ease-in-out 0.15s; }
+    .ai-eq-bars.active span:nth-child(1) {
+      animation: eqJump 0.4s infinite alternate ease-in-out;
+    }
+
+    .ai-eq-bars.active span:nth-child(2) {
+      animation: eqJump 0.6s infinite alternate ease-in-out 0.1s;
+    }
+
+    .ai-eq-bars.active span:nth-child(3) {
+      animation: eqJump 0.35s infinite alternate ease-in-out 0.2s;
+    }
+
+    .ai-eq-bars.active span:nth-child(4) {
+      animation: eqJump 0.55s infinite alternate ease-in-out 0.15s;
+    }
 
     @keyframes eqJump {
-      from { height: 3px; }
-      to { height: 14px; }
+      from {
+        height: 3px;
+      }
+
+      to {
+        height: 14px;
+      }
     }
 
     .ai-header-actions {
@@ -1493,7 +1550,9 @@
       scrollbar-width: none;
     }
 
-    .ai-depth-bar::-webkit-scrollbar { display: none; }
+    .ai-depth-bar::-webkit-scrollbar {
+      display: none;
+    }
 
     .ai-depth-btn {
       padding: 4px 12px;
@@ -1548,8 +1607,15 @@
     }
 
     @keyframes msgFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .ai-msg-row.user {
@@ -1701,7 +1767,9 @@
       flex-shrink: 0;
     }
 
-    .ai-suggestions::-webkit-scrollbar { display: none; }
+    .ai-suggestions::-webkit-scrollbar {
+      display: none;
+    }
 
     .ai-chip {
       background: rgba(255, 255, 255, 0.06);
@@ -1875,7 +1943,8 @@
       letter-spacing: 0.04em;
     }
 
-    .settings-input, .settings-select {
+    .settings-input,
+    .settings-select {
       width: 100%;
       padding: 10px 14px;
       background: rgba(10, 16, 32, 0.8);
@@ -1888,7 +1957,8 @@
       transition: border-color 0.2s;
     }
 
-    .settings-input:focus, .settings-select:focus {
+    .settings-input:focus,
+    .settings-select:focus {
       border-color: #00e5ff;
     }
 
@@ -2112,7 +2182,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.18);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
       transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       letter-spacing: 0.01em;
     }
@@ -2121,7 +2191,7 @@
       background: rgba(255, 255, 255, 0.17);
       border-color: rgba(255, 255, 255, 0.38);
       transform: translateY(-2px);
-      box-shadow: 0 4px 18px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.22);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.22);
     }
 
     /* --- MÀN HÌNH 1: KINETIC TEXT INTRO --- */
@@ -2436,11 +2506,13 @@
       font-family: inherit;
       width: 100%;
     }
+
     .quiz-option-btn:hover:not(:disabled) {
       background: rgba(0, 242, 254, 0.12);
       border-color: rgba(0, 242, 254, 0.5);
       transform: translateX(4px);
     }
+
     .quiz-option-btn .opt-badge {
       width: 28px;
       height: 28px;
@@ -2455,24 +2527,29 @@
       flex-shrink: 0;
       transition: all 0.2s;
     }
+
     .quiz-option-btn.correct {
       background: rgba(16, 185, 129, 0.22) !important;
       border-color: rgba(16, 185, 129, 0.8) !important;
       box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
     }
+
     .quiz-option-btn.correct .opt-badge {
       background: #10b981;
       color: #0a1020;
     }
+
     .quiz-option-btn.incorrect {
       background: rgba(239, 68, 68, 0.2) !important;
       border-color: rgba(239, 68, 68, 0.8) !important;
       box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
     }
+
     .quiz-option-btn.incorrect .opt-badge {
       background: #ef4444;
       color: #fff;
     }
+
     .prog-locus-item {
       display: flex;
       align-items: center;
@@ -2484,10 +2561,12 @@
       font-size: 12.5px;
       transition: all 0.18s;
     }
+
     .prog-locus-item:hover {
       background: rgba(255, 255, 255, 0.07);
       border-color: rgba(0, 242, 254, 0.3);
     }
+
     .prog-status-badge {
       font-size: 11px;
       font-weight: 700;
@@ -2495,16 +2574,19 @@
       border-radius: 8px;
       letter-spacing: 0.3px;
     }
+
     .prog-status-badge.mastered {
       background: rgba(16, 185, 129, 0.2);
       color: #34d399;
       border: 1px solid rgba(16, 185, 129, 0.4);
     }
+
     .prog-status-badge.reviewing {
       background: rgba(245, 158, 11, 0.2);
       color: #fbbf24;
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
+
     .prog-status-badge.unlearned {
       background: rgba(148, 163, 184, 0.15);
       color: #94a3b8;
@@ -2560,7 +2642,8 @@
     <div class="hero-card">
       <div class="badge">🧠 Khoa Học Kỹ Thuật • Method of Loci</div>
       <h1>Cung Điện Ký Ức Lịch Sử 12</h1>
-      <p>Khám phá không gian phòng Loft 3D góc nhìn thứ nhất (FPS). Tích hợp Trợ lý Trí tuệ Nhân tạo <b>Loci</b> tương tác trực tiếp bằng giọng nói tiếng Việt.</p>
+      <p>Khám phá không gian phòng Loft 3D góc nhìn thứ nhất (FPS). Tích hợp Trợ lý Trí tuệ Nhân tạo <b>Loci</b> tương
+        tác trực tiếp bằng giọng nói tiếng Việt.</p>
 
       <!-- Microphone & Voice Assistant Banner -->
       <div class="mic-permission-banner">
@@ -2571,7 +2654,8 @@
             <span class="mic-banner-badge">Rảnh tay</span>
           </div>
           <div class="mic-banner-desc">
-            Cho phép Micro ngay từ đầu để có thể gọi <b>"Loci ơi"</b> hoặc <b>"lo-xi ơi"</b> bất kỳ lúc nào để học bài, khảo bài và điều hướng trong không gian 3D và VR!
+            Cho phép Micro ngay từ đầu để có thể gọi <b>"Loci ơi"</b> hoặc <b>"lo-xi ơi"</b> bất kỳ lúc nào để học bài,
+            khảo bài và điều hướng trong không gian 3D và VR!
           </div>
         </div>
       </div>
@@ -2673,8 +2757,12 @@
       <button class="ai-depth-btn" id="ai-depth-short" data-depth="short">⚡ Ngắn</button>
       <button class="ai-depth-btn" id="ai-depth-standard" data-depth="standard">📘 Tiêu chuẩn</button>
       <button class="ai-depth-btn active" id="ai-depth-detailed" data-depth="detailed">🏛️ Giảng sâu</button>
-      <button class="ai-depth-btn" id="start-spatial-quiz-drawer-btn" style="background:rgba(0,242,254,0.18); border-color:rgba(0,242,254,0.45); color:#00f2fe; font-weight:800;" title="Bắt đầu khảo thí kiến thức không gian Loci">🧠 Khảo thí</button>
-      <button class="ai-depth-btn" id="view-user-progress-drawer-btn" style="background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.45); color:#10b981; font-weight:800;" title="Xem báo cáo tiến trình học & mốc còn yếu">📊 Tiến trình</button>
+      <button class="ai-depth-btn" id="start-spatial-quiz-drawer-btn"
+        style="background:rgba(0,242,254,0.18); border-color:rgba(0,242,254,0.45); color:#00f2fe; font-weight:800;"
+        title="Bắt đầu khảo thí kiến thức không gian Loci">🧠 Khảo thí</button>
+      <button class="ai-depth-btn" id="view-user-progress-drawer-btn"
+        style="background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.45); color:#10b981; font-weight:800;"
+        title="Xem báo cáo tiến trình học & mốc còn yếu">📊 Tiến trình</button>
     </div>
 
     <!-- Messages List -->
@@ -2690,8 +2778,10 @@
             </div>
           </div>
           <div class="ai-msg-text">
-            Xin chào! Tôi là Trợ lý AI Loci Lịch Sử 12 kiêm <b>Giám Khảo Khảo Thí Không Gian</b>. Tôi có khả năng ghi nhớ toàn bộ tiến trình học, độ thuộc bài và các điểm yếu của bạn.<br><br>
-            Bạn có thể ra lệnh giọng nói hoặc bấm các nút: <i>"Khảo bài kiến thức không gian"</i>, <i>"Đưa tôi đến Điện Biên Phủ"</i>, <i>"Xem tiến trình học tập của tôi"</i> nhé!
+            Xin chào! Tôi là Trợ lý AI Loci Lịch Sử 12 kiêm <b>Giám Khảo Khảo Thí Không Gian</b>. Tôi có khả năng ghi
+            nhớ toàn bộ tiến trình học, độ thuộc bài và các điểm yếu của bạn.<br><br>
+            Bạn có thể ra lệnh giọng nói hoặc bấm các nút: <i>"Khảo bài kiến thức không gian"</i>, <i>"Đưa tôi đến Điện
+              Biên Phủ"</i>, <i>"Xem tiến trình học tập của tôi"</i> nhé!
           </div>
         </div>
       </div>
@@ -2704,20 +2794,24 @@
 
     <!-- Quick Suggestions -->
     <div class="ai-suggestions">
-      <button class="ai-chip" data-query="Khảo bài kiểm tra kiến thức không gian cho tôi">🧠 Khảo thí không gian</button>
-      <button class="ai-chip" data-query="Báo cáo tiến trình học tập các mốc trong phòng và điểm yếu của tôi">📊 Tiến trình & Mốc yếu</button>
+      <button class="ai-chip" data-query="Khảo bài kiểm tra kiến thức không gian cho tôi">🧠 Khảo thí không
+        gian</button>
+      <button class="ai-chip" data-query="Báo cáo tiến trình học tập các mốc trong phòng và điểm yếu của tôi">📊 Tiến
+        trình & Mốc yếu</button>
       <button class="ai-chip" data-query="Ý nghĩa chiến dịch Điện Biên Phủ 1954">🏔️ Điện Biên Phủ</button>
       <button class="ai-chip" data-query="Đưa tôi đến Cách mạng Tháng Tám">🚩 Đến CMT8</button>
       <button class="ai-chip" data-query="Hiệp định Giơ-ne-vơ 1954 có ý nghĩa gì?">📜 Hiệp định Giơ-ne-vơ</button>
       <button class="ai-chip" data-query="Đưa tôi đến Chiến dịch Hồ Chí Minh">🎖️ Đến 30/4/1975</button>
-      <button class="ai-chip" data-query="Rời đi" style="border-color:rgba(255,82,82,0.45); color:#ff6b6b;" title="Yêu cầu AI rời đi / tắt trợ lý">👋 Rời đi (Tắt)</button>
+      <button class="ai-chip" data-query="Rời đi" style="border-color:rgba(255,82,82,0.45); color:#ff6b6b;"
+        title="Yêu cầu AI rời đi / tắt trợ lý">👋 Rời đi (Tắt)</button>
     </div>
 
     <!-- Bottom Capsule Dock -->
     <div class="ai-dock">
       <div class="ai-capsule-box">
         <button class="ai-dock-mic" id="ai-voice-btn" title="Bật/Tắt Micro giọng nói tiếng Việt">🎙️</button>
-        <input type="text" class="ai-dock-input" id="ai-text-input" placeholder="Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào..." autocomplete="off" />
+        <input type="text" class="ai-dock-input" id="ai-text-input"
+          placeholder="Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào..." autocomplete="off" />
         <button class="ai-dock-send" id="ai-send-btn">
           <span>Gửi</span>
           <span>➔</span>
@@ -2734,36 +2828,59 @@
 
       <div class="settings-form-group">
         <label class="settings-form-label">Google Gemini API Key:</label>
-        <input type="password" id="gemini-api-key-input" class="settings-input" value="AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA" />
+        <input type="password" id="gemini-api-key-input" class="settings-input"
+          value="AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA" />
       </div>
 
       <div class="settings-form-group">
         <label class="settings-form-label">Phiên bản Mô hình LLM:</label>
         <select id="gemini-model-select" class="settings-select">
-          <option value="gemini-3.5-flash" selected>gemini-3.5-flash (Thế hệ mới • Siêu nhanh & Trọng tâm)</option>
-          <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Siêu nhẹ • Tiết kiệm Quota)</option>
-          <option value="gemini-3.1-flash-lite-preview">gemini-3.1-flash-lite-preview (Dự phòng ổn định)</option>
-          <option value="gemini-2.5-flash">gemini-2.5-flash (Bản tiêu chuẩn)</option>
+          <option value="gemini-2.0-flash" selected>gemini-2.0-flash (Siêu nhanh • Ổn định nhất • Khuyên dùng)</option>
+          <option value="gemini-2.5-flash">gemini-2.5-flash (Bản thế hệ mới)</option>
+          <option value="gemini-1.5-flash">gemini-1.5-flash (Bản tiêu chuẩn)</option>
+          <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b (Siêu nhẹ • Tiết kiệm Quota)</option>
         </select>
       </div>
 
       <div class="settings-form-group">
-        <label class="settings-form-label">Giọng đọc tiếng Việt (TTS):</label>
+        <label class="settings-form-label">🎙️ Giọng đọc tiếng Việt (TTS):</label>
         <select id="ai-voice-select" class="settings-select">
           <option value="">Giọng đọc mặc định thiết bị</option>
         </select>
+        <div style="margin-top:6px; font-size:10px; color:#94a3b8;">💡 Google Vi = rõ nhất · Microsoft HoaiMy = ấm nhất</div>
       </div>
 
       <div class="settings-form-group">
-        <label class="settings-form-label">Tốc độ phát âm:</label>
+        <label class="settings-form-label">⚡ Tốc độ nói:</label>
         <div style="display:flex; align-items:center; gap:10px;">
-          <input type="range" id="ai-speech-rate" min="0.8" max="1.4" step="0.05" value="1.05" style="flex:1;" />
-          <span id="ai-rate-val" style="font-size:12px; color:#00e5ff; font-weight:700; width:45px;">1.05x</span>
+          <span style="font-size:10px;color:#64748b;">Chậm</span>
+          <input type="range" id="ai-speech-rate" min="0.6" max="1.6" step="0.05" value="0.92" style="flex:1;" />
+          <span id="ai-rate-val" style="font-size:12px; color:#00e5ff; font-weight:700; width:45px;">0.92x</span>
+          <span style="font-size:10px;color:#64748b;">Nhanh</span>
+        </div>
+      </div>
+
+      <div class="settings-form-group">
+        <label class="settings-form-label">🎵 Cao độ giọng (Pitch):</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:10px;color:#64748b;">Trầm</span>
+          <input type="range" id="ai-speech-pitch" min="0.5" max="1.6" step="0.05" value="0.85" style="flex:1;" />
+          <span id="ai-pitch-val" style="font-size:12px; color:#a78bfa; font-weight:700; width:45px;">0.85</span>
+          <span style="font-size:10px;color:#64748b;">Bổng</span>
+        </div>
+      </div>
+
+      <div class="settings-form-group">
+        <label class="settings-form-label">🔊 Âm lượng:</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="range" id="ai-speech-volume" min="0.1" max="1.0" step="0.05" value="1.0" style="flex:1;" />
+          <span id="ai-volume-val" style="font-size:12px; color:#34d399; font-weight:700; width:45px;">100%</span>
         </div>
       </div>
 
       <div class="settings-actions">
         <button class="btn-secondary" id="cancel-ai-settings-btn">Đóng</button>
+        <button class="btn-secondary" id="preview-voice-btn" style="background:rgba(167,139,250,0.15);border-color:#a78bfa;color:#a78bfa;">▶ Thử giọng</button>
         <button class="btn-primary-sm" id="save-ai-settings-btn">Lưu cấu hình</button>
       </div>
     </div>
@@ -2784,11 +2901,13 @@
             <span class="knowledge-icon" id="modal-icon">🏛️</span>
             <div style="flex:1;">
               <h2 class="knowledge-title" id="modal-view-title">Chiến dịch Điện Biên Phủ</h2>
-              <input type="text" id="modal-title-input" class="knowledge-edit-input hidden" placeholder="Nhập tên mốc ký ức..." />
+              <input type="text" id="modal-title-input" class="knowledge-edit-input hidden"
+                placeholder="Nhập tên mốc ký ức..." />
               <div class="knowledge-meta-row">
                 <span class="knowledge-tag loc" id="modal-furniture-loc">📍 Bàn trà</span>
                 <span class="knowledge-tag time" id="modal-view-time">⏳ Năm 1954</span>
-                <input type="text" id="modal-time-input" class="knowledge-edit-input inline hidden" placeholder="Năm / Thời điểm..." />
+                <input type="text" id="modal-time-input" class="knowledge-edit-input inline hidden"
+                  placeholder="Năm / Thời điểm..." />
                 <span class="knowledge-tag status" id="modal-status-badge">🟡 Đang học</span>
               </div>
             </div>
@@ -2807,7 +2926,8 @@
           <div class="knowledge-text-display" id="modal-view-details">
             Nội dung kiến thức cốt lõi ôn thi tốt nghiệp THPT...
           </div>
-          <textarea id="modal-details-input" class="knowledge-edit-textarea hidden" rows="4" placeholder="Nhập tóm tắt sự kiện, kiến thức cần nhớ..."></textarea>
+          <textarea id="modal-details-input" class="knowledge-edit-textarea hidden" rows="4"
+            placeholder="Nhập tóm tắt sự kiện, kiến thức cần nhớ..."></textarea>
         </div>
 
         <!-- Section 2: Method of Loci Memory Hook -->
@@ -2818,7 +2938,8 @@
           <div class="knowledge-text-display mnemonic" id="modal-view-mnemonic">
             Hình ảnh liên tưởng gắn với vị trí này...
           </div>
-          <textarea id="modal-mnemonic-input" class="knowledge-edit-textarea mnemonic hidden" rows="2" placeholder="Gắn hình ảnh sự kiện vào đồ vật cụ thể..."></textarea>
+          <textarea id="modal-mnemonic-input" class="knowledge-edit-textarea mnemonic hidden" rows="2"
+            placeholder="Gắn hình ảnh sự kiện vào đồ vật cụ thể..."></textarea>
         </div>
       </div>
 
@@ -2871,9 +2992,12 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     ">
       <!-- Shimmer top highlight -->
-      <div style="position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%);pointer-events:none"></div>
+      <div
+        style="position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 50%);pointer-events:none">
+      </div>
 
-      <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+      <div
+        style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
         <span style="font-size:22px">📍</span> Đặt Mốc Ký Ức
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:22px;">
@@ -2890,12 +3014,7 @@
         border: 1px solid rgba(255,255,255,0.1);
       "></canvas>
 
-      <input
-        id="marker-name-input"
-        type="text"
-        placeholder="VD: Chiến dịch Điện Biên Phủ"
-        maxlength="60"
-        style="
+      <input id="marker-name-input" type="text" placeholder="VD: Chiến dịch Điện Biên Phủ" maxlength="60" style="
           width: 100%;
           background: rgba(255,255,255,0.08);
           border: 1px solid rgba(255,255,255,0.2);
@@ -2909,8 +3028,7 @@
           margin-bottom: 20px;
           box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
           transition: border-color 0.2s;
-        "
-      />
+        " />
 
       <div style="display:flex;gap:10px;">
         <button id="marker-dialog-cancel" style="
@@ -2945,17 +3063,22 @@
   </div>
 
   <!-- Modal Quản Lý & Đặt Lại Danh Sách Mốc -->
-  <div id="loci-reset-modal" style="display:none; position:fixed; inset:0; z-index:220; align-items:center; justify-content:center; background:rgba(5,8,16,0.72); backdrop-filter:blur(18px);">
-    <div style="position:relative; background:rgba(15,23,42,0.95); border:1px solid rgba(255,255,255,0.18); border-radius:24px; padding:28px; width:min(90vw, 420px); box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center; font-family:'Plus Jakarta Sans',sans-serif;">
+  <div id="loci-reset-modal"
+    style="display:none; position:fixed; inset:0; z-index:220; align-items:center; justify-content:center; background:rgba(5,8,16,0.72); backdrop-filter:blur(18px);">
+    <div
+      style="position:relative; background:rgba(15,23,42,0.95); border:1px solid rgba(255,255,255,0.18); border-radius:24px; padding:28px; width:min(90vw, 420px); box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center; font-family:'Plus Jakarta Sans',sans-serif;">
       <div style="font-size:32px; margin-bottom:10px;">🗑️</div>
       <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:8px;">Quản Lý & Đặt Lại Mốc Ký Ức</h3>
-      <p style="font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:20px; line-height:1.5;">Bạn muốn khôi phục lại 5 mốc chuẩn SGK Lịch Sử 12 theo lộ trình chuẩn hay xóa sạch để tự tạo mốc?</p>
-      
+      <p style="font-size:13px; color:rgba(255,255,255,0.7); margin-bottom:20px; line-height:1.5;">Bạn muốn khôi phục
+        lại 5 mốc chuẩn SGK Lịch Sử 12 theo lộ trình chuẩn hay xóa sạch để tự tạo mốc?</p>
+
       <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-        <button id="reset-default-loci-btn" style="background:rgba(0,242,254,0.15); border:1px solid rgba(0,242,254,0.5); color:#00f2fe; padding:12px; border-radius:14px; font-weight:700; cursor:pointer; font-size:13px; transition:0.2s;">
+        <button id="reset-default-loci-btn"
+          style="background:rgba(0,242,254,0.15); border:1px solid rgba(0,242,254,0.5); color:#00f2fe; padding:12px; border-radius:14px; font-weight:700; cursor:pointer; font-size:13px; transition:0.2s;">
           🔄 Khôi phục 5 mốc chuẩn SGK Lịch Sử 12
         </button>
-        <button id="clear-all-loci-btn" style="background:rgba(255,82,82,0.15); border:1px solid rgba(255,82,82,0.5); color:#ff5252; padding:12px; border-radius:14px; font-weight:700; cursor:pointer; font-size:13px; transition:0.2s;">
+        <button id="clear-all-loci-btn"
+          style="background:rgba(255,82,82,0.15); border:1px solid rgba(255,82,82,0.5); color:#ff5252; padding:12px; border-radius:14px; font-weight:700; cursor:pointer; font-size:13px; transition:0.2s;">
           🗑️ Xóa toàn bộ các mốc (Phòng trống)
         </button>
       </div>
@@ -2965,7 +3088,8 @@
   </div>
 
   <!-- SPATIAL KNOWLEDGE QUIZ MODAL (Interactive 3D Examination) -->
-  <div id="spatial-quiz-modal" style="display:none; position:fixed; inset:0; z-index:230; align-items:center; justify-content:center; background:rgba(5,8,16,0.8); backdrop-filter:blur(22px);">
+  <div id="spatial-quiz-modal"
+    style="display:none; position:fixed; inset:0; z-index:230; align-items:center; justify-content:center; background:rgba(5,8,16,0.8); backdrop-filter:blur(22px);">
     <div class="spatial-quiz-card" style="
       position:relative;
       background:rgba(15,23,42,0.96);
@@ -2980,31 +3104,40 @@
       color:#fff;
     ">
       <!-- Quiz Header -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px;">
+      <div
+        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg, #00f2fe, #4facfe); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 15px rgba(0,242,254,0.4);">
+          <div
+            style="width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg, #00f2fe, #4facfe); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 15px rgba(0,242,254,0.4);">
             🧠
           </div>
           <div>
-            <div style="font-weight:800; font-size:16px; letter-spacing:0.3px; color:#fff;">KHẢO THÍ KHÔNG GIAN LOCI</div>
-            <div style="font-size:12px; color:rgba(255,255,255,0.6);" id="quiz-mode-subtitle">Kiểm tra liên tưởng Vị trí 3D ➔ Sự kiện Lịch sử</div>
+            <div style="font-weight:800; font-size:16px; letter-spacing:0.3px; color:#fff;">KHẢO THÍ KHÔNG GIAN LOCI
+            </div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.6);" id="quiz-mode-subtitle">Kiểm tra liên tưởng Vị trí
+              3D ➔ Sự kiện Lịch sử</div>
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <div style="background:rgba(255,153,0,0.15); border:1px solid rgba(255,153,0,0.4); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:800; color:#ffb300; display:flex; align-items:center; gap:4px;">
+          <div
+            style="background:rgba(255,153,0,0.15); border:1px solid rgba(255,153,0,0.4); border-radius:20px; padding:4px 10px; font-size:12px; font-weight:800; color:#ffb300; display:flex; align-items:center; gap:4px;">
             <span>🔥</span><span id="quiz-streak-badge">Chuỗi: 0</span>
           </div>
-          <button id="close-spatial-quiz-btn" style="background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.7); width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">✕</button>
+          <button id="close-spatial-quiz-btn"
+            style="background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.7); width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">✕</button>
         </div>
       </div>
 
       <!-- Question Box -->
-      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:18px; margin-bottom:20px;">
+      <div
+        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:18px; margin-bottom:20px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-          <span id="quiz-tag-pill" style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; padding:3px 8px; border-radius:8px; background:rgba(0,242,254,0.15); color:#00f2fe; border:1px solid rgba(0,242,254,0.3);">
+          <span id="quiz-tag-pill"
+            style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; padding:3px 8px; border-radius:8px; background:rgba(0,242,254,0.15); color:#00f2fe; border:1px solid rgba(0,242,254,0.3);">
             📍 Vị trí khảo thí
           </span>
-          <button id="quiz-glide-preview-btn" style="background:transparent; border:none; color:#00f2fe; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+          <button id="quiz-glide-preview-btn"
+            style="background:transparent; border:none; color:#00f2fe; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
             🔭 Quan sát trong phòng
           </button>
         </div>
@@ -3019,16 +3152,21 @@
       </div>
 
       <!-- Explanation / Feedback Banner (Initially hidden) -->
-      <div id="quiz-feedback-box" style="display:none; background:rgba(0,242,254,0.06); border:1px solid rgba(0,242,254,0.25); border-radius:18px; padding:16px; margin-bottom:18px;">
-        <div id="quiz-feedback-title" style="font-weight:800; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+      <div id="quiz-feedback-box"
+        style="display:none; background:rgba(0,242,254,0.06); border:1px solid rgba(0,242,254,0.25); border-radius:18px; padding:16px; margin-bottom:18px;">
+        <div id="quiz-feedback-title"
+          style="font-weight:800; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
           <!-- Correct / Incorrect Header -->
         </div>
-        <div id="quiz-feedback-desc" style="font-size:13px; line-height:1.5; color:rgba(255,255,255,0.85); margin-bottom:12px;"></div>
+        <div id="quiz-feedback-desc"
+          style="font-size:13px; line-height:1.5; color:rgba(255,255,255,0.85); margin-bottom:12px;"></div>
         <div style="display:flex; gap:10px;">
-          <button id="quiz-glide-to-locus-btn" style="flex:1; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">
+          <button id="quiz-glide-to-locus-btn"
+            style="flex:1; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">
             🚀 Bay đến mốc này
           </button>
-          <button id="quiz-next-question-btn" style="flex:1.5; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg,#00f2fe,#0099ff); border:none; color:#0a1020; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 4px 15px rgba(0,242,254,0.3);">
+          <button id="quiz-next-question-btn"
+            style="flex:1.5; padding:10px 14px; border-radius:12px; background:linear-gradient(135deg,#00f2fe,#0099ff); border:none; color:#0a1020; font-size:13px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 4px 15px rgba(0,242,254,0.3);">
             Câu tiếp theo ➔
           </button>
         </div>
@@ -3037,7 +3175,8 @@
   </div>
 
   <!-- USER PROGRESS & SPATIAL RETENTION MODAL -->
-  <div id="user-progress-modal" style="display:none; position:fixed; inset:0; z-index:230; align-items:center; justify-content:center; background:rgba(5,8,16,0.8); backdrop-filter:blur(22px);">
+  <div id="user-progress-modal"
+    style="display:none; position:fixed; inset:0; z-index:230; align-items:center; justify-content:center; background:rgba(5,8,16,0.8); backdrop-filter:blur(22px);">
     <div class="user-progress-card" style="
       position:relative;
       background:rgba(15,23,42,0.96);
@@ -3052,34 +3191,43 @@
       color:#fff;
     ">
       <!-- Header -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px;">
+      <div
+        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:14px;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg, #10b981, #06b6d4); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 15px rgba(16,185,129,0.4);">
+          <div
+            style="width:38px; height:38px; border-radius:12px; background:linear-gradient(135deg, #10b981, #06b6d4); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 4px 15px rgba(16,185,129,0.4);">
             📊
           </div>
           <div>
-            <div style="font-weight:800; font-size:16px; letter-spacing:0.3px; color:#fff;">TIẾN TRÌNH & GHI NHỚ KHÔNG GIAN</div>
-            <div style="font-size:12px; color:rgba(255,255,255,0.6);">Theo dõi trí nhớ không gian và các mốc lịch sử đã thuộc sâu</div>
+            <div style="font-weight:800; font-size:16px; letter-spacing:0.3px; color:#fff;">TIẾN TRÌNH & GHI NHỚ KHÔNG
+              GIAN</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.6);">Theo dõi trí nhớ không gian và các mốc lịch sử đã
+              thuộc sâu</div>
           </div>
         </div>
-        <button id="close-user-progress-btn" style="background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.7); width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">✕</button>
+        <button id="close-user-progress-btn"
+          style="background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.7); width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s;">✕</button>
       </div>
 
       <!-- Stat Cards Grid -->
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:22px;">
-        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
+        <div
+          style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
           <div style="font-size:20px; font-weight:800; color:#00f2fe;" id="prog-stat-acc">0%</div>
           <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px;">Chính xác</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
+        <div
+          style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
           <div style="font-size:20px; font-weight:800; color:#ff9900;" id="prog-stat-streak">0 🔥</div>
           <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px;">Chuỗi đúng</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
+        <div
+          style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
           <div style="font-size:20px; font-weight:800; color:#10b981;" id="prog-stat-mastered">0/0</div>
           <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px;">Thuộc sâu</div>
         </div>
-        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
+        <div
+          style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:12px; text-align:center;">
           <div style="font-size:20px; font-weight:800; color:#a855f7;" id="prog-stat-total">0</div>
           <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px;">Câu đã thi</div>
         </div>
@@ -3087,24 +3235,29 @@
 
       <!-- Loci Breakdown List -->
       <div style="margin-bottom:20px;">
-        <div style="font-weight:700; font-size:13px; color:rgba(255,255,255,0.8); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
+        <div
+          style="font-weight:700; font-size:13px; color:rgba(255,255,255,0.8); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;">
           <span>DANH SÁCH MỐC & ĐỘ GHI NHỚ</span>
           <span style="font-size:11px; color:rgba(255,255,255,0.5);">Trạng thái Loci</span>
         </div>
-        <div id="prog-loci-list" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; padding-right:4px;">
+        <div id="prog-loci-list"
+          style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; padding-right:4px;">
           <!-- Injected via JS -->
         </div>
       </div>
 
       <!-- Actions -->
       <div style="display:flex; gap:10px;">
-        <button id="prog-start-weak-btn" style="flex:1; padding:12px; border-radius:14px; background:rgba(255,153,0,0.15); border:1px solid rgba(255,153,0,0.4); color:#ffb300; font-weight:700; cursor:pointer; font-size:12px; font-family:inherit;">
+        <button id="prog-start-weak-btn"
+          style="flex:1; padding:12px; border-radius:14px; background:rgba(255,153,0,0.15); border:1px solid rgba(255,153,0,0.4); color:#ffb300; font-weight:700; cursor:pointer; font-size:12px; font-family:inherit;">
           🎯 Ôn luyện mốc yếu
         </button>
-        <button id="prog-start-all-btn" style="flex:1.5; padding:12px; border-radius:14px; background:linear-gradient(135deg, #10b981, #06b6d4); border:none; color:#0a1020; font-weight:800; cursor:pointer; font-size:13px; font-family:inherit; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+        <button id="prog-start-all-btn"
+          style="flex:1.5; padding:12px; border-radius:14px; background:linear-gradient(135deg, #10b981, #06b6d4); border:none; color:#0a1020; font-weight:800; cursor:pointer; font-size:13px; font-family:inherit; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
           🧠 Bắt đầu khảo thí
         </button>
-        <button id="prog-reset-btn" title="Đặt lại toàn bộ tiến trình học" style="padding:12px 16px; border-radius:14px; background:rgba(255,82,82,0.12); border:1px solid rgba(255,82,82,0.3); color:#ff5252; font-weight:700; cursor:pointer; font-size:12px; font-family:inherit;">
+        <button id="prog-reset-btn" title="Đặt lại toàn bộ tiến trình học"
+          style="padding:12px 16px; border-radius:14px; background:rgba(255,82,82,0.12); border:1px solid rgba(255,82,82,0.3); color:#ff5252; font-weight:700; cursor:pointer; font-size:12px; font-family:inherit;">
           🔄
         </button>
       </div>
@@ -3473,12 +3626,12 @@
         badgeCanvas.width = 128;
         badgeCanvas.height = 128;
         const bctx = badgeCanvas.getContext('2d');
-        
+
         bctx.fillStyle = idx === currentJourneyIndex ? 'rgba(255, 171, 0, 0.95)' : 'rgba(8, 14, 28, 0.92)';
         bctx.beginPath();
         bctx.arc(64, 64, 52, 0, Math.PI * 2);
         bctx.fill();
-        
+
         bctx.lineWidth = 6;
         bctx.strokeStyle = idx === currentJourneyIndex ? '#ffffff' : '#00f2fe';
         bctx.stroke();
@@ -3900,7 +4053,7 @@
           ai.startWakeWordListening();
           updateHudMicStatus(true);
           showToast('🎙️ Micro đã sẵn sàng! Bạn hãy gọi "Loci ơi" bất cứ lúc nào.', 'success');
-          
+
           setTimeout(() => {
             ai.speak('Xin chào! Tôi là Trợ lý AI Loci. Micro đã được kết nối, bạn hãy gọi "Loci ơi" bất cứ lúc nào để tôi hỗ trợ nhé!');
           }, 450);
@@ -4020,10 +4173,10 @@
       const dlg = document.getElementById('marker-name-dialog');
       const quiz = document.getElementById('spatial-quiz-modal');
       const prog = document.getElementById('user-progress-modal');
-      return locusModal.classList.contains('open') || 
-             (dlg && dlg.style.display === 'flex') ||
-             (quiz && quiz.style.display === 'flex') ||
-             (prog && prog.style.display === 'flex');
+      return locusModal.classList.contains('open') ||
+        (dlg && dlg.style.display === 'flex') ||
+        (quiz && quiz.style.display === 'flex') ||
+        (prog && prog.style.display === 'flex');
     }
 
     let isLocusEditMode = false;
@@ -4617,6 +4770,9 @@
     let vrAIPanelCtx = null;
     let vrAIPanelTexture = null;
     const vrAIInteractiveButtons = [];
+    let currentVRAITab = 'chat'; // 'chat' | 'compact' | 'places'
+    let vrAILastMessage = '';
+    let vrAILastStatus = 'idle';
 
     let vrFloatingAIOrbGroup = null;
     let vrFloatingAIOrbHitbox = null;
@@ -4692,27 +4848,8 @@
       vrAIPanelMesh.visible = false;
       scene.add(vrAIPanelMesh);
 
-      // 8 Interactive Action Buttons on VR AI Panel (Ordered chronologically!)
-      // Grid: 2 columns (X = -0.33, +0.33), 4 rows (Y = +0.02, -0.10, -0.22, -0.35)
-      const aiActionsGrid = [
-        { action: 'teleport_cach_mang_thang_tam', x: -0.33, y: 0.02 },
-        { action: 'teleport_dien_bien_phu', x: 0.33, y: 0.02 },
-        { action: 'teleport_hiep_dinh_geneve', x: -0.33, y: -0.10 },
-        { action: 'teleport_dong_khoi', x: 0.33, y: -0.10 },
-        { action: 'teleport_chien_dich_ho_chi_minh', x: -0.33, y: -0.22 },
-        { action: 'explain_room', x: 0.33, y: -0.22 },
-        { action: 'quiz', x: -0.33, y: -0.35 },
-        { action: 'close_ai', x: 0.33, y: -0.35 }
-      ];
-
-      const btnAIGeo = new THREE.PlaneGeometry(0.58, 0.10);
-      aiActionsGrid.forEach(item => {
-        const btn = new THREE.Mesh(btnAIGeo, createHitMat());
-        btn.position.set(item.x, item.y, 0.02);
-        btn.userData = { action: item.action };
-        vrAIPanelMesh.add(btn);
-        vrAIInteractiveButtons.push(btn);
-      });
+      // Khởi tạo giao diện Tab mặc định cho AI Panel
+      renderVRAIPanel();
 
       /* 3. 3D FLOATING HOLOGRAPHIC AI COMPANION ORB IN ROOM */
       if (!vrFloatingAIOrbGroup) {
@@ -4781,22 +4918,44 @@
       }
     }
 
-    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
       if (!text) return;
-      const words = text.split(' ');
-      let line = '';
-      for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
-        } else {
-          line = testLine;
+      const cleanText = text.replace(/\[ACTION:[^\]]+\]/g, '').trim();
+      const rawLines = cleanText.split('\n');
+      let currentY = y;
+      let lineCount = 0;
+
+      for (let p = 0; p < rawLines.length; p++) {
+        const paragraph = rawLines[p].trim();
+        if (!paragraph) {
+          currentY += lineHeight * 0.4;
+          continue;
+        }
+        const words = paragraph.split(' ');
+        let line = '';
+        for (let n = 0; n < words.length; n++) {
+          const testLine = line + words[n] + ' ';
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && n > 0) {
+            ctx.fillText(line.trim(), x, currentY);
+            line = words[n] + ' ';
+            currentY += lineHeight;
+            lineCount++;
+            if (lineCount >= maxLines) {
+              ctx.fillText('...', x, currentY);
+              return;
+            }
+          } else {
+            line = testLine;
+          }
+        }
+        if (line.trim().length > 0) {
+          ctx.fillText(line.trim(), x, currentY);
+          currentY += lineHeight;
+          lineCount++;
+          if (lineCount >= maxLines) return;
         }
       }
-      ctx.fillText(line, x, y);
     }
 
     /* --- RENDER 3D VR KNOWLEDGE CARD --- */
@@ -4905,19 +5064,36 @@
 
       if (renderer.xr && renderer.xr.isPresenting) {
         const xrCam = renderer.xr.getCamera();
-        xrCam.getWorldPosition(headPos);
-        xrCam.getWorldDirection(forward);
-      } else {
+        if (xrCam) {
+          xrCam.getWorldPosition(headPos);
+          xrCam.getWorldDirection(forward);
+        }
+      }
+
+      // Fallback nếu headPos bị 0 hoặc NaN
+      if (headPos.lengthSq() < 0.001 || isNaN(headPos.x) || isNaN(headPos.y) || isNaN(headPos.z)) {
         camera.getWorldPosition(headPos);
+      }
+      if (forward.lengthSq() < 0.001 || isNaN(forward.x) || isNaN(forward.y) || isNaN(forward.z)) {
         camera.getWorldDirection(forward);
       }
 
       forward.y = 0;
-      if (forward.lengthSq() < 0.001) {
+      if (forward.lengthSq() < 0.001 || isNaN(forward.x) || isNaN(forward.z)) {
         forward.set(0, 0, -1).applyQuaternion(cameraGroup.quaternion);
         forward.y = 0;
       }
-      forward.normalize();
+
+      if (forward.lengthSq() > 0.0001) {
+        forward.normalize();
+      } else {
+        forward.set(0, 0, -1);
+      }
+
+      // Đảm bảo tuyệt đối không trả về NaN
+      if (isNaN(headPos.x) || isNaN(headPos.y) || isNaN(headPos.z)) {
+        headPos.set(cameraGroup.position.x, 1.65, cameraGroup.position.z);
+      }
 
       return { headPos, forward };
     }
@@ -4943,111 +5119,341 @@
       vrCurrentLocus = null;
     }
 
-    /* --- RENDER 3D VR HOLOGRAPHIC AI ASSISTANT PANEL --- */
-    function renderVRAIPanel(text, status = 'idle') {
-      if (!vrAIPanelCtx) return;
-      const ctx = vrAIPanelCtx;
-      const w = 1024, h = 720;
+    /* --- HELPER CẬP NHẬT HITBOX RAYCAST CHO CÁC NÚT TRÊN VR AI PANEL --- */
+    function updateVRAIHitboxes(buttonsConfig) {
+      if (!vrAIPanelMesh) return;
+      while (vrAIInteractiveButtons.length > 0) {
+        const btn = vrAIInteractiveButtons.pop();
+        if (btn.parent) btn.parent.remove(btn);
+        if (btn.geometry) btn.geometry.dispose();
+      }
 
-      ctx.clearRect(0, 0, w, h);
-
-      // Background Hologram
-      ctx.fillStyle = 'rgba(8, 14, 28, 0.96)';
-      ctx.beginPath();
-      ctx.roundRect(10, 10, w - 20, h - 20, 32);
-      ctx.fill();
-
-      // Glowing Neon Rim
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = status === 'listening' ? '#ff3366' : (status === 'thinking' ? '#ffd54f' : '#00f2fe');
-      ctx.stroke();
-
-      // Top Title Bar
-      ctx.fillStyle = '#00f2fe';
-      ctx.font = 'bold 28px sans-serif';
-      ctx.fillText('🤖 TRỢ LÝ AI LOCI (LO-XI) • CUNG ĐIỆN KÝ ỨC VR', 45, 60);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '20px sans-serif';
-      ctx.fillText('Chĩa tia laser & Bóp cò (Trigger) vào nút để điều khiển tức thì:', 45, 95);
-
-      // Status Badge
-      const statusColor = status === 'listening' ? '#ff3366' : (status === 'thinking' ? '#ffd54f' : '#00e676');
-      ctx.fillStyle = statusColor;
-      ctx.beginPath();
-      ctx.arc(60, 135, 10, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 22px sans-serif';
-      const statusText = status === 'listening'
-        ? '🔴 ĐANG LẮNG NGHE BẠN NÓI...'
-        : (status === 'thinking' ? '🟡 GEMINI ĐANG TƯ DUY & XỬ LÝ...' : '🟢 SẴN SÀNG NHẬN LỆNH');
-      ctx.fillText(statusText, 82, 142);
-
-      // Text / Transcript Box
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-      ctx.beginPath();
-      ctx.roundRect(45, 165, w - 90, 130, 16);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffd54f';
-      ctx.font = 'bold 20px sans-serif';
-      ctx.fillText('💬 Lời nhắn từ Loci AI:', 65, 195);
-
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = '22px sans-serif';
-      const displayContent = text || 'Chĩa tia laser và bấm các nút bên dưới để di chuyển tới mốc hoặc khảo bài:';
-      wrapCanvasText(ctx, displayContent, 65, 230, w - 130, 28);
-
-      // 8 Action Buttons (Matching Hitbox Math!)
-      const buttonsConfig = [
-        { label: '🚩 Đến Cách Mạng Tháng Tám (1945)', x: 50, y: 315, color: '#00f2fe' },
-        { label: '🏔️ Đến Điện Biên Phủ (1954)', x: 534, y: 315, color: '#00f2fe' },
-        { label: '📜 Đến Hiệp Định Giơ-ne-vơ (1954)', x: 50, y: 405, color: '#00f2fe' },
-        { label: '🔥 Đến Phong Trào Đồng Khởi (1960)', x: 534, y: 405, color: '#00f2fe' },
-        { label: '🎖️ Đến Chiến Dịch HCM (1975)', x: 50, y: 495, color: '#00f2fe' },
-        { label: '💡 Tóm Tắt Mẹo Nhớ Của Phòng', x: 534, y: 495, color: '#ffd54f' },
-        { label: '🎯 Đố Tôi 1 Câu Trắc Nghiệm', x: 50, y: 585, color: '#00e676' },
-        { label: '✕ ĐÓNG HUD [Nút B / Y / X]', x: 534, y: 585, color: '#ff5252' }
-      ];
-
-      buttonsConfig.forEach(btn => {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        ctx.beginPath();
-        ctx.roundRect(btn.x, btn.y, 440, 68, 14);
-        ctx.fill();
-
-        ctx.strokeStyle = btn.color;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillText(btn.label, btn.x + 22, btn.y + 42);
+      const createHitMat = () => new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false
       });
 
-      // Bottom quick hint
-      ctx.fillStyle = 'rgba(0, 242, 254, 0.7)';
+      buttonsConfig.forEach(b => {
+        const w3d = b.w * (1.4 / 1024);
+        const h3d = b.h * (0.98 / 720);
+        const x3d = (b.x + b.w / 2 - 512) * (1.4 / 1024);
+        const y3d = (360 - (b.y + b.h / 2)) * (0.98 / 720);
+
+        const geo = new THREE.PlaneGeometry(w3d, h3d);
+        const mesh = new THREE.Mesh(geo, createHitMat());
+        mesh.position.set(x3d, y3d, 0.02);
+        mesh.userData = { action: b.action };
+        vrAIPanelMesh.add(mesh);
+        vrAIInteractiveButtons.push(mesh);
+      });
+    }
+
+    /* --- RENDER 3D VR HOLOGRAPHIC AI ASSISTANT PANEL (HỆ THỐNG TAB & THANH DOCK) --- */
+    function renderVRAIPanel(text, status = null) {
+      if (!vrAIPanelCtx) return;
+      if (text !== undefined && text !== null) vrAILastMessage = text;
+      if (status !== null) vrAILastStatus = status;
+
+      const ctx = vrAIPanelCtx;
+      const w = 1024, h = 720;
+      ctx.clearRect(0, 0, w, h);
+
+      const buttonsConfig = [];
+
+      // 1. NỀN HOLOGRAPHIC CHÍNH & VIỀN PHÁT SÁNG
+      ctx.fillStyle = 'rgba(8, 14, 28, 0.96)';
+      ctx.beginPath();
+      ctx.roundRect(10, 10, w - 20, h - 20, 28);
+      ctx.fill();
+
+      const borderGlow = vrAILastStatus === 'listening' ? '#ff3366' : (vrAILastStatus === 'thinking' ? '#ffd54f' : '#00f2fe');
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = borderGlow;
+      ctx.stroke();
+
+      // 2. HEADER: TIÊU ĐỀ & ĐÈN TRẠNG THÁI
+      ctx.fillStyle = '#00f2fe';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('🤖 TRỢ LÝ LOCI AI • CUNG ĐIỆN KÝ ỨC', 40, 52);
+
+      // Đèn trạng thái
+      const dotColor = vrAILastStatus === 'listening' ? '#ff3366' : (vrAILastStatus === 'thinking' ? '#ffd54f' : '#00e676');
+      ctx.fillStyle = dotColor;
+      ctx.beginPath();
+      ctx.arc(580, 44, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
       ctx.font = 'bold 18px sans-serif';
+      const statusLabel = vrAILastStatus === 'listening' ? 'Đang nghe bạn...' : (vrAILastStatus === 'thinking' ? 'Gemini đang suy nghĩ...' : 'Sẵn sàng');
+      ctx.fillText(statusLabel, 600, 51);
+
+      // Nút [✕ Đóng] ở góc phải trên
+      ctx.fillStyle = 'rgba(255, 82, 82, 0.2)';
+      ctx.beginPath();
+      ctx.roundRect(870, 20, 114, 44, 12);
+      ctx.fill();
+      ctx.strokeStyle = '#ff5252';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#ff7b7b';
+      ctx.font = 'bold 20px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[Nút B hoặc Y]: Đóng/Mở Trợ lý AI  •  [Bóp tay cầm (Grip)]: Mở AI  •  [Nút A]: Thêm mốc', w / 2, h - 25);
+      ctx.fillText('✕ Đóng', 927, 49);
+      buttonsConfig.push({ x: 870, y: 20, w: 114, h: 44, action: 'close_ai' });
+
+      // 3. HÀNG TAB CHUYỂN ĐỔI (TAB ROW)
+      const tabDef = [
+        { id: 'chat', label: '💬 Tab Trò Chuyện', x: 40, w: 230 },
+        { id: 'places', label: '🚩 5 Mốc Ký Ức', x: 285, w: 230 },
+        { id: 'quiz', label: '🎯 Khảo Bài 3D', x: 530, w: 215 },
+        { id: currentVRAITab === 'compact' ? 'expand' : 'compact', 
+          label: currentVRAITab === 'compact' ? '🔽 Mở Rộng Tab' : '▲ Thu Gọn Tab', 
+          x: 760, w: 224 }
+      ];
+
+      tabDef.forEach(t => {
+        const isActive = (currentVRAITab === t.id) || (t.id === 'compact' && currentVRAITab === 'compact');
+        ctx.fillStyle = isActive ? 'rgba(0, 242, 254, 0.25)' : 'rgba(255, 255, 255, 0.08)';
+        ctx.beginPath();
+        ctx.roundRect(t.x, 78, t.w, 50, 14);
+        ctx.fill();
+        ctx.strokeStyle = isActive ? '#00f2fe' : 'rgba(255, 255, 255, 0.18)';
+        ctx.lineWidth = isActive ? 3 : 1.5;
+        ctx.stroke();
+
+        ctx.fillStyle = isActive ? '#00f2fe' : '#ffffff';
+        ctx.font = 'bold 21px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(t.label, t.x + t.w / 2, 110);
+
+        const actionName = t.id === 'chat' ? 'switch_tab_chat'
+          : t.id === 'places' ? 'switch_tab_places'
+          : t.id === 'quiz' ? 'switch_tab_quiz'
+          : 'toggle_tab_collapse';
+        buttonsConfig.push({ x: t.x, y: 78, w: t.w, h: 50, action: actionName });
+      });
+
+      // 4. NỘI DUNG THEO TỪNG TAB:
+      if (currentVRAITab === 'chat') {
+        // === TAB TRÒ CHUYỆN (EXPANDED CHAT TAB) ===
+        // Khung hội thoại AI
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.beginPath();
+        ctx.roundRect(40, 142, w - 80, 240, 18);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Header nhỏ trong khung chat
+        ctx.fillStyle = '#ffd54f';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('💬 Tin nhắn từ Loci AI:', 60, 175);
+
+        // Nút [🔊 Nghe lại] góc phải khung chat
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.15)';
+        ctx.beginPath();
+        ctx.roundRect(830, 150, 134, 38, 10);
+        ctx.fill();
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔊 Nghe lại', 897, 175);
+        buttonsConfig.push({ x: 830, y: 150, w: 134, h: 38, action: 'speak_again' });
+
+        // Nội dung tin nhắn
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '22px sans-serif';
+        ctx.textAlign = 'left';
+        const chatText = vrAILastMessage || 'Chào bạn! Tôi là Trợ lý AI Loci. Bạn có thể chĩa laser bóp cò vào các chủ đề bên dưới để trò chuyện, hỏi đáp kiến thức Lịch Sử 12 hoặc bấm thu tab bất kỳ lúc nào.';
+        wrapCanvasText(ctx, chatText, 60, 215, w - 120, 30, 5);
+
+        // Tiêu đề gợi ý trò chuyện
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('💡 Chọn chủ đề để trò chuyện hoặc bấm Micro để nói:', 40, 410);
+
+        // 6 Nút gợi ý trò chuyện nhanh
+        const chatPrompts = [
+          { label: '🏔️ Hỏi: Ý nghĩa Điện Biên Phủ 1954?', action: 'ask_dien_bien_phu', x: 40, y: 426, w: 460, h: 54, color: '#00f2fe' },
+          { label: '📜 Hỏi: So sánh Giơ-ne-vơ và Paris?', action: 'ask_geneve', x: 524, y: 426, w: 460, h: 54, color: '#00f2fe' },
+          { label: '🎖️ Hỏi: Chiến dịch Hồ Chí Minh 1975?', action: 'ask_hcm', x: 40, y: 492, w: 460, h: 54, color: '#00f2fe' },
+          { label: '💡 Hỏi: Mẹo nhớ Loci trong phòng?', action: 'ask_loci_method', x: 524, y: 492, w: 460, h: 54, color: '#ffd54f' },
+          { label: '🎯 Đố tôi 1 câu trắc nghiệm ôn thi THPT', action: 'action_quiz', x: 40, y: 558, w: 460, h: 54, color: '#00e676' },
+          { label: '🎙️ Bật Micro nói chuyện trực tiếp', action: 'action_voice', x: 524, y: 558, w: 460, h: 54, color: '#ff3366' }
+        ];
+
+        chatPrompts.forEach(p => {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.beginPath();
+          ctx.roundRect(p.x, p.y, p.w, p.h, 14);
+          ctx.fill();
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(p.label, p.x + 18, p.y + 34);
+          buttonsConfig.push({ x: p.x, y: p.y, w: p.w, h: p.h, action: p.action });
+        });
+
+        // Nút [▲ Thu gọn Tab Chat vào thanh bar]
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.12)';
+        ctx.beginPath();
+        ctx.roundRect(40, 626, w - 80, 56, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('▲ THU GỌN TAB TRÒ CHUYỆN (Về thanh bar gọn)', w / 2, 661);
+        buttonsConfig.push({ x: 40, y: 626, w: w - 80, h: 56, action: 'toggle_tab_collapse' });
+
+      } else if (currentVRAITab === 'compact') {
+        // === CHẾ ĐỘ THU GỌN (THANH DOCK COMPACT BAR) ===
+        // Khung thông báo mini
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+        ctx.beginPath();
+        ctx.roundRect(40, 145, w - 80, 115, 16);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 21px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('✨ Thanh điều khiển Loci AI (Đã thu gọn tab):', 60, 182);
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '20px sans-serif';
+        const miniText = vrAILastMessage ? (vrAILastMessage.length > 75 ? vrAILastMessage.substring(0, 72) + '...' : vrAILastMessage) : 'Bấm [💬 Mở Tab Chat] để xem đầy đủ hội thoại hoặc bấm các nút hành động bên dưới:';
+        ctx.fillText(miniText, 60, 222);
+
+        // 4 Nút hành động thanh bar
+        const compactButtons = [
+          { label: '💬 MỞ TAB CHAT TRÒ CHUYỆN', action: 'switch_tab_chat', x: 40, y: 280, w: 460, h: 70, color: '#00f2fe', textColor: '#00f2fe' },
+          { label: '🚩 XEM 5 MỐC KÝ ỨC (Bay tới)', action: 'switch_tab_places', x: 524, y: 280, w: 460, h: 70, color: '#00f2fe', textColor: '#ffffff' },
+          { label: '🎯 KHẢO BÀI TRẮC NGHIỆM 3D', action: 'action_quiz', x: 40, y: 370, w: 460, h: 70, color: '#00e676', textColor: '#ffffff' },
+          { label: '💡 THUYẾT MINH TOÀN BỘ PHÒNG', action: 'explain_room', x: 524, y: 370, w: 460, h: 70, color: '#ffd54f', textColor: '#ffffff' }
+        ];
+
+        compactButtons.forEach(b => {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+          ctx.beginPath();
+          ctx.roundRect(b.x, b.y, b.w, b.h, 16);
+          ctx.fill();
+          ctx.strokeStyle = b.color;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          ctx.fillStyle = b.textColor;
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(b.label, b.x + b.w / 2, b.y + 43);
+          buttonsConfig.push({ x: b.x, y: b.y, w: b.w, h: b.h, action: b.action });
+        });
+
+      } else if (currentVRAITab === 'places') {
+        // === TAB 5 MỐC KÝ ỨC ===
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 19px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('🚩 Chĩa tia laser & Bóp cò vào mốc để bay đến vị trí đó:', 40, 155);
+
+        const lociCards = [
+          { name: '1. Cách Mạng Tháng Tám (1945)', posName: 'Cửa chính căn hộ', action: 'teleport_cach_mang_thang_tam', y: 170 },
+          { name: '2. Chiến Dịch Điện Biên Phủ (1954)', posName: 'Bàn trà tiếp khách', action: 'teleport_dien_bien_phu', y: 245 },
+          { name: '3. Hiệp Định Giơ-ne-vơ (1954)', posName: 'Kệ sách & tài liệu', action: 'teleport_hiep_dinh_geneve', y: 320 },
+          { name: '4. Phong Trào Đồng Khởi (1960)', posName: 'Cửa sổ ban công', action: 'teleport_dong_khoi', y: 395 },
+          { name: '5. Chiến Dịch Hồ Chí Minh (1975)', posName: 'Kệ TV & màn hình lớn', action: 'teleport_chien_dich_ho_chi_minh', y: 470 }
+        ];
+
+        lociCards.forEach(item => {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.beginPath();
+          ctx.roundRect(40, item.y, w - 80, 60, 14);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = '#00f2fe';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(item.name, 65, item.y + 37);
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '19px sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(`📍 ${item.posName} ➔`, w - 65, item.y + 37);
+          buttonsConfig.push({ x: 40, y: item.y, w: w - 80, h: 60, action: item.action });
+        });
+
+        // 2 nút dưới: Thuyết minh phòng & Quay lại Chat
+        ctx.fillStyle = 'rgba(255, 213, 79, 0.15)';
+        ctx.beginPath();
+        ctx.roundRect(40, 555, 460, 56, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#ffd54f';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#ffd54f';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💡 Thuyết minh toàn bộ 5 mốc', 270, 590);
+        buttonsConfig.push({ x: 40, y: 555, w: 460, h: 56, action: 'explain_room' });
+
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.15)';
+        ctx.beginPath();
+        ctx.roundRect(524, 555, 460, 56, 14);
+        ctx.fill();
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💬 Quay lại Tab Trò Chuyện', 754, 590);
+        buttonsConfig.push({ x: 524, y: 555, w: 460, h: 56, action: 'switch_tab_chat' });
+
+        // Nút Thu gọn Tab
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.beginPath();
+        ctx.roundRect(40, 626, w - 80, 54, 14);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('▲ Thu gọn Tab về thanh bar', w / 2, 660);
+        buttonsConfig.push({ x: 40, y: 626, w: w - 80, h: 54, action: 'toggle_tab_collapse' });
+      }
 
       vrAIPanelTexture.needsUpdate = true;
+      updateVRAIHitboxes(buttonsConfig);
     }
 
     function openVRAIPanel() {
       if (!vrAIPanelMesh) initVR3DUI();
       closeAllVRModals();
 
-      renderVRAIPanel('✨ Chào bạn! Tôi là Trợ lý AI Loci. Bạn hãy chĩa tia laser và bóp cò (Trigger) để chọn câu hỏi hoặc yêu cầu di chuyển (Nói "rời đi" để tắt):', 'idle');
-
+      // Hiện ra ngay trước mặt người dùng trong tầm mắt tự nhiên
       const { headPos, forward } = getVRHeadPose();
-
-      // Đặt bảng ngay trước mặt người dùng ở khoảng cách 1.15m và tầm mắt tự nhiên
       const targetPos = headPos.clone().add(forward.clone().multiplyScalar(1.15));
       targetPos.y = Math.max(0.95, headPos.y - 0.04);
 
@@ -5056,19 +5462,19 @@
       vrAIPanelMesh.scale.set(1, 1, 1);
       vrAIPanelMesh.visible = true;
 
-      // Rung phản hồi haptic trên cả 2 tay cầm để người dùng biết AI đã bật
+      // Render nội dung tab hiện tại
+      renderVRAIPanel();
+
+      // Rung phản hồi haptic trên cả 2 tay cầm
       triggerHaptic(0, 0.7, 60);
       triggerHaptic(1, 0.7, 60);
 
       try {
-        if (typeof ai !== 'undefined') {
-          ai.speak('Trợ lý AI Loci đã sẵn sàng. Bạn hãy chĩa tia laser và bóp cò vào các lựa chọn hoặc hỏi đáp nhé.');
-          if (ai.recognition) {
-            try { ai.recognition.start(); } catch(e){}
-          }
+        if (typeof ai !== 'undefined' && ai.speak && !vrAILastMessage) {
+          ai.speak('Trợ lý AI Loci đã hiện ra trước mặt bạn. Bạn có thể trò chuyện, mở các mốc hoặc thu gọn tab bất cứ lúc nào.');
         }
       } catch (e) {
-        console.warn('AI in VR:', e);
+        console.warn('AI speech in VR:', e);
       }
     }
 
@@ -5080,7 +5486,7 @@
           ai.stopSpeaking();
           if (ai.state === 'listening') ai.toggleListening();
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function toggleVRAIPanel() {
@@ -5096,8 +5502,7 @@
       if (vrAIPanelMesh) vrAIPanelMesh.visible = false;
       if (vrMarkerListMesh) vrMarkerListMesh.visible = false;
       vrCurrentLocus = null;
-      // Guard: ai may not be initialized yet at session start
-      try { if (typeof ai !== 'undefined' && ai.stopSpeaking) ai.stopSpeaking(); } catch(e) {}
+      try { if (typeof ai !== 'undefined' && ai.stopSpeaking) ai.stopSpeaking(); } catch (e) { }
     }
 
     function handleVRAIAction(action) {
@@ -5108,34 +5513,139 @@
         return;
       }
 
+      // 1. Chuyển đổi các Tab
+      if (action === 'switch_tab_chat') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel();
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'switch_tab_places') {
+        currentVRAITab = 'places';
+        renderVRAIPanel();
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'switch_tab_quiz' || action === 'action_quiz') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel('Gemini đang chuẩn bị câu hỏi trắc nghiệm ôn thi THPT...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Hãy đặt cho tôi 1 câu hỏi trắc nghiệm ngắn gọn về 1 trong 5 mốc lịch sử trong phòng này để tôi kiểm tra kiến thức nhé!');
+        }
+        triggerHaptic(0, 0.5, 40);
+        return;
+      }
+
+      if (action === 'toggle_tab_collapse') {
+        currentVRAITab = currentVRAITab === 'compact' ? 'chat' : 'compact';
+        renderVRAIPanel();
+        triggerHaptic(0, 0.5, 40);
+        return;
+      }
+
+      // 2. Trò chuyện & Giọng nói
+      if (action === 'speak_again') {
+        if (typeof ai !== 'undefined' && ai.speak && vrAILastMessage) {
+          ai.speak(vrAILastMessage);
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'action_voice') {
+        if (typeof ai !== 'undefined') {
+          ai.toggleListening();
+        }
+        triggerHaptic(0, 0.6, 50);
+        return;
+      }
+
+      if (action === 'ask_dien_bien_phu') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel('Đang tra cứu chiến dịch Điện Biên Phủ 1954...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Ý nghĩa lịch sử của chiến dịch Điện Biên Phủ năm 1954 là gì? Hãy trả lời trọng tâm để ôn thi THPT.');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'ask_geneve') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel('Đang phân tích Hiệp định Giơ-ne-vơ 1954...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Nội dung và ý nghĩa quan trọng nhất của Hiệp định Giơ-ne-vơ năm 1954 là gì?');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'ask_hcm') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel('Đang tra cứu Chiến dịch Hồ Chí Minh 1975...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Ý nghĩa lịch sử vĩ đại của Chiến dịch Hồ Chí Minh ngày 30/4/1975 là gì?');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'ask_loci_method') {
+        currentVRAITab = 'chat';
+        renderVRAIPanel('Đang tổng hợp phương pháp Cung điện Ký ức Loci...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Hãy hướng dẫn cách dùng phương pháp Cung điện Ký ức Loci gắn 5 mốc lịch sử vào các đồ vật trong căn phòng Loft này.');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      // 3. Điều hướng mốc ký ức
       if (action.startsWith('teleport_')) {
-        const locusId = action.replace('teleport_', '');
-        const targetLocus = lociList.find(l => l.id === locusId);
+        const key = action.replace('teleport_', '').toLowerCase();
+        let targetLocus = null;
+
+        if (key.includes('thang_tam') || key.includes('cach_mang')) {
+          targetLocus = lociList.find(l => (l.name && /tháng tám|cách mạng/i.test(l.name)) || l.id.includes('thang_tam')) || lociList[0];
+        } else if (key.includes('dien_bien') || key.includes('phu')) {
+          targetLocus = lociList.find(l => (l.name && /điện biên/i.test(l.name)) || l.id.includes('dien_bien')) || lociList[1];
+        } else if (key.includes('geneve') || key.includes('gio_ne_vo')) {
+          targetLocus = lociList.find(l => (l.name && /giơ[- ]?ne[- ]?vơ|genev/i.test(l.name)) || l.id.includes('geneve')) || lociList[2];
+        } else if (key.includes('dong_khoi')) {
+          targetLocus = lociList.find(l => (l.name && /đồng khởi/i.test(l.name)) || l.id.includes('dong_khoi')) || lociList[3];
+        } else if (key.includes('ho_chi_minh') || key.includes('hcm')) {
+          targetLocus = lociList.find(l => (l.name && /hồ chí minh|hcm/i.test(l.name)) || l.id.includes('ho_chi_minh')) || lociList[4];
+        } else {
+          targetLocus = lociList.find(l => l.id.toLowerCase() === key || (l.name && l.name.toLowerCase().includes(key.replace(/_/g, ' '))));
+        }
+
         if (targetLocus) {
           closeVRAIPanel();
-          ai.speak(`Đang di chuyển đến ${targetLocus.name} năm ${targetLocus.year}.`);
+          if (typeof ai !== 'undefined' && ai.speak) {
+            ai.speak(`Đang di chuyển đến ${targetLocus.name} năm ${targetLocus.year || ''}.`);
+          }
           smoothGlideToLocus(targetLocus);
-          const foundIdx = lociList.findIndex(l => l.id === locusId);
+          const foundIdx = lociList.indexOf(targetLocus);
           if (foundIdx !== -1) {
             currentJourneyIndex = foundIdx;
             updateJourneyUI();
           }
+          return;
+        } else {
+          renderVRAIPanel('⚠️ Chưa có mốc này trong phòng. Bạn hãy nhấn [Nút A] để thêm mốc nhé!', 'idle');
           return;
         }
       }
 
       if (action === 'explain_room') {
         renderVRAIPanel('Đang tổng hợp kiến thức toàn bộ 5 mốc Lịch Sử 12...', 'thinking');
-        ai.speak('Cung điện Loft Living Room lưu trữ 5 mốc: Cách mạng tháng Tám tại cửa chính, Chiến dịch Điện Biên Phủ tại bàn trà, Hiệp định Giơ-ne-vơ tại kệ sách, Phong trào Đồng Khởi tại cửa sổ, và Chiến dịch Hồ Chí Minh tại TV. Bạn có thể chĩa tia laser vào từng mốc để học sâu.');
-        setTimeout(() => {
-          renderVRAIPanel('Đã thuyết minh tổng quan 5 mốc Loci trong phòng.', 'idle');
-        }, 1500);
-        return;
-      }
-
-      if (action === 'quiz') {
-        renderVRAIPanel('Gemini đang tạo câu hỏi trắc nghiệm ôn thi THPT...', 'thinking');
-        ai.processUserInput('Hãy đặt cho tôi 1 câu hỏi trắc nghiệm ngắn gọn về 1 trong 5 mốc lịch sử trong phòng này để tôi kiểm tra kiến thức nhé!');
+        const summaryMsg = 'Cung điện Loft Living Room lưu trữ 5 mốc: Cách mạng tháng Tám tại cửa chính, Chiến dịch Điện Biên Phủ tại bàn trà, Hiệp định Giơ-ne-vơ tại kệ sách, Phong trào Đồng Khởi tại cửa sổ, và Chiến dịch Hồ Chí Minh tại TV. Bạn có thể chĩa tia laser vào từng mốc để học sâu.';
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak(summaryMsg);
+        }
+        renderVRAIPanel(summaryMsg, 'idle');
         return;
       }
     }
@@ -5298,6 +5808,7 @@
           }
         });
 
+        // Trong Three.js WebXR, controller phải thuộc cameraGroup để di chuyển cùng góc nhìn người chơi
         cameraGroup.add(controller);
         vrControllers.push(controller);
       }
@@ -5390,7 +5901,7 @@
       triggerHaptic(controllerIndex, 0.8, 80);
       // Open VR card to confirm placement
       openVRCard(newLocus);
-      try { if (typeof ai !== 'undefined' && ai.speak) ai.speak(`Đã đặt mốc ${name} tại điểm bạn đang nhìn.`); } catch(e) {}
+      try { if (typeof ai !== 'undefined' && ai.speak) ai.speak(`Đã đặt mốc ${name} tại điểm bạn đang nhìn.`); } catch (e) { }
     }
 
     // VR Marker List Panel
@@ -5426,25 +5937,25 @@
       // Background
       ctx.fillStyle = 'rgba(8, 14, 28, 0.95)';
       ctx.beginPath();
-      ctx.roundRect(8, 8, W-16, H-16, 28);
+      ctx.roundRect(8, 8, W - 16, H - 16, 28);
       ctx.fill();
 
       // Border
       ctx.strokeStyle = 'rgba(0,242,254,0.4)';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.roundRect(8, 8, W-16, H-16, 28);
+      ctx.roundRect(8, 8, W - 16, H - 16, 28);
       ctx.stroke();
 
       // Title
       ctx.fillStyle = '#00f2fe';
       ctx.font = 'bold 36px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('📍 Danh Sách Mốc Ký Ức', W/2, 60);
+      ctx.fillText('📍 Danh Sách Mốc Ký Ức', W / 2, 60);
 
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.font = '22px sans-serif';
-      ctx.fillText(`${lociList.length} mốc • Chỉa tia laser + Trigger để đến mốc`, W/2, 95);
+      ctx.fillText(`${lociList.length} mốc • Chỉa tia laser + Trigger để đến mốc`, W / 2, 95);
 
       // List items
       const maxShow = Math.min(lociList.length, 8);
@@ -5456,7 +5967,7 @@
         // Row bg
         ctx.fillStyle = 'rgba(255,255,255,0.06)';
         ctx.beginPath();
-        ctx.roundRect(24, rowY, W-48, 62, 12);
+        ctx.roundRect(24, rowY, W - 48, 62, 12);
         ctx.fill();
 
         // Status dot
@@ -5481,14 +5992,14 @@
         ctx.fillStyle = 'rgba(255,255,255,0.4)';
         ctx.font = '28px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Chưa có mốc nào. Nhấn A để thêm mốc mới.', W/2, H/2);
+        ctx.fillText('Chưa có mốc nào. Nhấn A để thêm mốc mới.', W / 2, H / 2);
       }
 
       // Close hint
       ctx.fillStyle = 'rgba(0,242,254,0.6)';
       ctx.font = 'bold 22px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('[B] Gọi Trợ lý AI  •  [Y] Danh sách mốc  •  [A] Thêm mốc  •  [X] Đóng HUD', W/2, H - 30);
+      ctx.fillText('[B] Gọi Trợ lý AI  •  [Y] Danh sách mốc  •  [A] Thêm mốc  •  [X] Đóng HUD', W / 2, H - 30);
 
       vrMarkerListTexture.needsUpdate = true;
     }
@@ -5658,8 +6169,23 @@
               });
               vrSession = session;
               window.vrSessionActive = true;
-              renderer.xr.setReferenceSpaceType('local-floor');
-              await renderer.xr.setSession(session);
+              // Tắt OrbitControls trước khi vào VR (nó gây xung đột với camera WebXR)
+              if (orbitControls) orbitControls.enabled = false;
+
+              // Đặt gốc cameraGroup đúng vị trí người dùng đang đứng trước khi vào VR
+              cameraGroup.position.set(camera.position.x, 0, camera.position.z);
+              camera.position.set(0, 0, 0);
+              camera.quaternion.identity();
+
+              try {
+                renderer.xr.setReferenceSpaceType('local-floor');
+                await renderer.xr.setSession(session);
+              } catch (spaceErr) {
+                console.warn('Thiết bị không hỗ trợ local-floor, fallback về local:', spaceErr);
+                renderer.xr.setReferenceSpaceType('local');
+                await renderer.xr.setSession(session);
+              }
+
               setupVRControllers();
               webxrBtn.innerHTML = '<span>🚪</span> Thoát VR';
 
@@ -5669,10 +6195,14 @@
                   if (typeof ai !== 'undefined' && ai.speak) {
                     ai.speak('Đã kết nối kính VR. Bấm nút B hoặc bóp tay cầm để gọi Loci AI bất kỳ lúc nào nhé!');
                   }
-                } catch(e) {}
+                } catch (e) { }
               }, 800);
 
               session.addEventListener('end', () => {
+                // Khôi phục lại tọa độ camera bình thường sau khi rời VR
+                camera.position.set(cameraGroup.position.x, ROOM_BOUNDS.eyeHeight, cameraGroup.position.z);
+                cameraGroup.position.set(0, 0, 0);
+
                 vrSession = null;
                 window.vrSessionActive = false;
                 vrLastButtons = {};
@@ -5693,73 +6223,92 @@
 
     function animate() {
       renderer.setAnimationLoop(() => {
-        const delta = Math.min(clock.getDelta(), 0.1);
+        try {
+          const delta = Math.min(clock.getDelta(), 0.1);
 
-        if (isGliding) {
-          updateCameraGlide();
-        } else {
-          updateFPSMovement(delta);
-        }
-        if (vrSession) {
-          updateVRMovement(delta);
-          updateVRPointers();
-        }
-
-        // Animate Floating AI Companion Orb in room
-        const time = clock.getElapsedTime();
-        if (vrFloatingAIOrbGroup) {
-          if (vrSession) {
-            // Trong VR: Trợ lý Loci AI đồng hành lơ lửng ở góc trên bên trái người dùng
-            const { headPos, forward } = getVRHeadPose();
-            const leftVec = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
-            const companionTarget = headPos.clone()
-              .add(forward.clone().multiplyScalar(1.2))
-              .add(leftVec.clone().multiplyScalar(0.75));
-            companionTarget.y = Math.max(1.1, headPos.y + 0.12 + Math.sin(time * 2.0) * 0.04);
-
-            vrFloatingAIOrbGroup.position.lerp(companionTarget, 0.05);
-            vrFloatingAIOrbGroup.lookAt(headPos.x, vrFloatingAIOrbGroup.position.y, headPos.z);
+          if (isGliding) {
+            updateCameraGlide();
           } else {
-            vrFloatingAIOrbGroup.position.y = 1.85 + Math.sin(time * 2.0) * 0.05;
+            updateFPSMovement(delta);
           }
-          if (vrFloatingAIOrbRing) {
-            vrFloatingAIOrbRing.rotation.x += 0.015;
-            vrFloatingAIOrbRing.rotation.y += 0.022;
+          if (vrSession) {
+            updateVRMovement(delta);
+            updateVRPointers();
           }
-        }
 
-        // Minimalist marker gentle rotation & floating animation
-        marker3DObjects.forEach((m, idx) => {
-          const diamond = m.getObjectByName('diamond');
-          const ring = m.getObjectByName('ring');
-          const floatY = Math.sin(time * 2.0 + idx * 1.3) * 0.025;
+          // Animate Floating AI Companion Orb in room
+          const time = clock.getElapsedTime();
+          if (vrFloatingAIOrbGroup) {
+            if (vrSession) {
+              // Trong VR: Trợ lý Loci AI đồng hành lơ lửng ở góc trên bên trái người dùng
+              const { headPos, forward } = getVRHeadPose();
+              const leftVec = new THREE.Vector3(-forward.z, 0, forward.x);
+              if (leftVec.lengthSq() > 0.001) leftVec.normalize();
+              else leftVec.set(-1, 0, 0);
 
-          if (diamond) {
-            diamond.position.y = floatY;
-            diamond.rotation.y = time * 0.8 + idx;
-            diamond.rotation.x = Math.sin(time * 1.2 + idx) * 0.08;
-          }
-          if (m.children[1]) {
-            m.children[1].position.y = floatY; // Tiny core follows diamond
-          }
-          if (ring) {
-            ring.rotation.z = time * 0.25;
-          }
-        });
+              const companionTarget = headPos.clone()
+                .add(forward.clone().multiplyScalar(1.2))
+                .add(leftVec.clone().multiplyScalar(0.75));
+              companionTarget.y = Math.max(1.1, headPos.y + 0.12 + Math.sin(time * 2.0) * 0.04);
 
-        // Flowing sparks along 3D Memory Journey Route
-        if (journeyCurve && journeySparks.length > 0) {
-          const nowSec = performance.now() * 0.00012;
-          journeySparks.forEach(spark => {
-            const t = (nowSec + spark.userData.offset) % 1.0;
-            spark.position.copy(journeyCurve.getPointAt(t));
+              if (!isNaN(companionTarget.x) && !isNaN(companionTarget.y) && !isNaN(companionTarget.z)) {
+                vrFloatingAIOrbGroup.position.lerp(companionTarget, 0.05);
+                const lookDist = Math.hypot(headPos.x - vrFloatingAIOrbGroup.position.x, headPos.z - vrFloatingAIOrbGroup.position.z);
+                if (lookDist > 0.1) {
+                  vrFloatingAIOrbGroup.lookAt(headPos.x, vrFloatingAIOrbGroup.position.y, headPos.z);
+                }
+              }
+            } else {
+              vrFloatingAIOrbGroup.position.y = 1.85 + Math.sin(time * 2.0) * 0.05;
+            }
+            if (vrFloatingAIOrbRing) {
+              vrFloatingAIOrbRing.rotation.x += 0.015;
+              vrFloatingAIOrbRing.rotation.y += 0.022;
+            }
+          }
+
+          // Minimalist marker gentle rotation & floating animation
+          marker3DObjects.forEach((m, idx) => {
+            const diamond = m.getObjectByName('diamond');
+            const ring = m.getObjectByName('ring');
+            const floatY = Math.sin(time * 2.0 + idx * 1.3) * 0.025;
+
+            if (diamond) {
+              diamond.position.y = floatY;
+              diamond.rotation.y = time * 0.8 + idx;
+              diamond.rotation.x = Math.sin(time * 1.2 + idx) * 0.08;
+            }
+            if (m.children[1]) {
+              m.children[1].position.y = floatY; // Tiny core follows diamond
+            }
+            if (ring) {
+              ring.rotation.z = time * 0.25;
+            }
           });
+
+          // Flowing sparks along 3D Memory Journey Route
+          if (journeyCurve && journeySparks.length > 0) {
+            const nowSec = performance.now() * 0.00012;
+            journeySparks.forEach(spark => {
+              const t = (nowSec + spark.userData.offset) % 1.0;
+              spark.position.copy(journeyCurve.getPointAt(t));
+            });
+          }
+
+          if (orbitControls.enabled) orbitControls.update();
+          // Chỉ kiểm tra raycast chuột khi KHÔNG ở trong VR (tránh xung đột)
+          if (!vrSession) checkRaycast();
+
+          // Three.js WebXR tự xử lý camera stereo - không cần gọi thủ công
+          renderer.render(scene, camera);
+        } catch (loopErr) {
+          console.error('Lỗi trong animation loop:', loopErr);
+          try {
+            renderer.render(scene, camera);
+          } catch (rErr) {
+            console.error('Lỗi khi render fallback:', rErr);
+          }
         }
-
-        if (orbitControls.enabled) orbitControls.update();
-        checkRaycast();
-
-        renderer.render(scene, camera);
       });
     }
     animate();
@@ -6105,18 +6654,21 @@
         removeThinkingIndicator();
         appendAIMessageRow(msg.role, msg.text);
         const cleanText = msg.text.replace(/\[ACTION:[^\]]+\]/g, '').trim();
-        if (msg.role === 'assistant' && plasmaLiveTranscript) {
-          plasmaLiveTranscript.textContent = cleanText.length > 90 ? cleanText.substring(0, 90) + '...' : cleanText;
-        }
-        if (msg.role === 'assistant' && vrSession && vrAIPanelMesh && vrAIPanelMesh.visible) {
-          renderVRAIPanel(cleanText, 'idle');
+        if (msg.role === 'assistant') {
+          vrAILastMessage = cleanText;
+          if (plasmaLiveTranscript) {
+            plasmaLiveTranscript.textContent = cleanText.length > 90 ? cleanText.substring(0, 90) + '...' : cleanText;
+          }
+          if (vrSession && vrAIPanelMesh && vrAIPanelMesh.visible) {
+            renderVRAIPanel(cleanText, 'idle');
+          }
         }
       }
     });
 
     // Update model badge with active model
     if (aiModelBadge) {
-      aiModelBadge.textContent = ai.modelName || 'gemini-3.5-flash';
+      aiModelBadge.textContent = ai.modelName || 'gemini-2.0-flash';
     }
 
     // Toggle drawer
@@ -6252,58 +6804,131 @@
       });
     });
 
-    // Populate voices for settings
+    // Populate voices: Ưu tiên tiếng Việt lên trước
     function populateVoices() {
       if (!('speechSynthesis' in window) || !aiVoiceSelect) return;
       const voices = window.speechSynthesis.getVoices();
       if (!voices.length) return;
-      aiVoiceSelect.innerHTML = '<option value="">Giọng đọc mặc định thiết bị</option>';
-      voices.forEach((v, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.textContent = `${v.name} (${v.lang})${v.default ? ' [Mặc định]' : ''}`;
-        if (v.lang.startsWith('vi') || v.lang.includes('VN')) {
-          opt.selected = true;
-        }
-        aiVoiceSelect.appendChild(opt);
+
+      const savedVoiceName = localStorage.getItem('loci_voice_name') || '';
+      aiVoiceSelect.innerHTML = '<option value="">-- Chọn giọng đọc --</option>';
+
+      // Tách giọng Việt và giọng khác
+      const viVoices = voices.filter(v => v.lang.startsWith('vi') || v.lang.toLowerCase().includes('vn'));
+      const otherVoices = voices.filter(v => !v.lang.startsWith('vi') && !v.lang.toLowerCase().includes('vn'));
+
+      // Ưu tiên Google Vi > Microsoft Vi > các giọng Vi khác
+      viVoices.sort((a, b) => {
+        const aS = a.name.includes('Google') ? 3 : a.name.includes('Microsoft') ? 2 : 1;
+        const bS = b.name.includes('Google') ? 3 : b.name.includes('Microsoft') ? 2 : 1;
+        return bS - aS;
       });
+
+      if (viVoices.length > 0) {
+        const grp = document.createElement('optgroup');
+        grp.label = '🆻🇳 Tiếng Việt (Rõ nhất - nên chọn)';
+        viVoices.forEach((v, i) => {
+          const opt = document.createElement('option');
+          opt.value = voices.indexOf(v);
+          const tag = v.name.includes('Google') ? '[★Google]' : v.name.includes('Microsoft') ? '[MS]' : '';
+          opt.textContent = `${tag} ${v.name} (${v.lang})`;
+          if (savedVoiceName && v.name === savedVoiceName) opt.selected = true;
+          else if (!savedVoiceName && i === 0) opt.selected = true;
+          grp.appendChild(opt);
+        });
+        aiVoiceSelect.appendChild(grp);
+      }
+
+      if (otherVoices.length > 0) {
+        const grp2 = document.createElement('optgroup');
+        grp2.label = '🌐 Giọng ngôn ngữ khác';
+        otherVoices.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = voices.indexOf(v);
+          opt.textContent = `${v.name} (${v.lang})`;
+          grp2.appendChild(opt);
+        });
+        aiVoiceSelect.appendChild(grp2);
+      }
     }
     populateVoices();
     if (typeof window.speechSynthesis !== 'undefined' && window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = populateVoices;
     }
 
+    // Slider listeners
+    const aiSpeechPitch  = document.getElementById('ai-speech-pitch');
+    const aiPitchVal     = document.getElementById('ai-pitch-val');
+    const aiSpeechVolume = document.getElementById('ai-speech-volume');
+    const aiVolumeVal    = document.getElementById('ai-volume-val');
+    const previewVoiceBtn = document.getElementById('preview-voice-btn');
+
     if (aiSpeechRate && aiRateVal) {
-      aiSpeechRate.addEventListener('input', (e) => {
-        aiRateVal.textContent = e.target.value + 'x';
+      aiSpeechRate.addEventListener('input', e => {
+        aiRateVal.textContent = parseFloat(e.target.value).toFixed(2) + 'x';
+      });
+    }
+    if (aiSpeechPitch && aiPitchVal) {
+      aiSpeechPitch.addEventListener('input', e => {
+        aiPitchVal.textContent = parseFloat(e.target.value).toFixed(2);
+      });
+    }
+    if (aiSpeechVolume && aiVolumeVal) {
+      aiSpeechVolume.addEventListener('input', e => {
+        aiVolumeVal.textContent = Math.round(e.target.value * 100) + '%';
       });
     }
 
     // Settings Modal
     aiSettingsBtn.addEventListener('click', () => {
       geminiApiKeyInput.value = ai.getApiKey();
-      if (geminiModelSelect) geminiModelSelect.value = ai.modelName || 'gemini-3.5-flash';
+      if (geminiModelSelect) geminiModelSelect.value = ai.modelName || 'gemini-2.0-flash';
+      // Tải lại giá trị đã lưu
+      if (aiSpeechRate) { aiSpeechRate.value = ai.speechRate || 0.92; if(aiRateVal) aiRateVal.textContent = (ai.speechRate||0.92).toFixed(2)+'x'; }
+      if (aiSpeechPitch) { aiSpeechPitch.value = ai.speechPitch || 0.85; if(aiPitchVal) aiPitchVal.textContent = (ai.speechPitch||0.85).toFixed(2); }
+      if (aiSpeechVolume) { aiSpeechVolume.value = ai.speechVolume || 1.0; if(aiVolumeVal) aiVolumeVal.textContent = Math.round((ai.speechVolume||1.0)*100)+'%'; }
       aiSettingsModal.classList.add('open');
     });
     cancelAiSettingsBtn.addEventListener('click', () => {
       aiSettingsModal.classList.remove('open');
     });
+
+    // Nút THỬ GIỌNG
+    if (previewVoiceBtn) {
+      previewVoiceBtn.addEventListener('click', () => {
+        const voices = window.speechSynthesis.getVoices();
+        const chosen = aiVoiceSelect && aiVoiceSelect.value !== '' ? voices[parseInt(aiVoiceSelect.value)] : null;
+        const rate   = parseFloat(aiSpeechRate?.value || 0.92);
+        const pitch  = parseFloat(aiSpeechPitch?.value || 0.85);
+        const volume = parseFloat(aiSpeechVolume?.value || 1.0);
+
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance('Xin chào, tôi là trợ lý AI Lo-xi. Đây là giọng nói mới của tôi!');
+        utt.lang = 'vi-VN';
+        if (chosen) utt.voice = chosen;
+        utt.rate = rate; utt.pitch = pitch; utt.volume = volume;
+        window.speechSynthesis.speak(utt);
+      });
+    }
+
     saveAiSettingsBtn.addEventListener('click', () => {
       ai.setApiKey(geminiApiKeyInput.value);
       if (geminiModelSelect) {
         ai.setModel(geminiModelSelect.value);
         if (aiModelBadge) aiModelBadge.textContent = geminiModelSelect.value;
       }
-      if (aiSpeechRate) {
-        ai.setSpeechRate(parseFloat(aiSpeechRate.value) || 1.05);
-      }
+      // Lưu tốc độ, pitch, volume
+      if (aiSpeechRate)   ai.setSpeechRate(parseFloat(aiSpeechRate.value));
+      if (aiSpeechPitch)  ai.setSpeechPitch(parseFloat(aiSpeechPitch.value));
+      if (aiSpeechVolume) ai.setSpeechVolume(parseFloat(aiSpeechVolume.value));
+      // Lưu giọng
       if (aiVoiceSelect && aiVoiceSelect.value !== '') {
         const voices = window.speechSynthesis.getVoices();
         const chosen = voices[parseInt(aiVoiceSelect.value)];
         if (chosen) ai.setVoice(chosen);
       }
       aiSettingsModal.classList.remove('open');
-      alert('Đã lưu cấu hình Trợ lý AI thành công!');
+      showToast('Giọng AI Loci đã được cập nhật! Nhấn ▶ Thử giọng để kiểm tra.', 'success', 3000);
     });
 
     /* --- 🧠 KHẢO THÍ KHÔNG GIAN LOCI & 📊 BÁO CÁO TIẾN TRÌNH --- */
@@ -6375,12 +7000,12 @@
             osc.stop(now + idx * 0.12 + 0.32);
           });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
 
     function openSpatialQuizModal(questionData = null, focusWeak = false) {
       if (isPointerLocked) document.exitPointerLock();
-      
+
       let q = questionData;
       if (!q) {
         if (focusWeak) {
