@@ -4480,6 +4480,11 @@
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0a0f1d);
     scene.fog = new THREE.FogExp2(0x0a0f1d, 0.04);
+    
+    // Khởi tạo AI Robot ngay trên Desktop để AI bay theo (Companion Mode)
+    if (typeof initVR3DUI === 'function') {
+      setTimeout(initVR3DUI, 500); // Đợi các component tải xong
+    }
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(0, 1.65, 2.5); // Human eye height: ~1.65m
@@ -7171,7 +7176,7 @@
           { label: '🎖️ Chiến dịch Hồ Chí Minh 1975?', action: 'ask_hcm', x: 524, y: currentTopY, w: 460, h: 54, color: '#00f2fe' },
           { label: '🎯 Đố 1 câu trắc nghiệm THPT', action: 'action_quiz', x: 40, y: currentTopY + 62, w: 300, h: 54, color: '#00e676' },
           { label: '🚀 Dẫn đường tham quan 5 mốc', action: 'tour_loci', x: 355, y: currentTopY + 62, w: 310, h: 54, color: '#ffd54f' },
-          { label: '💡 Mẹo nhớ Loci', action: 'ask_loci_method', x: 680, y: currentTopY + 62, w: 304, h: 54, color: '#a855f7' }
+          { label: '⌨️ Mở bàn phím ảo gõ chữ', action: 'action_keyboard', x: 680, y: currentTopY + 62, w: 304, h: 54, color: '#f97316' }
         ];
 
         chatPrompts.forEach(p => {
@@ -7263,10 +7268,29 @@
       if (action === 'action_voice') {
         if (typeof ai !== 'undefined') {
           ai.toggleListening();
-          if (ai.isListening) {
+          if (ai.state === 'listening' || ai.isListening) {
             renderVRAIPanel('Đang lắng nghe giọng nói của bạn... Hãy nói câu hỏi Lịch Sử 12!', 'listening');
+          } else {
+            renderVRAIPanel('⚠️ Trình duyệt VR chưa cấp quyền Micro! Bạn vui lòng dùng nút Bàn phím bên dưới.', 'idle');
           }
         }
+        triggerHaptic(0, 0.6, 50);
+        return;
+      }
+
+      if (action === 'action_keyboard') {
+        renderVRAIPanel('Đang mở khay chat bàn phím. Vui lòng gỡ kính VR để gõ phím...', 'idle');
+        if (vrSession) {
+          try { vrSession.end(); } catch (e) {}
+        }
+        setTimeout(() => {
+          if (typeof ai !== 'undefined') ai.onWakeWord();
+          const chatInput = document.getElementById('ai-text-input');
+          if (chatInput) chatInput.focus();
+        }, 800);
+        triggerHaptic(0, 0.6, 50);
+        return;
+      }
         triggerHaptic(0, 0.6, 50);
         return;
       }
