@@ -118,9 +118,21 @@ CHỦ ĐỀ 6: HỒ CHÍ MINH TRONG LỊCH SỬ VIỆT NAM (Bài 14, 15, 16)
 
 // Hàm thông minh trích xuất kiến thức phù hợp nhất với câu hỏi của học sinh (In-Browser RAG)
 window.getRelevantHistoricalKnowledge = function(query) {
-    if (!query || !window.HISTORICAL_KNOWLEDGE_BASE) return window.HISTORICAL_CORE_SUMMARY;
+    if (!query || !window.HISTORICAL_KNOWLEDGE_BASE) return '';
     
-    const qLower = query.toLowerCase();
+    const qLower = query.toLowerCase().trim();
+    
+    // Chỉ trả về mục lục / danh sách bài khi người dùng thực sự hỏi về danh sách bài
+    const isAskingForIndex = /(danh sách|mục lục|bao nhiêu bài|những bài nào|các bài học|các chủ đề|chương trình)/i.test(qLower);
+    if (isAskingForIndex) {
+        return window.HISTORICAL_CORE_SUMMARY || '';
+    }
+
+    // Nếu là câu hỏi chào hỏi, cảm xúc hoặc phương pháp nhớ, không nạp kiến thức bài học thô
+    const isNonHistorical = /(chào|bạn là ai|khỏe không|mệt|áp lực|lo lắng|chán|nản|stress|cung điện ký ức|method of loci|mẹo nhớ|cách nhớ|làm sao để nhớ)/i.test(qLower);
+    if (isNonHistorical) {
+        return '';
+    }
     
     // Tìm các bài học có độ trùng khớp cao nhất với câu hỏi
     const scored = window.HISTORICAL_KNOWLEDGE_BASE.map(item => {
@@ -150,17 +162,18 @@ window.getRelevantHistoricalKnowledge = function(query) {
 
     scored.sort((a, b) => b.score - a.score);
 
-    // Lấy top 2 bài học điểm cao nhất nếu có liên quan
-    const topMatches = scored.filter(s => s.score >= 6).slice(0, 2);
+    // Lấy bài học điểm cao nhất nếu độ liên quan đủ mạnh (>= 12)
+    const topMatches = scored.filter(s => s.score >= 12).slice(0, 1);
     
     if (topMatches.length > 0) {
-        let injected = '=== TRI THỨC TRỌNG TÂM TRÍCH TỪ TÀI LIỆU ÔN THI TN THPT ===\n';
+        let injected = '=== TRI THỨC BỔ TRỢ TỪ SGK LỊCH SỬ 12 ===\n';
         topMatches.forEach(m => {
-            injected += '\n[' + m.item.chu_de + ' - ' + m.item.bai + ']:\n' + m.item.content + '\n';
+            // Cắt ngắn nội dung cốt lõi, không để tràn hàng ngàn dòng
+            const truncated = m.item.content.length > 1500 ? m.item.content.substring(0, 1500) + '...' : m.item.content;
+            injected += '\n[' + m.item.chu_de + ' - ' + m.item.bai + ']:\n' + truncated + '\n';
         });
         return injected;
     }
 
-    // Nếu hỏi chung hoặc câu hỏi khái quát, trả về bản tóm tắt cốt lõi toàn bộ 6 chủ đề
-    return window.HISTORICAL_CORE_SUMMARY;
+    return '';
 };
