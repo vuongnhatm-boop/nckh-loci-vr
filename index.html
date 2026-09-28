@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Cung Điện Ký Ức - Lịch Sử 12 | 3D Loft Living Room</title>
 
-  <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
+  <!-- Google Fonts: Be Vietnam Pro & Inter (Chuẩn Tiếng Việt 100%, sắc nét tuyệt đối, không bao giờ lỗi phông) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
 
   <style>
@@ -41,7 +41,7 @@
       height: 100%;
       overflow: hidden;
       background: #090d16;
-      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-main);
       user-select: none;
     }
@@ -1881,6 +1881,53 @@
       box-shadow: 0 4px 16px rgba(0, 229, 255, 0.4);
     }
 
+    .ai-dock-summarize-btn {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(168, 85, 247, 0.6) 100%);
+      border: 1px solid rgba(168, 85, 247, 0.7);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+    }
+
+    .ai-dock-summarize-btn:hover {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      transform: scale(1.04);
+      box-shadow: 0 4px 18px rgba(139, 92, 246, 0.55);
+    }
+
+    .btn-paste-clip {
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(139, 92, 246, 0.22);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      color: #e9d5ff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-paste-clip:hover {
+      background: rgba(139, 92, 246, 0.4);
+      border-color: #8b5cf6;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
     /* Gemini Settings Modal */
     #ai-settings-modal {
       position: fixed;
@@ -2592,6 +2639,911 @@
       color: #94a3b8;
       border: 1px solid rgba(148, 163, 184, 0.3);
     }
+
+    /* --- NOTEBOOKLM KNOWLEDGE STUDIO MODAL & STYLES --- */
+    .notebook-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .notebook-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(4, 7, 16, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .notebook-modal-container {
+      position: relative;
+      width: 1180px;
+      max-width: 96vw;
+      height: 86vh;
+      background: rgba(11, 17, 34, 0.95);
+      border: 1px solid rgba(139, 92, 246, 0.45);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(139, 92, 246, 0.25);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalScaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes modalScaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .notebook-header {
+      padding: 16px 24px;
+      background: rgba(18, 26, 52, 0.9);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .notebook-title-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .notebook-logo-icon {
+      font-size: 26px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(0, 242, 254, 0.3));
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+    }
+
+    .notebook-header h2 {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    .notebook-header p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .notebook-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .notebook-close-btn:hover {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: #f43f5e;
+      color: #ffffff;
+    }
+
+    .notebook-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .notebook-source-pane {
+      width: 44%;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(8, 12, 24, 0.5);
+      overflow-y: auto;
+    }
+
+    .notebook-result-pane {
+      width: 56%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(10, 16, 32, 0.35);
+      overflow: hidden;
+    }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .pane-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: 0.3px;
+    }
+
+    .notebook-textarea {
+      flex: 1;
+      min-height: 180px;
+      background: rgba(14, 20, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px;
+      color: #f8fafc;
+      font-family: inherit;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .notebook-textarea:focus {
+      border-color: rgba(139, 92, 246, 0.7);
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .notebook-options-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .options-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .format-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .format-chip {
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .format-chip input {
+      display: none;
+    }
+
+    .format-chip.active {
+      background: rgba(139, 92, 246, 0.25);
+      border-color: #8b5cf6;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+    }
+
+    .source-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .notebook-btn-primary {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #00f2fe 100%);
+      border: none;
+      color: #060913;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 18px rgba(139, 92, 246, 0.4);
+    }
+
+    .notebook-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
+    }
+
+    .notebook-btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .notebook-btn-secondary {
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .notebook-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .res-action-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .res-action-btn:hover {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: #00f2fe;
+      color: #00f2fe;
+    }
+
+    .notebook-output-container {
+      flex: 1;
+      background: rgba(14, 20, 38, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .notebook-empty-state {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #64748b;
+      padding: 30px;
+    }
+
+    .notebook-empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.6;
+    }
+
+    .notebook-empty-state h3 {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .notebook-empty-state p {
+      font-size: 0.82rem;
+      max-width: 440px;
+      line-height: 1.6;
+    }
+
+    .notebook-loading-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+
+    .spinner-ring {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(139, 92, 246, 0.2);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    .nb-summary-content {
+      font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #e2e8f0;
+      letter-spacing: normal;
+    }
+
+    .nb-summary-content h1, .nb-summary-content h2, .nb-summary-content h3, .nb-summary-content h4 {
+      font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      color: #00f2fe;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: normal;
+    }
+
+    .nb-summary-content h1 { font-size: 1.22rem; color: #a78bfa; border-bottom: 1px solid rgba(167, 139, 250, 0.25); padding-bottom: 6px; }
+    .nb-summary-content h2 { font-size: 1.08rem; color: #00f2fe; border-bottom: 1px solid rgba(0, 242, 254, 0.15); padding-bottom: 4px; }
+    .nb-summary-content h3 { font-size: 0.98rem; color: #ffd54f; }
+
+    .nb-summary-content p {
+      margin-bottom: 10px;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #e2e8f0;
+    }
+
+    .nb-summary-content ul, .nb-summary-content ol {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .nb-summary-content li {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+
+    .nb-summary-content blockquote {
+      border-left: 3px solid #8b5cf6;
+      background: rgba(139, 92, 246, 0.1);
+      padding: 10px 14px;
+      border-radius: 0 10px 10px 0;
+      margin: 12px 0;
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+
+    .nb-summary-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 0.84rem;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .nb-summary-content th, .nb-summary-content td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .nb-summary-content th {
+      background: rgba(139, 92, 246, 0.18);
+      color: #e9d5ff;
+      font-weight: 700;
+    }
+
+    .nb-summary-content tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nb-flashcard {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(0, 242, 254, 0.28);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 10px 0;
+    }
+
+    .nb-flashcard .q {
+      font-weight: 700;
+      color: #00f2fe;
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+    }
+
+    .nb-flashcard .a {
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      line-height: 1.55;
+    }
+
+    .nb-kg-box {
+      background: rgba(10, 15, 29, 0.95);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .nb-kg-box pre {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      color: #38bdf8;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .fact-box {
+      background: rgba(14, 165, 233, 0.12);
+      border-left: 3px solid #0ea5e9;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 6px 0 3px 0;
+      font-size: 0.88rem;
+      color: #e0f2fe;
+      line-height: 1.55;
+    }
+
+    .anchor-box {
+      background: rgba(234, 179, 8, 0.12);
+      border-left: 3px solid #eab308;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 3px 0 12px 0;
+      font-size: 0.88rem;
+      color: #fef08a;
+      line-height: 1.55;
+    }
+
+    /* --- HISTORICAL IMAGES & LIGHTBOX STYLES --- */
+    .nb-image-card {
+      margin: 16px 0;
+      background: rgba(10, 16, 32, 0.9);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      transition: all 0.25s ease;
+    }
+
+    .nb-image-card:hover {
+      border-color: rgba(0, 242, 254, 0.7);
+      box-shadow: 0 12px 32px rgba(0, 242, 254, 0.22);
+      transform: translateY(-2px);
+    }
+
+    .nb-img-wrapper {
+      position: relative;
+      width: 100%;
+      max-height: 400px;
+      background: #040711;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .nb-img-wrapper img {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: contain;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .nb-img-wrapper:hover img {
+      transform: scale(1.02);
+    }
+
+    .img-zoom-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(10, 16, 32, 0.82);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      opacity: 0.85;
+      transition: all 0.2s;
+    }
+
+    .nb-img-wrapper:hover .img-zoom-btn {
+      opacity: 1;
+      background: rgba(0, 242, 254, 0.35);
+      border-color: #00f2fe;
+    }
+
+    .nb-img-caption {
+      padding: 10px 14px;
+      font-size: 0.84rem;
+      color: #e2e8f0;
+      background: rgba(10, 16, 32, 0.75);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nb-img-source-tag {
+      font-size: 0.72rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      white-space: nowrap;
+    }
+
+    /* Image Finder Modal */
+    .image-finder-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100005;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-finder-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(4, 7, 16, 0.85);
+      backdrop-filter: blur(14px);
+    }
+
+    .image-finder-card {
+      position: relative;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(0, 242, 254, 0.2);
+      border-radius: 20px;
+      width: min(94vw, 720px);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: #f8fafc;
+      font-family: 'Be Vietnam Pro', 'Inter', sans-serif;
+    }
+
+    .finder-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10, 16, 32, 0.5);
+    }
+
+    .finder-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .finder-close-btn:hover {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: #f43f5e;
+      color: #ffffff;
+    }
+
+    .finder-search-row {
+      padding: 14px 20px 8px 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .finder-input-wrapper {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      min-width: 280px;
+    }
+
+    .finder-search-input {
+      flex: 1;
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: rgba(8, 12, 24, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.86rem;
+      outline: none;
+    }
+
+    .finder-search-input:focus {
+      border-color: #00f2fe;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+    }
+
+    .finder-btn-search {
+      padding: 9px 16px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00f2fe, #0284c7);
+      border: none;
+      color: #060913;
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .finder-btn-search:hover {
+      box-shadow: 0 4px 16px rgba(0, 242, 254, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .finder-btn-google {
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #cbd5e1;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .finder-btn-google:hover {
+      background: rgba(66, 133, 244, 0.25);
+      border-color: #4285f4;
+      color: #ffffff;
+    }
+
+    .finder-paste-row {
+      padding: 10px 20px;
+      background: rgba(14, 165, 233, 0.08);
+      border-top: 1px solid rgba(14, 165, 233, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .finder-url-input {
+      flex: 1.5;
+      min-width: 180px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: rgba(6, 9, 19, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .finder-caption-input {
+      flex: 1;
+      min-width: 140px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: rgba(6, 9, 19, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .finder-btn-insert {
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: #10b981;
+      border: none;
+      color: #060913;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .finder-btn-insert:hover {
+      background: #34d399;
+      transform: translateY(-1px);
+    }
+
+    .finder-results-box {
+      flex: 1;
+      padding: 16px 20px;
+      overflow-y: auto;
+      max-height: 480px;
+    }
+
+    .finder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .finder-item {
+      background: rgba(10, 16, 32, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s;
+    }
+
+    .finder-item:hover {
+      border-color: #00f2fe;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 242, 254, 0.2);
+    }
+
+    .finder-item-thumb {
+      width: 100%;
+      height: 130px;
+      background: #020408;
+      object-fit: cover;
+      display: block;
+    }
+
+    .finder-item-body {
+      padding: 10px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .finder-item-caption {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: #e2e8f0;
+    }
+
+    .finder-item-source {
+      font-size: 0.7rem;
+      color: #38bdf8;
+    }
+
+    .finder-item-btn {
+      width: 100%;
+      padding: 6px;
+      border-radius: 6px;
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      color: #00f2fe;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .finder-item-btn:hover {
+      background: #00f2fe;
+      color: #0a1020;
+    }
+
+    /* Lightbox modal */
+    .image-lightbox-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100010;
+      background: rgba(3, 6, 14, 0.92);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.25);
+    }
+
+    .lightbox-caption {
+      margin-top: 12px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      text-align: center;
+      max-width: 700px;
+    }
+
+    .lightbox-close-btn {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* AI Dock Notebook Button */
+    .ai-dock-nb-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #e9d5ff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .ai-dock-nb-btn:hover {
+      background: rgba(139, 92, 246, 0.4);
+      transform: scale(1.08);
+      border-color: #8b5cf6;
+    }
   </style>
 </head>
 
@@ -2705,6 +3657,9 @@
     </div>
 
     <div class="top-actions">
+      <button class="action-btn" id="open-notebook-btn" title="Mở Studio Tóm Tắt Tài Liệu Chuẩn NotebookLM" style="background: rgba(139, 92, 246, 0.22); border-color: rgba(168, 85, 247, 0.55); color: #e9d5ff;">
+        <span>📚</span> Tóm Tắt Tài Liệu
+      </button>
       <button class="action-btn" id="add-marker-quick-btn" title="Tạo mốc ký ức mới tại vị trí đang nhìn (Phím F)">
         <span>➕</span> Tạo mốc [F]
       </button>
@@ -2757,6 +3712,9 @@
       <button class="ai-depth-btn" id="ai-depth-short" data-depth="short">⚡ Ngắn</button>
       <button class="ai-depth-btn" id="ai-depth-standard" data-depth="standard">📘 Tiêu chuẩn</button>
       <button class="ai-depth-btn active" id="ai-depth-detailed" data-depth="detailed">🏛️ Giảng sâu</button>
+      <button class="ai-depth-btn" id="drawer-notebook-btn"
+        style="background:rgba(139,92,246,0.22); border-color:rgba(168,85,247,0.55); color:#e9d5ff; font-weight:800;"
+        title="Mở Studio Tóm Tắt Tài Liệu Chuẩn NotebookLM">📚 Tóm Tắt LM</button>
       <button class="ai-depth-btn" id="start-spatial-quiz-drawer-btn"
         style="background:rgba(0,242,254,0.18); border-color:rgba(0,242,254,0.45); color:#00f2fe; font-weight:800;"
         title="Bắt đầu khảo thí kiến thức không gian Loci">🧠 Khảo thí</button>
@@ -2771,17 +3729,15 @@
         <div class="ai-avatar">✦</div>
         <div class="ai-msg-box">
           <div class="ai-msg-box-header">
-            <span>✨ TRỢ LÝ LOCI LỊCH SỬ 12 (GEMINI 3.5)</span>
+            <span>✨ TRỢ LÝ LOCI LỊCH SỬ 12 (GEMINI 3 FLASH)</span>
             <div class="ai-msg-actions">
               <button class="ai-bubble-btn" onclick="window.speakBubble(this)">🔊 Nghe</button>
               <button class="ai-bubble-btn" onclick="window.copyBubble(this)">📋 Chép</button>
             </div>
           </div>
           <div class="ai-msg-text">
-            Xin chào! Tôi là Trợ lý AI Loci Lịch Sử 12 kiêm <b>Giám Khảo Khảo Thí Không Gian</b>. Tôi có khả năng ghi
-            nhớ toàn bộ tiến trình học, độ thuộc bài và các điểm yếu của bạn.<br><br>
-            Bạn có thể ra lệnh giọng nói hoặc bấm các nút: <i>"Khảo bài kiến thức không gian"</i>, <i>"Đưa tôi đến Điện
-              Biên Phủ"</i>, <i>"Xem tiến trình học tập của tôi"</i> nhé!
+            Xin chào! Tôi là Trợ lý AI Loci Lịch Sử 12 (kết nối trực tiếp <b>Gemini 3 Flash</b> thông minh & siêu tốc). Tôi có khả năng giải đáp linh hoạt mọi câu hỏi, hỗ trợ tâm lý thi cử và đồng hành cùng bạn trong Cung điện Ký ức 3D.<br><br>
+            Bạn có thể trò chuyện trực tiếp hoặc bấm các nút: <i>"Khảo bài kiến thức không gian"</i>, <i>"Đưa tôi đến Điện Biên Phủ"</i>, <i>"Tóm Tắt LM"</i> nhé!
           </div>
         </div>
       </div>
@@ -2794,6 +3750,7 @@
 
     <!-- Quick Suggestions -->
     <div class="ai-suggestions">
+      <button class="ai-chip" id="chip-notebook-sample" style="background:rgba(139,92,246,0.18); border-color:rgba(168,85,247,0.5); color:#e9d5ff;" data-query="Hãy tóm tắt toàn diện theo chuẩn NotebookLM về Chiến dịch Điện Biên Phủ 1954: Đề cương, Niên biểu, Ý chính cốt lõi và Thẻ flashcards.">📚 Tóm tắt NotebookLM 1954</button>
       <button class="ai-chip" data-query="Khảo bài kiểm tra kiến thức không gian cho tôi">🧠 Khảo thí không
         gian</button>
       <button class="ai-chip" data-query="Báo cáo tiến trình học tập các mốc trong phòng và điểm yếu của tôi">📊 Tiến
@@ -2810,8 +3767,12 @@
     <div class="ai-dock">
       <div class="ai-capsule-box">
         <button class="ai-dock-mic" id="ai-voice-btn" title="Bật/Tắt Micro giọng nói tiếng Việt">🎙️</button>
+        <button class="ai-dock-nb-btn" id="dock-open-notebook-btn" title="Mở Studio nạp và tóm tắt văn bản/tài liệu">📚</button>
         <input type="text" class="ai-dock-input" id="ai-text-input"
-          placeholder="Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào..." autocomplete="off" />
+          placeholder="Hỏi AI bất kỳ kiến thức nào hoặc dán đoạn văn vào đây..." autocomplete="off" />
+        <button class="ai-dock-summarize-btn" id="ai-quick-summarize-btn" title="Bấm để TÓM TẮT NGAY đoạn văn bạn vừa dán">
+          <span>⚡ Tóm Tắt</span>
+        </button>
         <button class="ai-dock-send" id="ai-send-btn">
           <span>Gửi</span>
           <span>➔</span>
@@ -2827,18 +3788,19 @@
       <p>Cấu hình mô hình Google Gemini và giọng nói tiếng Việt để tối ưu hoá trải nghiệm ôn thi Lịch Sử 12.</p>
 
       <div class="settings-form-group">
-        <label class="settings-form-label">Google Gemini API Key:</label>
+        <label class="settings-form-label">Google Gemini / OpenRouter API Key:</label>
         <input type="password" id="gemini-api-key-input" class="settings-input"
-          value="AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA" />
+          value="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" />
       </div>
 
       <div class="settings-form-group">
         <label class="settings-form-label">Phiên bản Mô hình LLM:</label>
         <select id="gemini-model-select" class="settings-select">
-          <option value="gemini-2.0-flash" selected>gemini-2.0-flash (Siêu nhanh • Ổn định nhất • Khuyên dùng)</option>
-          <option value="gemini-2.5-flash">gemini-2.5-flash (Bản thế hệ mới)</option>
-          <option value="gemini-1.5-flash">gemini-1.5-flash (Bản tiêu chuẩn)</option>
-          <option value="gemini-1.5-flash-8b">gemini-1.5-flash-8b (Siêu nhẹ • Tiết kiệm Quota)</option>
+          <option value="google/gemini-3.5-flash-lite" selected>Gemini 3.5 Flash Lite (Model 3 Flash - Siêu tốc, linh hoạt)</option>
+          <option value="google/gemini-3.7-flash">Gemini 3.7 Flash (Tư duy nhạy bén, sâu sắc)</option>
+          <option value="google/gemini-3.8-flash">Gemini 3.8 Flash (Mới nhất)</option>
+          <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash (Google Direct)</option>
         </select>
       </div>
 
@@ -3278,6 +4240,139 @@
     </div>
   </div>
 
+  <!-- NOTEBOOKLM KNOWLEDGE STUDIO MODAL -->
+  <div class="notebook-modal" id="notebook-modal" style="display: none;">
+    <div class="notebook-modal-backdrop" id="notebook-modal-backdrop"></div>
+    <div class="notebook-modal-container">
+      <div class="notebook-header">
+        <div class="notebook-title-box">
+          <div class="notebook-logo-icon">📚</div>
+          <div>
+            <h2>NotebookLM Knowledge Studio • Tóm Tắt Tri Thức Lịch Sử 12</h2>
+            <p>Tóm tắt thông minh dựa chặt chẽ trên tài liệu gốc (Source-grounded) • Trích xuất đề cương, niên biểu & flashcards</p>
+          </div>
+        </div>
+        <div class="notebook-header-btns">
+          <button class="notebook-close-btn" id="notebook-close-btn">✕ Đóng Studio</button>
+        </div>
+      </div>
+
+      <div class="notebook-body">
+        <!-- CỘT TRÁI: NGUỒN TÀI LIỆU (SOURCE DOCUMENT) -->
+        <div class="notebook-source-pane">
+          <div class="pane-header">
+            <span class="pane-title">📄 Tài Liệu Nguồn Cần Tóm Tắt</span>
+            <button class="btn-paste-clip" id="btn-paste-clipboard" title="Dán nội dung bạn vừa copy từ máy vào đây">📋 Dán từ khay nhớ tạm</button>
+          </div>
+
+          <div>
+            <label style="margin-bottom: 4px; display: block; font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Chọn bài học mẫu từ SGK 12:</label>
+            <select id="notebook-preset-select" style="width: 100%; padding: 9px 12px; border-radius: 10px; background: rgba(10, 16, 32, 0.85); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-size: 0.86rem; font-family: inherit; outline: none; cursor: pointer;">
+              <option value="">-- Chọn bài học mẫu trong SGK 12 --</option>
+              <option value="dien_bien_phu">Bài 17: Chiến dịch Điện Biên Phủ 1954</option>
+              <option value="cach_mang_thang_tam">Bài 12: Cách mạng Tháng Tám 1945 & Tuyên ngôn Độc lập</option>
+              <option value="dong_khoi">Bài 21: Phong trào Đồng Khởi 1959 - 1960</option>
+              <option value="mau_than_1968">Bài 22: Cuộc Tổng tiến công Xuân Mậu Thân 1968</option>
+              <option value="hiep_dinh_paris">Bài 22: Hiệp định Pa-ri 1973 về chấm dứt chiến tranh</option>
+              <option value="ho_chi_minh_1975">Bài 23: Chiến dịch Hồ Chí Minh 30/4/1975 toàn thắng</option>
+            </select>
+          </div>
+
+          <textarea id="notebook-source-text" class="notebook-textarea" placeholder="Dán đoạn văn, bài đọc, tài liệu ôn thi hoặc ghi chú của bạn vào đây (hoặc chọn bài mẫu phía trên)..."></textarea>
+          
+          <div class="notebook-options-bar">
+            <span class="options-label">Định dạng tóm tắt:</span>
+            <div class="format-chips">
+              <label class="format-chip active"><input type="radio" name="nb-format" value="all" checked> 🌟 Toàn diện NotebookLM</label>
+              <label class="format-chip"><input type="radio" name="nb-format" value="study_guide"> 📋 Đề cương tổng quan</label>
+              <label class="format-chip"><input type="radio" name="nb-format" value="timeline"> ⏳ Dòng thời gian</label>
+              <label class="format-chip"><input type="radio" name="nb-format" value="takeaways"> 💡 Ý chính cốt lõi</label>
+              <label class="format-chip"><input type="radio" name="nb-format" value="flashcards"> ❓ Thẻ câu hỏi & Đáp án</label>
+              <label class="format-chip"><input type="radio" name="nb-format" value="loci"> 🏛️ Bản đồ Loci 3D</label>
+            </div>
+          </div>
+
+          <div class="source-actions">
+            <button class="notebook-btn-primary" id="btn-run-summarize">
+              <span>✨ Bắt Đầu Tóm Tắt Chuẩn NotebookLM</span>
+            </button>
+            <button class="notebook-btn-secondary" id="btn-clear-source">Xóa trắng</button>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: KẾT QUẢ TÓM TẮT THÔNG MINH (GENERATED SUMMARY) -->
+        <div class="notebook-result-pane">
+          <div class="pane-header">
+            <span class="pane-title">✨ Kết Quả Tóm Tắt NotebookLM</span>
+            <div class="result-actions" id="result-actions" style="display: none;">
+              <button class="res-action-btn" id="btn-speak-summary">🔊 Đọc to (TTS)</button>
+              <button class="res-action-btn" id="btn-copy-summary">📋 Sao chép</button>
+              <button class="res-action-btn" id="btn-finder-images" onclick="window.openHistoricalImageFinder()" title="Tìm ảnh xác thực trên Wikimedia / Google và chèn vào bản đồ">🖼️ Tìm & Chèn Ảnh</button>
+              <button class="res-action-btn" id="btn-transfer-summary">💬 Đàm thoại với AI về bài này ➔</button>
+            </div>
+          </div>
+
+          <!-- Khung hiển thị nội dung tóm tắt -->
+          <div class="notebook-output-container" id="notebook-output">
+            <div class="notebook-empty-state">
+              <div class="empty-icon">📖</div>
+              <h3>Chưa có tài liệu nào được tóm tắt</h3>
+              <p>Dán bài đọc vào khung bên trái hoặc chọn bài học mẫu trong SGK 12, sau đó nhấn <b>"Bắt Đầu Tóm Tắt"</b> để AI NotebookLM phân tích đề cương, niên biểu và thẻ ghi nhớ.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TÌM & CHÈN ẢNH TƯ LIỆU LỊCH SỬ XÁC THỰC -->
+  <div id="image-finder-modal" class="image-finder-modal" style="display: none;">
+    <div class="image-finder-backdrop" onclick="window.closeHistoricalImageFinder()"></div>
+    <div class="image-finder-card">
+      <div class="finder-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.3rem;">🖼️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1rem; color: #fff;">Tìm & Chèn Ảnh Tư Liệu Lịch Sử Xác Thực</h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.74rem; color: #94a3b8;">Nguồn Wikimedia Commons, Wikipedia Bách khoa & Google Images</p>
+          </div>
+        </div>
+        <button type="button" class="finder-close-btn" onclick="window.closeHistoricalImageFinder()" title="Đóng">✕</button>
+      </div>
+
+      <!-- Khung tìm kiếm chính & Nút mở Google Images -->
+      <div class="finder-search-row">
+        <div class="finder-input-wrapper">
+          <input type="text" id="finder-search-input" class="finder-search-input" placeholder="Nhập tên sự kiện, chiến dịch, nhân vật (VD: Chiến dịch Điện Biên Phủ 1954)..." />
+          <button type="button" id="finder-search-btn" class="finder-btn-search">🔍 Tìm ảnh</button>
+        </div>
+        <button type="button" id="finder-google-btn" class="finder-btn-google" title="Mở Google Images trong tab mới">🔎 Tìm trên Google Images ↗</button>
+      </div>
+
+      <!-- Dán link từ Google Images -->
+      <div class="finder-paste-row">
+        <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 700; white-space: nowrap;">🔗 Dán link ảnh từ Google:</span>
+        <input type="url" id="finder-paste-url" class="finder-url-input" placeholder="Dán URL hình ảnh bạn vừa sao chép từ Google Images..." />
+        <input type="text" id="finder-paste-caption" class="finder-caption-input" placeholder="Chú thích ảnh (tùy chọn)..." />
+        <button type="button" id="finder-btn-insert-url" class="finder-btn-insert">➕ Chèn vào bài</button>
+      </div>
+
+      <!-- Danh sách ảnh tìm được -->
+      <div id="finder-results-box" class="finder-results-box">
+        <!-- Rendered dynamically via historical_image_search.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX PHÓNG TO ẢNH TƯ LIỆU -->
+  <div id="image-lightbox-modal" class="image-lightbox-modal" style="display: none;" onclick="if(event.target===this) window.closeHistoricalLightbox();">
+    <div class="lightbox-content">
+      <button type="button" class="lightbox-close-btn" onclick="window.closeHistoricalLightbox()" title="Đóng">✕</button>
+      <img id="lightbox-img" src="" alt="Ảnh tư liệu lịch sử" />
+      <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
   <!-- Three.js Importmap -->
   <script type="importmap">
   {
@@ -3290,6 +4385,8 @@
 
   <!-- NẠP KHO TRI THỨC LỊCH SỬ 12 (16 BÀI HỌC) CHO AI ASSISTANT -->
   <script src="./history_knowledge_base.js"></script>
+  <!-- NẠP CÔNG CỤ TÌM KIẾM ẢNH TƯ LIỆU LỊCH SỬ XÁC THỰC -->
+  <script src="./historical_image_search.js"></script>
 
   <script type="module">
     import * as THREE from 'three';
@@ -4763,17 +5860,37 @@
     let vrCardCtx = null;
     let vrCardTexture = null;
     let vrCurrentLocus = null;
+    let vrCardMode = 'view'; // 'view' | 'edit'
+    let vrEditLocusData = null;
+    let vrEditActiveField = 'name'; // 'name' | 'year' | 'details' | 'mnemonic'
     const vrCardInteractiveButtons = [];
+
+    // === 3D ROBOT AI COMPANION ("CON AI LOCI") & VR CONVERSATION SYSTEM ===
+    let vrAICompanionGroup = null;
+    let vrAICompanionHitbox = null;
+    let vrAIFaceCanvas = null;
+    let vrAIFaceCtx = null;
+    let vrAIFaceTexture = null;
+    let vrAIRobotHead = null;
+    let vrAIRobotVisor = null;
+    let vrAICoreMesh = null;
+    let vrAIRobotRings = [];
+    let vrAIRobotHands = [];
+    let vrAIRobotLight = null;
+    let vrAISummoned = false;
+    let vrAILastUserQuery = '';
+    let vrAIActiveQuiz = null;
 
     let vrAIPanelMesh = null;
     let vrAIPanelCanvas = null;
     let vrAIPanelCtx = null;
     let vrAIPanelTexture = null;
     const vrAIInteractiveButtons = [];
-    let currentVRAITab = 'chat'; // 'chat' | 'compact' | 'places'
+    let currentVRAITab = 'chat';
     let vrAILastMessage = '';
     let vrAILastStatus = 'idle';
 
+    // Tương thích ngược với các raycaster cũ
     let vrFloatingAIOrbGroup = null;
     let vrFloatingAIOrbHitbox = null;
     let vrFloatingAIOrbRing = null;
@@ -4805,87 +5922,152 @@
       vrCardMesh = new THREE.Mesh(cardGeo, cardMat);
       vrCardMesh.visible = false;
       scene.add(vrCardMesh);
+      // Các hitbox của vrCardMesh được tạo động chuẩn xác từng pixel trong renderVRCardTexture
 
-      // Hitbox: Button Đã thuộc (Trái)
-      const btnMasteredGeo = new THREE.PlaneGeometry(0.36, 0.12);
-      const btnMastered = new THREE.Mesh(btnMasteredGeo, createHitMat());
-      btnMastered.position.set(-0.38, -0.36, 0.02);
-      btnMastered.userData = { action: 'mastered' };
-      vrCardMesh.add(btnMastered);
-      vrCardInteractiveButtons.push(btnMastered);
+      /* 2. KHỞI TẠO "CON AI" 3D ROBOT COMPANION & BÓNG HỘI THOẠI HOLOGRAPHIC CHAT */
+      if (!vrAICompanionGroup) {
+        vrAICompanionGroup = new THREE.Group();
+        vrAICompanionGroup.position.set(0.0, 1.85, 0.4);
 
-      // Hitbox: Button Xóa mốc (Giữa)
-      const btnDeleteGeo = new THREE.PlaneGeometry(0.32, 0.12);
-      const btnDelete = new THREE.Mesh(btnDeleteGeo, createHitMat());
-      btnDelete.position.set(0.0, -0.36, 0.02);
-      btnDelete.userData = { action: 'delete_locus' };
-      vrCardMesh.add(btnDelete);
-      vrCardInteractiveButtons.push(btnDelete);
+        // A. ĐẦU ROBOT KIM LOẠI NGỌC TRAI TRẮNG TƯƠNG LAI
+        const headGeo = new THREE.SphereGeometry(0.18, 32, 24);
+        headGeo.scale(1.0, 0.92, 0.96);
+        const headMat = new THREE.MeshStandardMaterial({
+          color: 0xf1f5f9,
+          roughness: 0.18,
+          metalness: 0.82
+        });
+        vrAIRobotHead = new THREE.Mesh(headGeo, headMat);
+        vrAICompanionGroup.add(vrAIRobotHead);
 
-      // Hitbox: Button Đóng (Phải)
-      const btnCloseGeo = new THREE.PlaneGeometry(0.30, 0.12);
-      const btnClose = new THREE.Mesh(btnCloseGeo, createHitMat());
-      btnClose.position.set(0.38, -0.36, 0.02);
-      btnClose.userData = { action: 'close' };
-      vrCardMesh.add(btnClose);
-      vrCardInteractiveButtons.push(btnClose);
+        // B. MÀN HÌNH LED KÍNH ĐEN CẢM XÚC (DIGITAL VISOR FACE)
+        vrAIFaceCanvas = document.createElement('canvas');
+        vrAIFaceCanvas.width = 512;
+        vrAIFaceCanvas.height = 256;
+        vrAIFaceCtx = vrAIFaceCanvas.getContext('2d');
+        vrAIFaceTexture = new THREE.CanvasTexture(vrAIFaceCanvas);
+        vrAIFaceTexture.colorSpace = THREE.SRGBColorSpace;
 
-      /* 2. VR 3D HOLOGRAPHIC AI ASSISTANT PANEL */
-      vrAIPanelCanvas = document.createElement('canvas');
-      vrAIPanelCanvas.width = 1024;
-      vrAIPanelCanvas.height = 720;
-      vrAIPanelCtx = vrAIPanelCanvas.getContext('2d');
-      vrAIPanelTexture = new THREE.CanvasTexture(vrAIPanelCanvas);
-      vrAIPanelTexture.colorSpace = THREE.SRGBColorSpace;
+        const visorGeo = new THREE.PlaneGeometry(0.24, 0.14);
+        const visorMat = new THREE.MeshBasicMaterial({
+          map: vrAIFaceTexture,
+          transparent: true,
+          side: THREE.FrontSide,
+          depthWrite: false
+        });
+        vrAIRobotVisor = new THREE.Mesh(visorGeo, visorMat);
+        vrAIRobotVisor.position.set(0, 0.015, 0.176);
+        vrAICompanionGroup.add(vrAIRobotVisor);
 
-      const aiGeo = new THREE.PlaneGeometry(1.4, 0.98);
-      const aiMat = new THREE.MeshBasicMaterial({
-        map: vrAIPanelTexture,
-        transparent: true,
-        side: THREE.DoubleSide
-      });
-      vrAIPanelMesh = new THREE.Mesh(aiGeo, aiMat);
-      vrAIPanelMesh.visible = false;
-      scene.add(vrAIPanelMesh);
+        // Viền vát kính đen bảo vệ màn hình (Bezel)
+        const visorRimGeo = new THREE.TorusGeometry(0.115, 0.012, 12, 32);
+        visorRimGeo.scale(1.12, 0.68, 1.0);
+        const visorRimMat = new THREE.MeshStandardMaterial({
+          color: 0x0a1122,
+          metalness: 0.95,
+          roughness: 0.1
+        });
+        const visorRim = new THREE.Mesh(visorRimGeo, visorRimMat);
+        visorRim.position.set(0, 0.015, 0.174);
+        vrAICompanionGroup.add(visorRim);
 
-      // Khởi tạo giao diện Tab mặc định cho AI Panel
-      renderVRAIPanel();
+        // C. THÂN ROBOT (CHASSIS METALLIC)
+        const torsoGeo = new THREE.CylinderGeometry(0.08, 0.13, 0.15, 24);
+        const torsoMat = new THREE.MeshStandardMaterial({
+          color: 0x1e293b,
+          metalness: 0.85,
+          roughness: 0.25
+        });
+        const torso = new THREE.Mesh(torsoGeo, torsoMat);
+        torso.position.set(0, -0.16, 0);
+        vrAICompanionGroup.add(torso);
 
-      /* 3. 3D FLOATING HOLOGRAPHIC AI COMPANION ORB IN ROOM */
-      if (!vrFloatingAIOrbGroup) {
-        vrFloatingAIOrbGroup = new THREE.Group();
-        vrFloatingAIOrbGroup.position.set(0.0, 1.85, 0.4);
-
-        // Pulsing glowing core
-        const coreGeo = new THREE.SphereGeometry(0.16, 24, 24);
+        // D. LÒ PHẢN ỨNG NĂNG LƯỢNG NGỰC (PULSING QUANTUM CORE)
+        const coreGeo = new THREE.SphereGeometry(0.048, 18, 18);
         const coreMat = new THREE.MeshStandardMaterial({
           color: 0x00f2fe,
-          emissive: 0x00a8cc,
-          emissiveIntensity: 0.8,
-          roughness: 0.15,
-          metalness: 0.85
+          emissive: 0x00f2fe,
+          emissiveIntensity: 1.4,
+          roughness: 0.1,
+          metalness: 0.8
         });
-        const orbCore = new THREE.Mesh(coreGeo, coreMat);
-        vrFloatingAIOrbGroup.add(orbCore);
+        vrAICoreMesh = new THREE.Mesh(coreGeo, coreMat);
+        vrAICoreMesh.position.set(0, -0.15, 0.085);
+        vrAICompanionGroup.add(vrAICoreMesh);
 
-        // Spinning holographic gyro ring
-        const ringGeo = new THREE.TorusGeometry(0.28, 0.016, 16, 48);
-        const ringMat = new THREE.MeshStandardMaterial({
-          color: 0xffd54f,
-          emissive: 0xffab00,
-          emissiveIntensity: 0.6,
+        // E. 2 TAI ANTENNA ÂM THANH CYBERNETIC (AUDIO RECEPTORS)
+        const earGeo = new THREE.CylinderGeometry(0.018, 0.028, 0.06, 16);
+        earGeo.rotateZ(Math.PI / 2);
+        const earMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.2 });
+        const earTipGeo = new THREE.SphereGeometry(0.02, 12, 12);
+        const earTipMat = new THREE.MeshStandardMaterial({ color: 0x00f2fe, emissive: 0x00f2fe, emissiveIntensity: 1.0 });
+
+        const earL = new THREE.Mesh(earGeo, earMat);
+        earL.position.set(-0.19, 0.02, 0);
+        const earTipL = new THREE.Mesh(earTipGeo, earTipMat);
+        earTipL.position.set(-0.225, 0.02, 0);
+        vrAICompanionGroup.add(earL);
+        vrAICompanionGroup.add(earTipL);
+
+        const earR = new THREE.Mesh(earGeo, earMat);
+        earR.position.set(0.19, 0.02, 0);
+        const earTipR = new THREE.Mesh(earTipGeo, earTipMat);
+        earTipR.position.set(0.225, 0.02, 0);
+        vrAICompanionGroup.add(earR);
+        vrAICompanionGroup.add(earTipR);
+
+        // F. VÒNG NĂNG LƯỢNG HÀNH TINH (DUAL GYRO ORBITAL RINGS)
+        const ring1Geo = new THREE.TorusGeometry(0.29, 0.012, 16, 48);
+        const ring1Mat = new THREE.MeshStandardMaterial({
+          color: 0x00f2fe,
+          emissive: 0x00c8e0,
+          emissiveIntensity: 0.9,
           roughness: 0.2,
           metalness: 0.8
         });
-        vrFloatingAIOrbRing = new THREE.Mesh(ringGeo, ringMat);
-        vrFloatingAIOrbGroup.add(vrFloatingAIOrbRing);
+        const ring1 = new THREE.Mesh(ring1Geo, ring1Mat);
+        vrAICompanionGroup.add(ring1);
 
-        // Floating Title Sprite: 🤖 TRỢ LÝ AI [BẤM B]
+        const ring2Geo = new THREE.TorusGeometry(0.33, 0.009, 16, 48);
+        const ring2Mat = new THREE.MeshStandardMaterial({
+          color: 0xffd54f,
+          emissive: 0xffab00,
+          emissiveIntensity: 0.8,
+          roughness: 0.2,
+          metalness: 0.8
+        });
+        const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+        ring2.rotation.x = Math.PI / 3;
+        vrAICompanionGroup.add(ring2);
+
+        vrAIRobotRings = [ring1, ring2];
+
+        // G. TAY ROBOT TỪ TÍNH LƠ LỬNG (MAGNETIC HANDS CÓ CỬ CHỈ)
+        const handGeo = new THREE.SphereGeometry(0.038, 16, 16);
+        handGeo.scale(1.2, 0.8, 1.0);
+        const handMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.85, roughness: 0.2 });
+
+        const handL = new THREE.Mesh(handGeo, handMat);
+        handL.position.set(-0.25, -0.16, 0.06);
+        vrAICompanionGroup.add(handL);
+
+        const handR = new THREE.Mesh(handGeo, handMat);
+        handR.position.set(0.25, -0.16, 0.06);
+        vrAICompanionGroup.add(handR);
+
+        vrAIRobotHands = [handL, handR];
+
+        // H. ĐÈN ĐỘNG (DYNAMIC POINTLIGHT) TỎA ÁNH SÁNG XANH CYAN QUANH PHÒNG
+        vrAIRobotLight = new THREE.PointLight(0x00f2fe, 1.35, 3.2);
+        vrAIRobotLight.position.set(0, 0, 0.2);
+        vrAICompanionGroup.add(vrAIRobotLight);
+
+        // I. BIỂU NGỮ 3D TRÊN ĐẦU ROBOT
         const badgeCanvas = document.createElement('canvas');
         badgeCanvas.width = 512;
         badgeCanvas.height = 128;
         const bCtx = badgeCanvas.getContext('2d');
-        bCtx.fillStyle = 'rgba(8, 14, 28, 0.9)';
+        bCtx.fillStyle = 'rgba(8, 14, 28, 0.92)';
         bCtx.beginPath();
         bCtx.roundRect(10, 10, 492, 108, 24);
         bCtx.fill();
@@ -4895,26 +6077,57 @@
         bCtx.fillStyle = '#ffffff';
         bCtx.font = 'bold 36px sans-serif';
         bCtx.textAlign = 'center';
-        bCtx.fillText('🤖 TRỢ LÝ AI [BẤM B]', 256, 58);
+        bCtx.fillText('🤖 TRỢ LÝ AI LOCI', 256, 56);
         bCtx.fillStyle = '#00e676';
         bCtx.font = 'bold 24px sans-serif';
-        bCtx.fillText('Chĩa laser + Bóp cò để gọi', 256, 94);
+        bCtx.fillText('Bấm [B] hoặc nói "Loci ơi" để trò chuyện', 256, 94);
 
         const badgeTex = new THREE.CanvasTexture(badgeCanvas);
         badgeTex.colorSpace = THREE.SRGBColorSpace;
         const badgeSpriteMat = new THREE.SpriteMaterial({ map: badgeTex, transparent: true });
         const badgeSprite = new THREE.Sprite(badgeSpriteMat);
-        badgeSprite.position.set(0, 0.42, 0);
-        badgeSprite.scale.set(0.9, 0.24, 1);
-        vrFloatingAIOrbGroup.add(badgeSprite);
+        badgeSprite.position.set(0, 0.38, 0);
+        badgeSprite.scale.set(0.85, 0.22, 1);
+        vrAICompanionGroup.add(badgeSprite);
 
-        // Hitbox for raycasting
-        const hitGeo = new THREE.SphereGeometry(0.35, 12, 12);
-        vrFloatingAIOrbHitbox = new THREE.Mesh(hitGeo, createHitMat());
-        vrFloatingAIOrbHitbox.userData = { action: 'open_ai_panel', isAIOrb: true };
-        vrFloatingAIOrbGroup.add(vrFloatingAIOrbHitbox);
+        // J. HITBOX BẮN TIA LASER TRỰC TIẾP VÀO CON AI
+        const hitGeo = new THREE.SphereGeometry(0.38, 14, 14);
+        vrAICompanionHitbox = new THREE.Mesh(hitGeo, createHitMat());
+        vrAICompanionHitbox.userData = { action: 'open_ai_panel', isAIOrb: true, isAIRobot: true };
+        vrAICompanionGroup.add(vrAICompanionHitbox);
 
-        scene.add(vrFloatingAIOrbGroup);
+        // K. BÓNG CHAT HOLOGRAPHIC HỘI THOẠI GẮN LIỀN VỚI ROBOT (HOLOGRAPHIC CHAT BUBBLE)
+        vrAIPanelCanvas = document.createElement('canvas');
+        vrAIPanelCanvas.width = 1024;
+        vrAIPanelCanvas.height = 700;
+        vrAIPanelCtx = vrAIPanelCanvas.getContext('2d');
+        vrAIPanelTexture = new THREE.CanvasTexture(vrAIPanelCanvas);
+        vrAIPanelTexture.colorSpace = THREE.SRGBColorSpace;
+
+        const aiGeo = new THREE.PlaneGeometry(1.2, 0.82);
+        const aiMat = new THREE.MeshBasicMaterial({
+          map: vrAIPanelTexture,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        vrAIPanelMesh = new THREE.Mesh(aiGeo, aiMat);
+        // Đặt bóng chat chếch nhẹ sang bên phải robot, góc vát uốn quanh người dùng
+        vrAIPanelMesh.position.set(0.78, 0.05, 0.06);
+        vrAIPanelMesh.rotation.y = -0.25;
+        vrAIPanelMesh.visible = false;
+        vrAICompanionGroup.add(vrAIPanelMesh);
+
+        // Tương thích ngược với các biến cũ
+        vrFloatingAIOrbGroup = vrAICompanionGroup;
+        vrFloatingAIOrbHitbox = vrAICompanionHitbox;
+        vrFloatingAIOrbRing = ring1;
+
+        scene.add(vrAICompanionGroup);
+
+        // Render giao diện khởi tạo ban đầu
+        renderVRAIFace(0);
+        renderVRAIPanel();
       }
     }
 
@@ -4959,102 +6172,534 @@
     }
 
     /* --- RENDER 3D VR KNOWLEDGE CARD --- */
+    /* --- HELPER CẬP NHẬT HITBOX RAYCAST CHO CÁC NÚT TRÊN VR CARD --- */
+    function updateVRCardHitboxes(buttonsConfig) {
+      if (!vrCardMesh) return;
+      while (vrCardInteractiveButtons.length > 0) {
+        const btn = vrCardInteractiveButtons.pop();
+        if (btn.parent) btn.parent.remove(btn);
+        if (btn.geometry) btn.geometry.dispose();
+      }
+
+      const createHitMat = () => new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false
+      });
+
+      buttonsConfig.forEach(b => {
+        const w3d = b.w * (1.4 / 1024);
+        const h3d = b.h * (0.96 / 700);
+        const x3d = (b.x + b.w / 2 - 512) * (1.4 / 1024);
+        const y3d = (350 - (b.y + b.h / 2)) * (0.96 / 700);
+
+        const geo = new THREE.PlaneGeometry(w3d, h3d);
+        const mesh = new THREE.Mesh(geo, createHitMat());
+        mesh.position.set(x3d, y3d, 0.02);
+        mesh.userData = { action: b.action };
+        vrCardMesh.add(mesh);
+        vrCardInteractiveButtons.push(mesh);
+      });
+    }
+
+    /* --- RENDER 3D VR KNOWLEDGE CARD & BÀN PHÍM ẢO --- */
     function renderVRCardTexture(locus) {
       if (!vrCardCtx) return;
       const ctx = vrCardCtx;
       const w = 1024, h = 700;
-
       ctx.clearRect(0, 0, w, h);
 
-      // Card Background
-      ctx.fillStyle = 'rgba(10, 16, 32, 0.96)';
-      ctx.beginPath();
-      ctx.roundRect(10, 10, w - 20, h - 20, 32);
-      ctx.fill();
+      const buttonsConfig = [];
 
-      // Glowing Neon Border
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#00f2fe';
-      ctx.stroke();
+      if (vrCardMode === 'edit') {
+        // === GIAO DIỆN CHỈNH SỬA & BÀN PHÍM ẢO TRỰC TIẾP TRONG VR ===
+        const data = vrEditLocusData || locus;
 
-      // Header Tag
-      ctx.fillStyle = '#00f2fe';
-      ctx.font = 'bold 26px sans-serif';
-      ctx.fillText('🏛️ CUNG ĐIỆN KÝ ỨC • LỊCH SỬ 12 (VR MODE)', 50, 70);
+        // Background
+        ctx.fillStyle = 'rgba(10, 16, 32, 0.98)';
+        ctx.beginPath();
+        ctx.roundRect(10, 10, w - 20, h - 20, 28);
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#ffd54f';
+        ctx.stroke();
 
-      // Title & Year
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 42px sans-serif';
-      ctx.fillText(`${locus.name} (${locus.year})`, 50, 130);
+        // Header
+        ctx.fillStyle = '#ffd54f';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('✏️ BÀN PHÍM ẢO & CHỈNH SỬA MỐC TRONG VR', 40, 50);
 
-      // Furniture Location
-      ctx.fillStyle = '#ffd54f';
-      ctx.font = 'bold 28px sans-serif';
-      ctx.fillText(`📍 Điểm neo: ${locus.locName}`, 50, 175);
+        // Hàng 6 Sự Kiện Nhanh SGK Lịch Sử 12 (1-Click điền đầy đủ dữ liệu)
+        const presets = [
+          { label: '🏔️ Điện Biên Phủ', action: 'preset_dbp', x: 40, w: 150 },
+          { label: '📜 Giơnevơ 1954', action: 'preset_gne', x: 200, w: 150 },
+          { label: '🚩 CMT8 1945', action: 'preset_cmt8', x: 360, w: 150 },
+          { label: '🎖️ 30/4/1975', action: 'preset_hcm', x: 520, w: 150 },
+          { label: '🌴 Đồng Khởi 60', action: 'preset_dk', x: 680, w: 150 },
+          { label: '🕊️ Paris 1973', action: 'preset_prs', x: 840, w: 144 }
+        ];
+        presets.forEach(p => {
+          ctx.fillStyle = 'rgba(255, 213, 79, 0.15)';
+          ctx.beginPath();
+          ctx.roundRect(p.x, 68, p.w, 42, 10);
+          ctx.fill();
+          ctx.strokeStyle = '#ffd54f';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#ffd54f';
+          ctx.font = 'bold 17px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.label, p.x + p.w / 2, 95);
+          buttonsConfig.push({ x: p.x, y: 68, w: p.w, h: 42, action: p.action });
+        });
 
-      // Divider Line
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(50, 200);
-      ctx.lineTo(w - 50, 200);
-      ctx.stroke();
+        // Chọn Trường Đang Sửa (Field Tabs)
+        const fields = [
+          { id: 'name', label: '🏷️ Tên mốc', x: 40, w: 220 },
+          { id: 'year', label: '📅 Năm/Thời gian', x: 275, w: 220 },
+          { id: 'details', label: '📝 Nội dung cốt lõi', x: 510, w: 250 },
+          { id: 'mnemonic', label: '💡 Mẹo Loci', x: 775, w: 209 }
+        ];
+        fields.forEach(f => {
+          const isActive = vrEditActiveField === f.id;
+          ctx.fillStyle = isActive ? 'rgba(0, 242, 254, 0.3)' : 'rgba(255, 255, 255, 0.08)';
+          ctx.beginPath();
+          ctx.roundRect(f.x, 122, f.w, 46, 12);
+          ctx.fill();
+          ctx.strokeStyle = isActive ? '#00f2fe' : 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = isActive ? 2.5 : 1;
+          ctx.stroke();
+          ctx.fillStyle = isActive ? '#00f2fe' : '#ffffff';
+          ctx.font = 'bold 19px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(f.label, f.x + f.w / 2, 152);
+          buttonsConfig.push({ x: f.x, y: 122, w: f.w, h: 46, action: `field_${f.id}` });
+        });
 
-      // Knowledge Details
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillText('📖 Kiến thức cốt lõi thi THPT:', 50, 240);
+        // Ô Hiển Thị Nội Dung Đang Gõ (Input Box)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.beginPath();
+        ctx.roundRect(40, 180, w - 80, 58, 12);
+        ctx.fill();
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '26px sans-serif';
-      wrapCanvasText(ctx, locus.details, 50, 280, w - 100, 36);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.textAlign = 'left';
+        const curText = (data[vrEditActiveField] || '');
+        const dispText = curText.length > 55 ? '...' + curText.substring(curText.length - 52) : curText;
+        ctx.fillText(dispText + ' █', 56, 217);
 
-      // Mnemonic
-      ctx.fillStyle = '#ffab00';
-      ctx.font = 'bold 24px sans-serif';
-      ctx.fillText('💡 Mẹo liên tưởng không gian Loci:', 50, 430);
+        // Bàn phím ảo 3D VR Keyboard (Hàng phím số, chữ cái, ký hiệu)
+        // Hàng 1: Số & ký tự đặc biệt
+        const row1 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '/'];
+        row1.forEach((char, idx) => {
+          const kx = 40 + idx * 79;
+          const ky = 252;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.beginPath();
+          ctx.roundRect(kx, ky, 72, 48, 10);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(char, kx + 36, ky + 33);
+          buttonsConfig.push({ x: kx, y: ky, w: 72, h: 48, action: `key_char_${char}` });
+        });
 
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'italic 25px sans-serif';
-      wrapCanvasText(ctx, locus.mnemonic, 50, 470, w - 100, 34);
+        // Hàng 2: QWERTY 1
+        const row2 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
+        row2.forEach((char, idx) => {
+          const kx = 65 + idx * 90;
+          const ky = 310;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.beginPath();
+          ctx.roundRect(kx, ky, 82, 48, 10);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(char, kx + 41, ky + 33);
+          buttonsConfig.push({ x: kx, y: ky, w: 82, h: 48, action: `key_char_${char}` });
+        });
 
-      // Button 1: Đã thuộc (Trái)
-      ctx.fillStyle = locus.status === 'mastered' ? '#00e676' : 'rgba(0, 230, 118, 0.25)';
-      ctx.beginPath();
-      ctx.roundRect(50, 580, 270, 70, 18);
-      ctx.fill();
-      ctx.strokeStyle = '#00e676';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.fillStyle = locus.status === 'mastered' ? '#051329' : '#ffffff';
-      ctx.font = 'bold 26px sans-serif';
-      ctx.fillText('✓ ĐÃ THUỘC', 90, 624);
+        // Hàng 3: QWERTY 2 (kèm Đ)
+        const row3 = ['A', 'S', 'D', 'Đ', 'F', 'G', 'H', 'J', 'K', 'L'];
+        row3.forEach((char, idx) => {
+          const kx = 65 + idx * 90;
+          const ky = 368;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.beginPath();
+          ctx.roundRect(kx, ky, 82, 48, 10);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(char, kx + 41, ky + 33);
+          buttonsConfig.push({ x: kx, y: ky, w: 82, h: 48, action: `key_char_${char}` });
+        });
 
-      // Button 2: Xóa mốc (Giữa)
-      ctx.fillStyle = 'rgba(255, 82, 82, 0.25)';
-      ctx.beginPath();
-      ctx.roundRect(377, 580, 270, 70, 18);
-      ctx.fill();
-      ctx.strokeStyle = '#ff5252';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.fillStyle = '#ff5252';
-      ctx.font = 'bold 26px sans-serif';
-      ctx.fillText('🗑️ XÓA MỐC', 430, 624);
+        // Hàng 4: QWERTY 3
+        const row4 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '.', ',', ':'];
+        row4.forEach((char, idx) => {
+          const kx = 65 + idx * 90;
+          const ky = 426;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.beginPath();
+          ctx.roundRect(kx, ky, 82, 48, 10);
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 22px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(char, kx + 41, ky + 33);
+          buttonsConfig.push({ x: kx, y: ky, w: 82, h: 48, action: `key_char_${char}` });
+        });
 
-      // Button 3: Đóng (Phải)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.beginPath();
-      ctx.roundRect(704, 580, 270, 70, 18);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 26px sans-serif';
-      ctx.fillText('✕ ĐÓNG [Nút X]', 750, 624);
+        // Hàng 5: Nút chức năng bàn phím
+        const kActions = [
+          { label: '⌫ Xóa (Backspace)', action: 'key_backspace', x: 40, w: 260, color: '#ff5252' },
+          { label: '␣ Phím cách (Space)', action: 'key_space', x: 315, w: 410, color: '#00f2fe' },
+          { label: '✕ Xóa trắng ô', action: 'key_clear', x: 740, w: 244, color: '#ffab00' }
+        ];
+        kActions.forEach(k => {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.beginPath();
+          ctx.roundRect(k.x, 484, k.w, 48, 10);
+          ctx.fill();
+          ctx.strokeStyle = k.color;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = k.color;
+          ctx.font = 'bold 19px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(k.label, k.x + k.w / 2, 516);
+          buttonsConfig.push({ x: k.x, y: 484, w: k.w, h: 48, action: k.action });
+        });
+
+        // Hàng 6: Nút LƯU THAY ĐỔI & HỦY SỬA
+        // Nút Lưu
+        ctx.fillStyle = 'rgba(0, 230, 118, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(40, 568, 455, 80, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = '#00e676';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💾 LƯU MỐC KÝ ỨC', 40 + 455 / 2, 618);
+        buttonsConfig.push({ x: 40, y: 568, w: 455, h: 80, action: 'save_edit' });
+
+        // Nút Hủy
+        ctx.fillStyle = 'rgba(255, 82, 82, 0.2)';
+        ctx.beginPath();
+        ctx.roundRect(525, 568, 459, 80, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#ff5252';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.fillStyle = '#ff7b7b';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✕ HỦY / QUAY LẠI', 525 + 459 / 2, 618);
+        buttonsConfig.push({ x: 525, y: 568, w: 459, h: 80, action: 'cancel_edit' });
+
+      } else {
+        // === GIAO DIỆN XEM CHI TIẾT MỐC (VIEW MODE) ===
+        // Card Background
+        ctx.fillStyle = 'rgba(10, 16, 32, 0.96)';
+        ctx.beginPath();
+        ctx.roundRect(10, 10, w - 20, h - 20, 32);
+        ctx.fill();
+
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#00f2fe';
+        ctx.stroke();
+
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('🏛️ CUNG ĐIỆN KÝ ỨC • LỊCH SỬ 12 (VR MODE)', 50, 70);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 42px sans-serif';
+        ctx.fillText(`${locus.name} (${locus.year})`, 50, 130);
+
+        ctx.fillStyle = '#ffd54f';
+        ctx.font = 'bold 28px sans-serif';
+        ctx.fillText(`📍 Điểm neo: ${locus.locName}`, 50, 175);
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(50, 200);
+        ctx.lineTo(w - 50, 200);
+        ctx.stroke();
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText('📖 Kiến thức cốt lõi thi THPT:', 50, 240);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '26px sans-serif';
+        wrapCanvasText(ctx, locus.details, 50, 280, w - 100, 36);
+
+        ctx.fillStyle = '#ffab00';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.fillText('💡 Mẹo liên tưởng không gian Loci:', 50, 430);
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = 'italic 25px sans-serif';
+        wrapCanvasText(ctx, locus.mnemonic, 50, 470, w - 100, 34);
+
+        // 4 Nút hành động trực tiếp trong VR: Sửa, Thuộc, Xóa, Đóng
+        // Button 1: SỬA MỐC (Trái 1)
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(40, 580, 220, 72, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#00f2fe';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = '#00f2fe';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✏️ SỬA MỐC', 40 + 110, 626);
+        buttonsConfig.push({ x: 40, y: 580, w: 220, h: 72, action: 'edit_locus' });
+
+        // Button 2: ĐÃ THUỘC (Trái 2)
+        ctx.fillStyle = locus.status === 'mastered' ? '#00e676' : 'rgba(0, 230, 118, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(280, 580, 220, 72, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#00e676';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = locus.status === 'mastered' ? '#051329' : '#ffffff';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✓ ĐÃ THUỘC', 280 + 110, 626);
+        buttonsConfig.push({ x: 280, y: 580, w: 220, h: 72, action: 'mastered' });
+
+        // Button 3: XÓA MỐC (Phải 2)
+        ctx.fillStyle = 'rgba(255, 82, 82, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(520, 580, 220, 72, 18);
+        ctx.fill();
+        ctx.strokeStyle = '#ff5252';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = '#ff5252';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🗑️ XÓA MỐC', 520 + 110, 626);
+        buttonsConfig.push({ x: 520, y: 580, w: 220, h: 72, action: 'delete_locus' });
+
+        // Button 4: ĐÓNG (Phải 1)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.beginPath();
+        ctx.roundRect(760, 580, 220, 72, 18);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✕ ĐÓNG', 760 + 110, 626);
+        buttonsConfig.push({ x: 760, y: 580, w: 220, h: 72, action: 'close' });
+      }
 
       vrCardTexture.needsUpdate = true;
+      updateVRCardHitboxes(buttonsConfig);
+    }
+
+    /* --- XỬ LÝ HÀNH ĐỘNG TRÊN VR KNOWLEDGE CARD --- */
+    function handleVRCardAction(action) {
+      if (!action || !vrCurrentLocus) return;
+
+      if (action === 'close') {
+        closeVRCard();
+        return;
+      }
+
+      if (action === 'edit_locus') {
+        vrCardMode = 'edit';
+        vrEditLocusData = JSON.parse(JSON.stringify(vrCurrentLocus));
+        vrEditActiveField = 'name';
+        renderVRCardTexture(vrEditLocusData);
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak('Đã mở chế độ sửa mốc. Bạn có thể chọn nhanh sự kiện SGK hoặc gõ chữ bằng bàn phím ảo.');
+        }
+        return;
+      }
+
+      if (action === 'cancel_edit') {
+        vrCardMode = 'view';
+        renderVRCardTexture(vrCurrentLocus);
+        return;
+      }
+
+      if (action === 'save_edit') {
+        if (vrEditLocusData) {
+          Object.assign(vrCurrentLocus, vrEditLocusData);
+          saveLociData();
+          refresh3DMarkers();
+          drawJourneyRoute();
+          renderBottomPills();
+          vrCardMode = 'view';
+          renderVRCardTexture(vrCurrentLocus);
+          if (typeof ai !== 'undefined' && ai.speak) {
+            ai.speak(`Đã lưu thành công mốc ${vrCurrentLocus.name} vào Cung điện.`);
+          }
+        }
+        return;
+      }
+
+      if (action === 'mastered') {
+        vrCurrentLocus.status = vrCurrentLocus.status === 'mastered' ? 'reviewing' : 'mastered';
+        saveLociData();
+        refresh3DMarkers();
+        renderVRCardTexture(vrCurrentLocus);
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak(vrCurrentLocus.status === 'mastered' ? `Tuyệt vời! Đã thuộc mốc ${vrCurrentLocus.name}.` : `Đã chuyển mốc ${vrCurrentLocus.name} sang đang ôn tập.`);
+        }
+        return;
+      }
+
+      if (action === 'delete_locus') {
+        const deletedName = vrCurrentLocus.name;
+        const targetId = vrCurrentLocus.id;
+        lociList = lociList.filter(l => l.id !== targetId);
+        saveLociData();
+        refresh3DMarkers();
+        drawJourneyRoute();
+        renderBottomPills();
+        closeVRCard();
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak(`Đã xóa mốc ${deletedName} khỏi Cung điện.`);
+        }
+        return;
+      }
+
+      // Chọn trường để sửa
+      if (action.startsWith('field_')) {
+        const fieldName = action.replace('field_', '');
+        vrEditActiveField = fieldName;
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      // Xóa ký tự (Backspace)
+      if (action === 'key_backspace') {
+        if (!vrEditLocusData) return;
+        const cur = (vrEditLocusData[vrEditActiveField] || '');
+        vrEditLocusData[vrEditActiveField] = cur.slice(0, -1);
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      // Dấu cách (Space)
+      if (action === 'key_space') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData[vrEditActiveField] = (vrEditLocusData[vrEditActiveField] || '') + ' ';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      // Xóa hết ô (Clear)
+      if (action === 'key_clear') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData[vrEditActiveField] = '';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      // Gõ ký tự thông thường
+      if (action.startsWith('key_char_')) {
+        if (!vrEditLocusData) return;
+        const ch = action.replace('key_char_', '');
+        vrEditLocusData[vrEditActiveField] = (vrEditLocusData[vrEditActiveField] || '') + ch;
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      // 6 Sự kiện lịch sử nhanh 1-Click
+      if (action === 'preset_dbp') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Chiến dịch Điện Biên Phủ';
+        vrEditLocusData.year = '1954';
+        vrEditLocusData.details = 'Chiến thắng lừng lẫy năm châu, chấn động địa cầu. Đập tan hoàn toàn kế hoạch Nava, giáng đòn quyết định buộc Pháp ký Hiệp định Giơ-ne-vơ.';
+        vrEditLocusData.mnemonic = 'Chiến dịch 56 ngày đêm khoét núi ngủ hầm, đồi A1, tướng Đờ Cát đầu hàng.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      if (action === 'preset_gne') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Hiệp định Giơ-ne-vơ';
+        vrEditLocusData.year = '1954';
+        vrEditLocusData.details = 'Pháp và các nước công nhận độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ Việt Nam. Vĩ tuyến 17 là giới tuyến quân sự tạm thời.';
+        vrEditLocusData.mnemonic = 'Sông Bến Hải vĩ tuyến 17 chia cắt hai miền tạm thời.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      if (action === 'preset_cmt8') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Cách mạng Tháng Tám';
+        vrEditLocusData.year = '1945';
+        vrEditLocusData.details = 'Thắng lợi thần tốc trong 15 ngày, lật đổ ách thống trị phát xít - thực dân - phong kiến, thành lập nước Việt Nam Dân chủ Cộng hòa.';
+        vrEditLocusData.mnemonic = 'Mùa thu Ba Đình lịch sử, Bác Hồ đọc Tuyên ngôn Độc lập ngày 2/9.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      if (action === 'preset_hcm') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Chiến dịch Hồ Chí Minh';
+        vrEditLocusData.year = '1975';
+        vrEditLocusData.details = 'Chiến dịch quyết chiến chiến lược giải phóng Sài Gòn - Gia Định, kết thúc 21 năm kháng chiến chống Mỹ cứu nước, non sông thống nhất.';
+        vrEditLocusData.mnemonic = 'Xe tăng 390 húc đổ cổng Dinh Độc Lập lúc 11h30 ngày 30/4/1975.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      if (action === 'preset_dk') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Phong trào Đồng Khởi';
+        vrEditLocusData.year = '1959 - 1960';
+        vrEditLocusData.details = 'Bùng nổ từ Bến Tre, chuyển cách mạng miền Nam từ giữ gìn lực lượng sang tiến công, làm sụp đổ từng mảng chính quyền địch ở nông thôn.';
+        vrEditLocusData.mnemonic = 'Đội quân tóc dài Bến Tre, ngọn đuốc Đồng Khởi lan rộng toàn miền Nam.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
+
+      if (action === 'preset_prs') {
+        if (!vrEditLocusData) return;
+        vrEditLocusData.name = 'Hiệp định Paris';
+        vrEditLocusData.year = '1973';
+        vrEditLocusData.details = 'Mỹ buộc phải cam kết tôn trọng độc lập, chủ quyền của Việt Nam và rút hết quân đội về nước, tạo thế và lực giải phóng miền Nam.';
+        vrEditLocusData.mnemonic = 'Chiến thắng Điện Biên Phủ trên không 1972 buộc Mỹ ký Hiệp định Paris.';
+        renderVRCardTexture(vrEditLocusData);
+        return;
+      }
     }
 
     /* --- HELPER: LẤY VỊ TRÍ & HƯỚNG NHÌN CHUẨN XÁC CỦA KÍNH VR META QUEST --- */
@@ -5102,6 +6747,8 @@
       if (!vrCardMesh) initVR3DUI();
       if (vrAIPanelMesh) vrAIPanelMesh.visible = false;
       vrCurrentLocus = locus;
+      vrCardMode = 'view';
+      vrEditLocusData = null;
       renderVRCardTexture(locus);
 
       const { headPos, forward } = getVRHeadPose();
@@ -5117,9 +6764,11 @@
     function closeVRCard() {
       if (vrCardMesh) vrCardMesh.visible = false;
       vrCurrentLocus = null;
+      vrCardMode = 'view';
+      vrEditLocusData = null;
     }
 
-    /* --- HELPER CẬP NHẬT HITBOX RAYCAST CHO CÁC NÚT TRÊN VR AI PANEL --- */
+    /* --- HELPER CẬP NHẬT HITBOX RAYCAST CHO CÁC NÚT TRÊN BÓNG HỘI THOẠI CON AI --- */
     function updateVRAIHitboxes(buttonsConfig) {
       if (!vrAIPanelMesh) return;
       while (vrAIInteractiveButtons.length > 0) {
@@ -5135,10 +6784,11 @@
       });
 
       buttonsConfig.forEach(b => {
-        const w3d = b.w * (1.4 / 1024);
-        const h3d = b.h * (0.98 / 720);
-        const x3d = (b.x + b.w / 2 - 512) * (1.4 / 1024);
-        const y3d = (360 - (b.y + b.h / 2)) * (0.98 / 720);
+        // Tỷ lệ chuẩn cho bóng chat 1.2m x 0.82m trên canvas 1024 x 700
+        const w3d = b.w * (1.2 / 1024);
+        const h3d = b.h * (0.82 / 700);
+        const x3d = (b.x + b.w / 2 - 512) * (1.2 / 1024);
+        const y3d = (350 - (b.y + b.h / 2)) * (0.82 / 700);
 
         const geo = new THREE.PlaneGeometry(w3d, h3d);
         const mesh = new THREE.Mesh(geo, createHitMat());
@@ -5149,149 +6799,383 @@
       });
     }
 
-    /* --- RENDER 3D VR HOLOGRAPHIC AI ASSISTANT PANEL (HỆ THỐNG TAB & THANH DOCK) --- */
+    /* --- HIỆU ỨNG BIỂU CẢM MẶT LED TRÊN MÀN HÌNH ROBOT (CẢM XÚC THỜI GIAN THỰC) --- */
+    function renderVRAIFace(time) {
+      if (!vrAIFaceCtx) return;
+      const ctx = vrAIFaceCtx;
+      const w = 512, h = 256;
+      ctx.clearRect(0, 0, w, h);
+
+      // Kính đen chiều sâu không gian
+      ctx.fillStyle = '#040914';
+      ctx.fillRect(0, 0, w, h);
+
+      // Lưới ma trận số tương lai tinh tế
+      ctx.strokeStyle = 'rgba(0, 242, 254, 0.06)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 32) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 32) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      const status = vrAILastStatus || 'idle';
+      const eyeY = 110;
+      const leftEyeX = 175;
+      const rightEyeX = 337;
+
+      if (status === 'listening') {
+        // 1. TRẠNG THÁI ĐANG LẮNG NGHE GIỌNG NÓI (MẮT SÁNG CORAL/RED + SÓNG ÂM EQUALIZER)
+        const eqColor = '#ff3366';
+        ctx.fillStyle = eqColor;
+        ctx.shadowColor = eqColor;
+        ctx.shadowBlur = 18;
+
+        // Mắt tròn mở to chăm chú nhìn người dùng
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY - 10, 32, 0, Math.PI * 2);
+        ctx.arc(rightEyeX, eyeY - 10, 32, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Đồng tử trắng lấp lánh
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(leftEyeX + 6, eyeY - 14, 12, 0, Math.PI * 2);
+        ctx.arc(rightEyeX + 6, eyeY - 14, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Dải sóng âm Equalizer chuyển động nhịp nhàng theo micro
+        const barCount = 11;
+        const startX = 165;
+        const barW = 12;
+        const gap = 6;
+        for (let b = 0; b < barCount; b++) {
+          const bh = 10 + Math.abs(Math.sin(time * 8.5 + b * 0.7)) * 46;
+          ctx.fillStyle = b % 2 === 0 ? '#ff3366' : '#ff7b99';
+          ctx.beginPath();
+          ctx.roundRect(startX + b * (barW + gap), 185 - bh / 2, barW, bh, 4);
+          ctx.fill();
+        }
+
+        // Huy hiệu trạng thái trên trán
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#ff7b99';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎙️ ĐANG NGHE BẠN NÓI...', 256, 38);
+
+      } else if (status === 'thinking') {
+        // 2. TRẠNG THÁI GEMINI ĐANG SUY NGHĨ (VÒNG XOAY LƯỢNG TỬ VÀNG ÁNH KIM)
+        const goldColor = '#ffd54f';
+        ctx.strokeStyle = goldColor;
+        ctx.shadowColor = goldColor;
+        ctx.shadowBlur = 16;
+        ctx.lineWidth = 6;
+
+        ctx.save();
+        ctx.translate(leftEyeX, eyeY);
+        ctx.rotate(time * 3.5);
+        ctx.beginPath();
+        ctx.arc(0, 0, 34, 0, Math.PI * 1.5);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(rightEyeX, eyeY);
+        ctx.rotate(-time * 3.5);
+        ctx.beginPath();
+        ctx.arc(0, 0, 34, 0, Math.PI * 1.5);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY, 10, 0, Math.PI * 2);
+        ctx.arc(rightEyeX, eyeY, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#ffd54f';
+        ctx.textAlign = 'center';
+        ctx.fillText('🧠 GEMINI ĐANG SUY NGHĨ...', 256, 38);
+
+      } else if (status === 'speaking') {
+        // 3. TRẠNG THÁI CON AI ĐANG TRẢ LỜI/THUYẾT MINH (MẮT CƯỜI HẠNH PHÚC ^ _ ^ + MIỆNG NÓI PHÁT SÁNG)
+        const spkColor = '#00e676';
+        ctx.strokeStyle = spkColor;
+        ctx.fillStyle = spkColor;
+        ctx.shadowColor = spkColor;
+        ctx.shadowBlur = 18;
+        ctx.lineWidth = 10;
+        ctx.lineCap = 'round';
+
+        // Cung mắt cười bên trái
+        ctx.beginPath();
+        ctx.arc(leftEyeX, eyeY + 12, 34, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+
+        // Cung mắt cười bên phải
+        ctx.beginPath();
+        ctx.arc(rightEyeX, eyeY + 12, 34, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+
+        // Miệng nói chuyển động sóng âm nhịp nhàng
+        ctx.beginPath();
+        const mouthW = 140;
+        const mouthX = 256 - mouthW / 2;
+        ctx.moveTo(mouthX, 185);
+        for (let x = 0; x <= mouthW; x += 10) {
+          const my = 185 + Math.sin(time * 12 + x * 0.1) * 14 * Math.sin((x / mouthW) * Math.PI);
+          ctx.lineTo(mouthX + x, my);
+        }
+        ctx.lineWidth = 6;
+        ctx.stroke();
+
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillStyle = '#69f0ae';
+        ctx.textAlign = 'center';
+        ctx.fillText('🔊 AI ĐANG THUYẾT MINH...', 256, 38);
+
+      } else {
+        // 4. TRẠNG THÁI CHỜ IDLE (MẮT CYAN ĐÁNG YÊU CÓ CHỚP MẮT TỰ NHIÊN)
+        const cyanColor = '#00f2fe';
+        ctx.fillStyle = cyanColor;
+        ctx.shadowColor = cyanColor;
+        ctx.shadowBlur = 16;
+
+        const blinkCycle = time % 3.8;
+        const isBlinking = blinkCycle < 0.16;
+        const eyeH = isBlinking ? 4 : 52;
+        const eyeW = 44;
+
+        ctx.beginPath();
+        ctx.roundRect(leftEyeX - eyeW / 2, eyeY - eyeH / 2, eyeW, eyeH, 18);
+        ctx.roundRect(rightEyeX - eyeW / 2, eyeY - eyeH / 2, eyeW, eyeH, 18);
+        ctx.fill();
+
+        if (!isBlinking) {
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(leftEyeX + 10, eyeY - 10, 8, 0, Math.PI * 2);
+          ctx.arc(rightEyeX + 10, eyeY - 10, 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = '#00f2fe';
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.arc(256, 175, 20, Math.PI * 0.15, Math.PI * 0.85);
+          ctx.stroke();
+        }
+
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = 'rgba(0, 242, 254, 0.85)';
+        ctx.textAlign = 'center';
+        ctx.fillText('✦ AI LOCI • SẴN SÀNG TRÒ CHUYỆN', 256, 38);
+      }
+
+      ctx.shadowBlur = 0;
+      if (vrAIFaceTexture) vrAIFaceTexture.needsUpdate = true;
+    }
+
+    /* --- RENDER BÓNG HỘI THOẠI HOLOGRAPHIC CHAT TRỰC TIẾP CỦA CON AI --- */
     function renderVRAIPanel(text, status = null) {
       if (!vrAIPanelCtx) return;
       if (text !== undefined && text !== null) vrAILastMessage = text;
       if (status !== null) vrAILastStatus = status;
 
       const ctx = vrAIPanelCtx;
-      const w = 1024, h = 720;
+      const w = 1024, h = 700;
       ctx.clearRect(0, 0, w, h);
 
       const buttonsConfig = [];
 
-      // 1. NỀN HOLOGRAPHIC CHÍNH & VIỀN PHÁT SÁNG
-      ctx.fillStyle = 'rgba(8, 14, 28, 0.96)';
+      // 1. NỀN KÍNH HOLOGRAPHIC THỦY TINH & VIỀN PHÁT SÁNG THEO TRẠNG THÁI
+      ctx.fillStyle = 'rgba(8, 14, 28, 0.94)';
       ctx.beginPath();
-      ctx.roundRect(10, 10, w - 20, h - 20, 28);
+      ctx.roundRect(10, 10, w - 20, h - 20, 26);
       ctx.fill();
 
-      const borderGlow = vrAILastStatus === 'listening' ? '#ff3366' : (vrAILastStatus === 'thinking' ? '#ffd54f' : '#00f2fe');
+      const borderGlow = vrAILastStatus === 'listening' ? '#ff3366'
+        : (vrAILastStatus === 'thinking' ? '#ffd54f'
+        : (vrAILastStatus === 'speaking' ? '#00e676' : '#00f2fe'));
       ctx.lineWidth = 4;
       ctx.strokeStyle = borderGlow;
       ctx.stroke();
 
-      // 2. HEADER: TIÊU ĐỀ & ĐÈN TRẠNG THÁI
+      // 2. HEADER: TIÊU ĐỀ & HUY HIỆU TRẠNG THÁI TRỰC TIẾP
       ctx.fillStyle = '#00f2fe';
-      ctx.font = 'bold 26px sans-serif';
+      ctx.font = 'bold 25px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText('🤖 TRỢ LÝ LOCI AI • CUNG ĐIỆN KÝ ỨC', 40, 52);
+      ctx.fillText('🤖 CON AI LOCI • HỘI THOẠI 3D TRỰC TIẾP', 40, 52);
 
-      // Đèn trạng thái
-      const dotColor = vrAILastStatus === 'listening' ? '#ff3366' : (vrAILastStatus === 'thinking' ? '#ffd54f' : '#00e676');
-      ctx.fillStyle = dotColor;
+      // Đèn tín hiệu & nhãn trạng thái
+      ctx.fillStyle = borderGlow;
       ctx.beginPath();
-      ctx.arc(580, 44, 9, 0, Math.PI * 2);
+      ctx.arc(600, 44, 9, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.font = 'bold 18px sans-serif';
-      const statusLabel = vrAILastStatus === 'listening' ? 'Đang nghe bạn...' : (vrAILastStatus === 'thinking' ? 'Gemini đang suy nghĩ...' : 'Sẵn sàng');
-      ctx.fillText(statusLabel, 600, 51);
+      const statusLabel = vrAILastStatus === 'listening' ? 'Đang nghe bạn...'
+        : (vrAILastStatus === 'thinking' ? 'Gemini đang suy nghĩ...'
+        : (vrAILastStatus === 'speaking' ? 'AI đang nói...' : 'Sẵn sàng trò chuyện'));
+      ctx.fillText(statusLabel, 620, 50);
 
-      // Nút [✕ Đóng] ở góc phải trên
+      // Nút [✕ Tạm biệt] ở góc phải trên
       ctx.fillStyle = 'rgba(255, 82, 82, 0.2)';
       ctx.beginPath();
-      ctx.roundRect(870, 20, 114, 44, 12);
+      ctx.roundRect(865, 20, 118, 44, 12);
       ctx.fill();
       ctx.strokeStyle = '#ff5252';
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.fillStyle = '#ff7b7b';
-      ctx.font = 'bold 20px sans-serif';
+      ctx.font = 'bold 19px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('✕ Đóng', 927, 49);
-      buttonsConfig.push({ x: 870, y: 20, w: 114, h: 44, action: 'close_ai' });
+      ctx.fillText('✕ Tạm biệt', 924, 49);
+      buttonsConfig.push({ x: 865, y: 20, w: 118, h: 44, action: 'close_ai' });
 
-      // 3. HÀNG TAB CHUYỂN ĐỔI (TAB ROW)
-      const tabDef = [
-        { id: 'chat', label: '💬 Tab Trò Chuyện', x: 40, w: 230 },
-        { id: 'places', label: '🚩 5 Mốc Ký Ức', x: 285, w: 230 },
-        { id: 'quiz', label: '🎯 Khảo Bài 3D', x: 530, w: 215 },
-        { id: currentVRAITab === 'compact' ? 'expand' : 'compact', 
-          label: currentVRAITab === 'compact' ? '🔽 Mở Rộng Tab' : '▲ Thu Gọn Tab', 
-          x: 760, w: 224 }
-      ];
+      // 3. KHU VỰC HỘI THOẠI (CHAT STREAM)
+      let currentTopY = 82;
 
-      tabDef.forEach(t => {
-        const isActive = (currentVRAITab === t.id) || (t.id === 'compact' && currentVRAITab === 'compact');
-        ctx.fillStyle = isActive ? 'rgba(0, 242, 254, 0.25)' : 'rgba(255, 255, 255, 0.08)';
+      // 3A. Khung hiển thị câu hỏi của Người dùng (nếu vừa hỏi)
+      if (vrAILastUserQuery) {
+        ctx.fillStyle = 'rgba(0, 168, 255, 0.16)';
         ctx.beginPath();
-        ctx.roundRect(t.x, 78, t.w, 50, 14);
+        ctx.roundRect(40, currentTopY, w - 80, 50, 14);
         ctx.fill();
-        ctx.strokeStyle = isActive ? '#00f2fe' : 'rgba(255, 255, 255, 0.18)';
-        ctx.lineWidth = isActive ? 3 : 1.5;
-        ctx.stroke();
-
-        ctx.fillStyle = isActive ? '#00f2fe' : '#ffffff';
-        ctx.font = 'bold 21px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(t.label, t.x + t.w / 2, 110);
-
-        const actionName = t.id === 'chat' ? 'switch_tab_chat'
-          : t.id === 'places' ? 'switch_tab_places'
-          : t.id === 'quiz' ? 'switch_tab_quiz'
-          : 'toggle_tab_collapse';
-        buttonsConfig.push({ x: t.x, y: 78, w: t.w, h: 50, action: actionName });
-      });
-
-      // 4. NỘI DUNG THEO TỪNG TAB:
-      if (currentVRAITab === 'chat') {
-        // === TAB TRÒ CHUYỆN (EXPANDED CHAT TAB) ===
-        // Khung hội thoại AI
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        ctx.beginPath();
-        ctx.roundRect(40, 142, w - 80, 240, 18);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0, 242, 254, 0.3)';
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Header nhỏ trong khung chat
-        ctx.fillStyle = '#ffd54f';
+        ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 20px sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('💬 Tin nhắn từ Loci AI:', 60, 175);
+        const displayQuery = vrAILastUserQuery.length > 55 ? vrAILastUserQuery.substring(0, 52) + '...' : vrAILastUserQuery;
+        ctx.fillText(`👤 Bạn: "${displayQuery}"`, 60, currentTopY + 33);
+        currentTopY += 60;
+      }
 
-        // Nút [🔊 Nghe lại] góc phải khung chat
-        ctx.fillStyle = 'rgba(0, 242, 254, 0.15)';
+      // 3B. Khung tin nhắn phản hồi của Con AI Loci
+      const aiBoxH = vrAILastUserQuery ? 220 : 275;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.beginPath();
+      ctx.roundRect(40, currentTopY, w - 80, aiBoxH, 18);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Tiêu đề nhỏ trong khung chat AI
+      ctx.fillStyle = '#ffd54f';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('💬 Tin nhắn từ AI Loci:', 60, currentTopY + 34);
+
+      // Nút [🔊 Nghe lại] góc phải
+      ctx.fillStyle = 'rgba(0, 242, 254, 0.18)';
+      ctx.beginPath();
+      ctx.roundRect(830, currentTopY + 10, 134, 38, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#00f2fe';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#00f2fe';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔊 Nghe lại', 897, currentTopY + 35);
+      buttonsConfig.push({ x: 830, y: currentTopY + 10, w: 134, h: 38, action: 'speak_again' });
+
+      // Nội dung câu trả lời của AI
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '21px sans-serif';
+      ctx.textAlign = 'left';
+      const msgToShow = vrAILastMessage || 'Chào bạn! Mình là AI Loci đây. Bạn có thể bấm nút Micro lớn bên dưới để nói chuyện, hoặc chĩa laser bấm các câu hỏi lịch sử ôn thi nhé!';
+      wrapCanvasText(ctx, msgToShow, 60, currentTopY + 74, w - 120, 30, vrAILastUserQuery ? 5 : 7);
+
+      currentTopY += aiBoxH + 16;
+
+      // 4. BỘ ĐIỀU KHIỂN TRÒ CHUYỆN TRỰC TIẾP ("CÓ THỂ CHAT ĐƯỢC")
+      // Nếu đang trong chế độ Khảo bài Trắc nghiệm THPT (Quiz Mode)
+      if (vrAIActiveQuiz) {
+        ctx.fillStyle = '#00e676';
+        ctx.font = 'bold 19px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('🎯 Chọn 1 đáp án để kiểm tra kiến thức:', 40, currentTopY - 2);
+
+        const quizChoices = vrAIActiveQuiz.options;
+        const qPos = [
+          { x: 40, y: currentTopY + 10, w: 460, h: 56, idx: 0 },
+          { x: 524, y: currentTopY + 10, w: 460, h: 56, idx: 1 },
+          { x: 40, y: currentTopY + 76, w: 460, h: 56, idx: 2 },
+          { x: 524, y: currentTopY + 76, w: 460, h: 56, idx: 3 }
+        ];
+
+        qPos.forEach(p => {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+          ctx.beginPath();
+          ctx.roundRect(p.x, p.y, p.w, p.h, 14);
+          ctx.fill();
+          ctx.strokeStyle = '#00f2fe';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'left';
+          const optText = quizChoices[p.idx] || '';
+          ctx.fillText(optText, p.x + 18, p.y + 36);
+          buttonsConfig.push({ x: p.x, y: p.y, w: p.w, h: p.h, action: `answer_quiz_${p.idx}` });
+        });
+
+        // Nút hủy quiz
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.beginPath();
-        ctx.roundRect(830, 150, 134, 38, 10);
+        ctx.roundRect(40, currentTopY + 144, w - 80, 48, 12);
         ctx.fill();
-        ctx.strokeStyle = '#00f2fe';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
         ctx.lineWidth = 1.5;
         ctx.stroke();
-        ctx.fillStyle = '#00f2fe';
-        ctx.font = 'bold 18px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('🔊 Nghe lại', 897, 175);
-        buttonsConfig.push({ x: 830, y: 150, w: 134, h: 38, action: 'speak_again' });
-
-        // Nội dung tin nhắn
-        ctx.fillStyle = '#f8fafc';
-        ctx.font = '22px sans-serif';
-        ctx.textAlign = 'left';
-        const chatText = vrAILastMessage || 'Chào bạn! Tôi là Trợ lý AI Loci. Bạn có thể chĩa laser bóp cò vào các chủ đề bên dưới để trò chuyện, hỏi đáp kiến thức Lịch Sử 12 hoặc bấm thu tab bất kỳ lúc nào.';
-        wrapCanvasText(ctx, chatText, 60, 215, w - 120, 30, 5);
-
-        // Tiêu đề gợi ý trò chuyện
         ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 18px sans-serif';
-        ctx.fillText('💡 Chọn chủ đề để trò chuyện hoặc bấm Micro để nói:', 40, 410);
+        ctx.font = 'bold 19px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✕ Bỏ qua câu hỏi này • Quay lại trò chuyện', w / 2, currentTopY + 175);
+        buttonsConfig.push({ x: 40, y: currentTopY + 144, w: w - 80, h: 48, action: 'cancel_quiz' });
 
-        // 6 Nút gợi ý trò chuyện nhanh
+      } else {
+        // Chế độ Trò chuyện & Micro thông thường:
+        // A. NÚT MICRO SIÊU NỔI BẬT: [🎙️ BẬT MICRO NÓI CHUYỆN VỚI AI]
+        const isListening = vrAILastStatus === 'listening';
+        ctx.fillStyle = isListening ? 'rgba(255, 51, 102, 0.28)' : 'rgba(0, 242, 254, 0.18)';
+        ctx.beginPath();
+        ctx.roundRect(40, currentTopY, w - 80, 64, 16);
+        ctx.fill();
+        ctx.strokeStyle = isListening ? '#ff3366' : '#00f2fe';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.fillStyle = isListening ? '#ff7b99' : '#00f2fe';
+        ctx.font = 'bold 23px sans-serif';
+        ctx.textAlign = 'center';
+        const micLabel = isListening ? '🔴 ĐANG LẮNG NGHE BẠN NÓI... (BÓP CÒ ĐỂ DỪNG / GỬI)'
+          : '🎙️ BẬT MICRO NÓI CHUYỆN VỚI AI (BẤM VÀO ĐÂY ĐỂ NÓI)';
+        ctx.fillText(micLabel, w / 2, currentTopY + 41);
+        buttonsConfig.push({ x: 40, y: currentTopY, w: w - 80, h: 64, action: 'action_voice' });
+
+        currentTopY += 76;
+
+        // B. CÁC NÚT CHỦ ĐỀ HỎI ĐÁP ÔN THI THPT NHANH
         const chatPrompts = [
-          { label: '🏔️ Hỏi: Ý nghĩa Điện Biên Phủ 1954?', action: 'ask_dien_bien_phu', x: 40, y: 426, w: 460, h: 54, color: '#00f2fe' },
-          { label: '📜 Hỏi: So sánh Giơ-ne-vơ và Paris?', action: 'ask_geneve', x: 524, y: 426, w: 460, h: 54, color: '#00f2fe' },
-          { label: '🎖️ Hỏi: Chiến dịch Hồ Chí Minh 1975?', action: 'ask_hcm', x: 40, y: 492, w: 460, h: 54, color: '#00f2fe' },
-          { label: '💡 Hỏi: Mẹo nhớ Loci trong phòng?', action: 'ask_loci_method', x: 524, y: 492, w: 460, h: 54, color: '#ffd54f' },
-          { label: '🎯 Đố tôi 1 câu trắc nghiệm ôn thi THPT', action: 'action_quiz', x: 40, y: 558, w: 460, h: 54, color: '#00e676' },
-          { label: '🎙️ Bật Micro nói chuyện trực tiếp', action: 'action_voice', x: 524, y: 558, w: 460, h: 54, color: '#ff3366' }
+          { label: '🏔️ Ý nghĩa Điện Biên Phủ 1954?', action: 'ask_dien_bien_phu', x: 40, y: currentTopY, w: 460, h: 54, color: '#00f2fe' },
+          { label: '🎖️ Chiến dịch Hồ Chí Minh 1975?', action: 'ask_hcm', x: 524, y: currentTopY, w: 460, h: 54, color: '#00f2fe' },
+          { label: '🎯 Đố 1 câu trắc nghiệm THPT', action: 'action_quiz', x: 40, y: currentTopY + 62, w: 300, h: 54, color: '#00e676' },
+          { label: '🚀 Dẫn đường tham quan 5 mốc', action: 'tour_loci', x: 355, y: currentTopY + 62, w: 310, h: 54, color: '#ffd54f' },
+          { label: '💡 Mẹo nhớ Loci', action: 'ask_loci_method', x: 680, y: currentTopY + 62, w: 304, h: 54, color: '#a855f7' }
         ];
 
         chatPrompts.forEach(p => {
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
           ctx.beginPath();
           ctx.roundRect(p.x, p.y, p.w, p.h, 14);
           ctx.fill();
@@ -5300,148 +7184,11 @@
           ctx.stroke();
 
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 20px sans-serif';
+          ctx.font = 'bold 19px sans-serif';
           ctx.textAlign = 'left';
-          ctx.fillText(p.label, p.x + 18, p.y + 34);
+          ctx.fillText(p.label, p.x + 16, p.y + 34);
           buttonsConfig.push({ x: p.x, y: p.y, w: p.w, h: p.h, action: p.action });
         });
-
-        // Nút [▲ Thu gọn Tab Chat vào thanh bar]
-        ctx.fillStyle = 'rgba(0, 242, 254, 0.12)';
-        ctx.beginPath();
-        ctx.roundRect(40, 626, w - 80, 56, 14);
-        ctx.fill();
-        ctx.strokeStyle = '#00f2fe';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.fillStyle = '#00f2fe';
-        ctx.font = 'bold 22px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('▲ THU GỌN TAB TRÒ CHUYỆN (Về thanh bar gọn)', w / 2, 661);
-        buttonsConfig.push({ x: 40, y: 626, w: w - 80, h: 56, action: 'toggle_tab_collapse' });
-
-      } else if (currentVRAITab === 'compact') {
-        // === CHẾ ĐỘ THU GỌN (THANH DOCK COMPACT BAR) ===
-        // Khung thông báo mini
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-        ctx.beginPath();
-        ctx.roundRect(40, 145, w - 80, 115, 16);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0, 242, 254, 0.35)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.fillStyle = '#00f2fe';
-        ctx.font = 'bold 21px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('✨ Thanh điều khiển Loci AI (Đã thu gọn tab):', 60, 182);
-
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = '20px sans-serif';
-        const miniText = vrAILastMessage ? (vrAILastMessage.length > 75 ? vrAILastMessage.substring(0, 72) + '...' : vrAILastMessage) : 'Bấm [💬 Mở Tab Chat] để xem đầy đủ hội thoại hoặc bấm các nút hành động bên dưới:';
-        ctx.fillText(miniText, 60, 222);
-
-        // 4 Nút hành động thanh bar
-        const compactButtons = [
-          { label: '💬 MỞ TAB CHAT TRÒ CHUYỆN', action: 'switch_tab_chat', x: 40, y: 280, w: 460, h: 70, color: '#00f2fe', textColor: '#00f2fe' },
-          { label: '🚩 XEM 5 MỐC KÝ ỨC (Bay tới)', action: 'switch_tab_places', x: 524, y: 280, w: 460, h: 70, color: '#00f2fe', textColor: '#ffffff' },
-          { label: '🎯 KHẢO BÀI TRẮC NGHIỆM 3D', action: 'action_quiz', x: 40, y: 370, w: 460, h: 70, color: '#00e676', textColor: '#ffffff' },
-          { label: '💡 THUYẾT MINH TOÀN BỘ PHÒNG', action: 'explain_room', x: 524, y: 370, w: 460, h: 70, color: '#ffd54f', textColor: '#ffffff' }
-        ];
-
-        compactButtons.forEach(b => {
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-          ctx.beginPath();
-          ctx.roundRect(b.x, b.y, b.w, b.h, 16);
-          ctx.fill();
-          ctx.strokeStyle = b.color;
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
-
-          ctx.fillStyle = b.textColor;
-          ctx.font = 'bold 22px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(b.label, b.x + b.w / 2, b.y + 43);
-          buttonsConfig.push({ x: b.x, y: b.y, w: b.w, h: b.h, action: b.action });
-        });
-
-      } else if (currentVRAITab === 'places') {
-        // === TAB 5 MỐC KÝ ỨC ===
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 19px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('🚩 Chĩa tia laser & Bóp cò vào mốc để bay đến vị trí đó:', 40, 155);
-
-        const lociCards = [
-          { name: '1. Cách Mạng Tháng Tám (1945)', posName: 'Cửa chính căn hộ', action: 'teleport_cach_mang_thang_tam', y: 170 },
-          { name: '2. Chiến Dịch Điện Biên Phủ (1954)', posName: 'Bàn trà tiếp khách', action: 'teleport_dien_bien_phu', y: 245 },
-          { name: '3. Hiệp Định Giơ-ne-vơ (1954)', posName: 'Kệ sách & tài liệu', action: 'teleport_hiep_dinh_geneve', y: 320 },
-          { name: '4. Phong Trào Đồng Khởi (1960)', posName: 'Cửa sổ ban công', action: 'teleport_dong_khoi', y: 395 },
-          { name: '5. Chiến Dịch Hồ Chí Minh (1975)', posName: 'Kệ TV & màn hình lớn', action: 'teleport_chien_dich_ho_chi_minh', y: 470 }
-        ];
-
-        lociCards.forEach(item => {
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
-          ctx.beginPath();
-          ctx.roundRect(40, item.y, w - 80, 60, 14);
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(0, 242, 254, 0.4)';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          ctx.fillStyle = '#00f2fe';
-          ctx.font = 'bold 22px sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(item.name, 65, item.y + 37);
-
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '19px sans-serif';
-          ctx.textAlign = 'right';
-          ctx.fillText(`📍 ${item.posName} ➔`, w - 65, item.y + 37);
-          buttonsConfig.push({ x: 40, y: item.y, w: w - 80, h: 60, action: item.action });
-        });
-
-        // 2 nút dưới: Thuyết minh phòng & Quay lại Chat
-        ctx.fillStyle = 'rgba(255, 213, 79, 0.15)';
-        ctx.beginPath();
-        ctx.roundRect(40, 555, 460, 56, 14);
-        ctx.fill();
-        ctx.strokeStyle = '#ffd54f';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = '#ffd54f';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('💡 Thuyết minh toàn bộ 5 mốc', 270, 590);
-        buttonsConfig.push({ x: 40, y: 555, w: 460, h: 56, action: 'explain_room' });
-
-        ctx.fillStyle = 'rgba(0, 242, 254, 0.15)';
-        ctx.beginPath();
-        ctx.roundRect(524, 555, 460, 56, 14);
-        ctx.fill();
-        ctx.strokeStyle = '#00f2fe';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = '#00f2fe';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('💬 Quay lại Tab Trò Chuyện', 754, 590);
-        buttonsConfig.push({ x: 524, y: 555, w: 460, h: 56, action: 'switch_tab_chat' });
-
-        // Nút Thu gọn Tab
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-        ctx.beginPath();
-        ctx.roundRect(40, 626, w - 80, 54, 14);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('▲ Thu gọn Tab về thanh bar', w / 2, 660);
-        buttonsConfig.push({ x: 40, y: 626, w: w - 80, h: 54, action: 'toggle_tab_collapse' });
       }
 
       vrAIPanelTexture.needsUpdate = true;
@@ -5449,48 +7196,46 @@
     }
 
     function openVRAIPanel() {
-      if (!vrAIPanelMesh) initVR3DUI();
+      if (!vrAICompanionGroup) initVR3DUI();
       closeAllVRModals();
 
-      // Hiện ra ngay trước mặt người dùng trong tầm mắt tự nhiên
-      const { headPos, forward } = getVRHeadPose();
-      const targetPos = headPos.clone().add(forward.clone().multiplyScalar(1.15));
-      targetPos.y = Math.max(0.95, headPos.y - 0.04);
+      vrAISummoned = true;
+      if (vrAIPanelMesh) vrAIPanelMesh.visible = true;
 
-      vrAIPanelMesh.position.copy(targetPos);
-      vrAIPanelMesh.lookAt(headPos.x, targetPos.y, headPos.z);
-      vrAIPanelMesh.scale.set(1, 1, 1);
-      vrAIPanelMesh.visible = true;
-
-      // Render nội dung tab hiện tại
+      // Render nội dung hội thoại
       renderVRAIPanel();
 
-      // Rung phản hồi haptic trên cả 2 tay cầm
+      // Phản hồi rung haptic trên tay cầm VR
       triggerHaptic(0, 0.7, 60);
       triggerHaptic(1, 0.7, 60);
 
       try {
-        if (typeof ai !== 'undefined' && ai.speak && !vrAILastMessage) {
-          ai.speak('Trợ lý AI Loci đã hiện ra trước mặt bạn. Bạn có thể trò chuyện, mở các mốc hoặc thu gọn tab bất cứ lúc nào.');
+        if (typeof ai !== 'undefined' && ai.speak) {
+          const greeting = vrAILastMessage || 'Chào bạn! Mình là AI Loci đây. Bạn có thể bấm nút Micro để nói chuyện trực tiếp, hoặc chọn các câu hỏi lịch sử bên cạnh nhé!';
+          ai.speak(greeting);
+          vrAILastMessage = greeting;
+          renderVRAIPanel(greeting, 'idle');
         }
       } catch (e) {
         console.warn('AI speech in VR:', e);
       }
     }
 
-    function closeVRAIPanel() {
-      if (!vrAIPanelMesh || !vrAIPanelMesh.visible) return;
-      vrAIPanelMesh.visible = false;
+    function closeVRAIPanel(skipSpeech = false) {
+      vrAISummoned = false;
+      if (vrAIPanelMesh) vrAIPanelMesh.visible = false;
       try {
         if (typeof ai !== 'undefined') {
-          ai.stopSpeaking();
+          if (!skipSpeech && ai.speak) {
+            ai.speak('Tạm biệt bạn! Cần hỏi gì bạn cứ bấm nút B để gọi mình nhé.');
+          }
           if (ai.state === 'listening') ai.toggleListening();
         }
       } catch (e) { }
     }
 
     function toggleVRAIPanel() {
-      if (vrAIPanelMesh && vrAIPanelMesh.visible) {
+      if (vrAISummoned) {
         closeVRAIPanel();
       } else {
         openVRAIPanel();
@@ -5501,6 +7246,7 @@
       if (vrCardMesh) vrCardMesh.visible = false;
       if (vrAIPanelMesh) vrAIPanelMesh.visible = false;
       if (vrMarkerListMesh) vrMarkerListMesh.visible = false;
+      vrAISummoned = false;
       vrCurrentLocus = null;
       try { if (typeof ai !== 'undefined' && ai.stopSpeaking) ai.stopSpeaking(); } catch (e) { }
     }
@@ -5513,39 +7259,18 @@
         return;
       }
 
-      // 1. Chuyển đổi các Tab
-      if (action === 'switch_tab_chat') {
-        currentVRAITab = 'chat';
-        renderVRAIPanel();
-        triggerHaptic(0, 0.4, 30);
-        return;
-      }
-
-      if (action === 'switch_tab_places') {
-        currentVRAITab = 'places';
-        renderVRAIPanel();
-        triggerHaptic(0, 0.4, 30);
-        return;
-      }
-
-      if (action === 'switch_tab_quiz' || action === 'action_quiz') {
-        currentVRAITab = 'chat';
-        renderVRAIPanel('Gemini đang chuẩn bị câu hỏi trắc nghiệm ôn thi THPT...', 'thinking');
+      // 1. Kích hoạt Giọng nói & Micro Trò chuyện
+      if (action === 'action_voice') {
         if (typeof ai !== 'undefined') {
-          ai.processUserInput('Hãy đặt cho tôi 1 câu hỏi trắc nghiệm ngắn gọn về 1 trong 5 mốc lịch sử trong phòng này để tôi kiểm tra kiến thức nhé!');
+          ai.toggleListening();
+          if (ai.isListening) {
+            renderVRAIPanel('Đang lắng nghe giọng nói của bạn... Hãy nói câu hỏi Lịch Sử 12!', 'listening');
+          }
         }
-        triggerHaptic(0, 0.5, 40);
+        triggerHaptic(0, 0.6, 50);
         return;
       }
 
-      if (action === 'toggle_tab_collapse') {
-        currentVRAITab = currentVRAITab === 'compact' ? 'chat' : 'compact';
-        renderVRAIPanel();
-        triggerHaptic(0, 0.5, 40);
-        return;
-      }
-
-      // 2. Trò chuyện & Giọng nói
       if (action === 'speak_again') {
         if (typeof ai !== 'undefined' && ai.speak && vrAILastMessage) {
           ai.speak(vrAILastMessage);
@@ -5554,98 +7279,142 @@
         return;
       }
 
-      if (action === 'action_voice') {
-        if (typeof ai !== 'undefined') {
-          ai.toggleListening();
-        }
-        triggerHaptic(0, 0.6, 50);
-        return;
-      }
-
+      // 2. Hỏi đáp các chủ đề lịch sử tức thì
       if (action === 'ask_dien_bien_phu') {
-        currentVRAITab = 'chat';
+        vrAILastUserQuery = 'Ý nghĩa Chiến dịch Điện Biên Phủ 1954?';
         renderVRAIPanel('Đang tra cứu chiến dịch Điện Biên Phủ 1954...', 'thinking');
         if (typeof ai !== 'undefined') {
-          ai.processUserInput('Ý nghĩa lịch sử của chiến dịch Điện Biên Phủ năm 1954 là gì? Hãy trả lời trọng tâm để ôn thi THPT.');
-        }
-        triggerHaptic(0, 0.4, 30);
-        return;
-      }
-
-      if (action === 'ask_geneve') {
-        currentVRAITab = 'chat';
-        renderVRAIPanel('Đang phân tích Hiệp định Giơ-ne-vơ 1954...', 'thinking');
-        if (typeof ai !== 'undefined') {
-          ai.processUserInput('Nội dung và ý nghĩa quan trọng nhất của Hiệp định Giơ-ne-vơ năm 1954 là gì?');
+          ai.processUserInput('Ý nghĩa lịch sử quan trọng nhất của chiến dịch Điện Biên Phủ năm 1954 là gì? Hãy trả lời ngắn gọn, sinh động để ôn thi THPT.');
         }
         triggerHaptic(0, 0.4, 30);
         return;
       }
 
       if (action === 'ask_hcm') {
-        currentVRAITab = 'chat';
+        vrAILastUserQuery = 'Chiến dịch Hồ Chí Minh 1975?';
         renderVRAIPanel('Đang tra cứu Chiến dịch Hồ Chí Minh 1975...', 'thinking');
         if (typeof ai !== 'undefined') {
-          ai.processUserInput('Ý nghĩa lịch sử vĩ đại của Chiến dịch Hồ Chí Minh ngày 30/4/1975 là gì?');
+          ai.processUserInput('Ý nghĩa lịch sử vĩ đại của Chiến dịch Hồ Chí Minh ngày 30/4/1975 giải phóng miền Nam là gì?');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'ask_geneve') {
+        vrAILastUserQuery = 'Hiệp định Giơ-ne-vơ 1954?';
+        renderVRAIPanel('Đang phân tích Hiệp định Giơ-ne-vơ 1954...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Nội dung và ý nghĩa cốt lõi của Hiệp định Giơ-ne-vơ năm 1954 là gì?');
+        }
+        triggerHaptic(0, 0.4, 30);
+        return;
+      }
+
+      if (action === 'ask_dong_khoi') {
+        vrAILastUserQuery = 'Phong trào Đồng Khởi 1960?';
+        renderVRAIPanel('Đang tra cứu phong trào Đồng Khởi...', 'thinking');
+        if (typeof ai !== 'undefined') {
+          ai.processUserInput('Ý nghĩa bước ngoặt của phong trào Đồng Khởi năm 1960 đối với cách mạng miền Nam là gì?');
         }
         triggerHaptic(0, 0.4, 30);
         return;
       }
 
       if (action === 'ask_loci_method') {
-        currentVRAITab = 'chat';
+        vrAILastUserQuery = 'Mẹo nhớ 5 mốc bằng Cung điện Loci?';
         renderVRAIPanel('Đang tổng hợp phương pháp Cung điện Ký ức Loci...', 'thinking');
         if (typeof ai !== 'undefined') {
-          ai.processUserInput('Hãy hướng dẫn cách dùng phương pháp Cung điện Ký ức Loci gắn 5 mốc lịch sử vào các đồ vật trong căn phòng Loft này.');
+          ai.processUserInput('Hãy hướng dẫn cách dùng phương pháp Cung điện Ký ức Loci gắn 5 mốc lịch sử vào các đồ vật trong căn phòng Loft này để nhớ siêu tốc.');
         }
         triggerHaptic(0, 0.4, 30);
         return;
       }
 
-      // 3. Điều hướng mốc ký ức
-      if (action.startsWith('teleport_')) {
-        const key = action.replace('teleport_', '').toLowerCase();
-        let targetLocus = null;
-
-        if (key.includes('thang_tam') || key.includes('cach_mang')) {
-          targetLocus = lociList.find(l => (l.name && /tháng tám|cách mạng/i.test(l.name)) || l.id.includes('thang_tam')) || lociList[0];
-        } else if (key.includes('dien_bien') || key.includes('phu')) {
-          targetLocus = lociList.find(l => (l.name && /điện biên/i.test(l.name)) || l.id.includes('dien_bien')) || lociList[1];
-        } else if (key.includes('geneve') || key.includes('gio_ne_vo')) {
-          targetLocus = lociList.find(l => (l.name && /giơ[- ]?ne[- ]?vơ|genev/i.test(l.name)) || l.id.includes('geneve')) || lociList[2];
-        } else if (key.includes('dong_khoi')) {
-          targetLocus = lociList.find(l => (l.name && /đồng khởi/i.test(l.name)) || l.id.includes('dong_khoi')) || lociList[3];
-        } else if (key.includes('ho_chi_minh') || key.includes('hcm')) {
-          targetLocus = lociList.find(l => (l.name && /hồ chí minh|hcm/i.test(l.name)) || l.id.includes('ho_chi_minh')) || lociList[4];
-        } else {
-          targetLocus = lociList.find(l => l.id.toLowerCase() === key || (l.name && l.name.toLowerCase().includes(key.replace(/_/g, ' '))));
-        }
-
-        if (targetLocus) {
-          closeVRAIPanel();
-          if (typeof ai !== 'undefined' && ai.speak) {
-            ai.speak(`Đang di chuyển đến ${targetLocus.name} năm ${targetLocus.year || ''}.`);
+      // 3. Khảo bài trắc nghiệm 3D trong hội thoại
+      if (action === 'action_quiz') {
+        const quizBank = [
+          {
+            q: "Chiến dịch nào đã đập tan tập đoàn cứ điểm mạnh nhất của Pháp năm 1954?",
+            options: ["A. Biên giới 1950", "B. Điện Biên Phủ", "C. Trung Lào", "D. Thượng Lào"],
+            correct: 1,
+            exp: "Chiến dịch Điện Biên Phủ lừng lẫy năm châu, buộc Pháp ký Hiệp định Giơ-ne-vơ!"
+          },
+          {
+            q: "Hiệp định Giơ-ne-vơ 1954 lấy vĩ tuyến nào làm giới tuyến quân sự tạm thời?",
+            options: ["A. Vĩ tuyến 13", "B. Vĩ tuyến 15", "C. Vĩ tuyến 17", "D. Vĩ tuyến 19"],
+            correct: 2,
+            exp: "Vĩ tuyến 17 (sông Bến Hải, Quảng Trị) là giới tuyến quân sự tạm thời chia cắt 2 miền."
+          },
+          {
+            q: "Chiến dịch giải phóng hoàn toàn miền Nam năm 1975 mang tên ai?",
+            options: ["A. Hồ Chí Minh", "B. Võ Nguyên Giáp", "C. Tây Nguyên", "D. Huế - Đà Nẵng"],
+            correct: 0,
+            exp: "Chiến dịch Hồ Chí Minh lịch sử toàn thắng vào ngày 30/4/1975!"
+          },
+          {
+            q: "Phong trào Đồng Khởi (1960) nổ ra tiêu biểu nhất tại tỉnh nào?",
+            options: ["A. Tiền Giang", "B. Bến Tre", "C. Tây Ninh", "D. Cà Mau"],
+            correct: 1,
+            exp: "Đồng Khởi nổ ra tiêu biểu nhất tại 3 xã Định Thủy, Phước Hiệp, Bình Khánh tỉnh Bến Tre!"
           }
-          smoothGlideToLocus(targetLocus);
-          const foundIdx = lociList.indexOf(targetLocus);
-          if (foundIdx !== -1) {
-            currentJourneyIndex = foundIdx;
-            updateJourneyUI();
-          }
-          return;
-        } else {
-          renderVRAIPanel('⚠️ Chưa có mốc này trong phòng. Bạn hãy nhấn [Nút A] để thêm mốc nhé!', 'idle');
-          return;
+        ];
+        const picked = quizBank[Math.floor(Math.random() * quizBank.length)];
+        vrAIActiveQuiz = picked;
+        vrAILastUserQuery = '🎯 Khảo bài trắc nghiệm Lịch Sử 12';
+        vrAILastMessage = picked.q;
+        renderVRAIPanel(picked.q, 'idle');
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak('Câu hỏi trắc nghiệm: ' + picked.q + '. Bạn hãy chọn đáp án trên bảng nhé!');
         }
+        triggerHaptic(0, 0.5, 40);
+        return;
       }
 
-      if (action === 'explain_room') {
-        renderVRAIPanel('Đang tổng hợp kiến thức toàn bộ 5 mốc Lịch Sử 12...', 'thinking');
-        const summaryMsg = 'Cung điện Loft Living Room lưu trữ 5 mốc: Cách mạng tháng Tám tại cửa chính, Chiến dịch Điện Biên Phủ tại bàn trà, Hiệp định Giơ-ne-vơ tại kệ sách, Phong trào Đồng Khởi tại cửa sổ, và Chiến dịch Hồ Chí Minh tại TV. Bạn có thể chĩa tia laser vào từng mốc để học sâu.';
-        if (typeof ai !== 'undefined' && ai.speak) {
-          ai.speak(summaryMsg);
+      if (action.startsWith('answer_quiz_')) {
+        if (vrAIActiveQuiz) {
+          const idx = parseInt(action.replace('answer_quiz_', ''));
+          const isRight = (idx === vrAIActiveQuiz.correct);
+          let feedback = '';
+          if (isRight) {
+            feedback = `🎉 CHÍNH XÁC! ${vrAIActiveQuiz.options[idx]} là đáp án đúng! ${vrAIActiveQuiz.exp}`;
+            if (typeof ai !== 'undefined' && ai.speak) {
+              ai.speak('Chúc mừng bạn! Bạn đã trả lời hoàn toàn chính xác. ' + vrAIActiveQuiz.exp);
+            }
+          } else {
+            feedback = `❌ Chưa chính xác! Đáp án đúng là: ${vrAIActiveQuiz.options[vrAIActiveQuiz.correct]}. ${vrAIActiveQuiz.exp}`;
+            if (typeof ai !== 'undefined' && ai.speak) {
+              ai.speak('Chưa chính xác rồi. Đáp án đúng là ' + vrAIActiveQuiz.options[vrAIActiveQuiz.correct] + '. ' + vrAIActiveQuiz.exp);
+            }
+          }
+          vrAILastMessage = feedback;
+          vrAIActiveQuiz = null;
+          renderVRAIPanel(feedback, 'idle');
+          triggerHaptic(0, isRight ? 0.7 : 0.3, isRight ? 60 : 40);
         }
-        renderVRAIPanel(summaryMsg, 'idle');
+        return;
+      }
+
+      if (action === 'cancel_quiz') {
+        vrAIActiveQuiz = null;
+        vrAILastUserQuery = '';
+        renderVRAIPanel('Đã hủy câu hỏi. Bạn muốn trò chuyện gì tiếp theo?', 'idle');
+        triggerHaptic(0, 0.3, 30);
+        return;
+      }
+
+      // 4. Dẫn đường tham quan không gian
+      if (action === 'tour_loci') {
+        vrAILastUserQuery = 'Dẫn tôi đi tham quan 5 mốc';
+        const tourMsg = 'Tuyệt vời! Hãy bay cùng mình đến mốc đầu tiên: Cách mạng Tháng Tám năm 1945 tại cửa chính nhé!';
+        vrAILastMessage = tourMsg;
+        renderVRAIPanel(tourMsg, 'idle');
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak(tourMsg);
+        }
+        if (lociList && lociList[0]) {
+          smoothGlideToLocus(lociList[0]);
+        }
+        triggerHaptic(0, 0.5, 40);
         return;
       }
     }
@@ -5736,6 +7505,7 @@
         // Trigger press (select) to click 3D elements
         controller.addEventListener('selectstart', () => {
           triggerHaptic(i, 0.6, 50);
+          if (typeof ai !== 'undefined' && ai.unlockAudio) ai.unlockAudio();
 
           const origin = new THREE.Vector3();
           controller.getWorldPosition(origin);
@@ -5765,33 +7535,14 @@
             }
           }
 
-          // 2. Check 3D Knowledge Card buttons if open
+          // 2. Check 3D Knowledge Card buttons if open (Bao gồm Sửa, Xóa, Bàn phím ảo VR)
           if (vrCardMesh && vrCardMesh.visible) {
             const cardHits = vrRay.intersectObjects(vrCardInteractiveButtons, true);
             if (cardHits.length > 0) {
               const action = cardHits[0].object.userData.action;
-              if (action === 'close') {
-                closeVRCard();
-                return;
-              } else if (action === 'mastered' && vrCurrentLocus) {
-                vrCurrentLocus.status = 'mastered';
-                saveLociData();
-                refresh3DMarkers();
-                renderVRCardTexture(vrCurrentLocus);
-                ai.speak(`Tuyệt vời! Bạn đã hoàn thành ghi nhớ mốc ${vrCurrentLocus.name}.`);
-                return;
-              } else if (action === 'delete_locus' && vrCurrentLocus) {
-                const deletedName = vrCurrentLocus.name;
-                lociList = lociList.filter(l => l.id !== vrCurrentLocus.id);
-                saveLociData();
-                refresh3DMarkers();
-                drawJourneyRoute();
-                closeVRCard();
-                if (typeof ai !== 'undefined' && ai.speak) {
-                  ai.speak(`Đã xóa mốc ${deletedName} khỏi Cung điện.`);
-                }
-                return;
-              }
+              handleVRCardAction(action);
+              triggerHaptic(i, 0.5, 40);
+              return;
             }
           }
 
@@ -5856,52 +7607,87 @@
     }
 
     /* --- QUEST 2 THUMBSTICK LOCOMOTION & BUTTON HANDLING --- */
-    // VR-native marker placement (no DOM prompt needed in headset)
-    function placeMarkerVR(controllerIndex) {
+    // VR-native marker placement (Chĩa laser tay cầm chính xác vào đồ vật/tường để đặt mốc)
+    function placeMarkerVR(controllerIndex = 1) {
       const name = `Mốc VR ${lociList.length + 1}`;
 
-      const { headPos, forward } = getVRHeadPose();
-      const placeRay = new THREE.Raycaster(headPos, forward);
+      // 1. Lấy vị trí và hướng tia laser CHÍNH XÁC từ tay cầm đang bấm
+      const ctrl = vrControllers[controllerIndex] || vrControllers[1] || vrControllers[0];
+      const origin = new THREE.Vector3();
+      const dir = new THREE.Vector3(0, 0, -1);
+
+      if (ctrl) {
+        ctrl.getWorldPosition(origin);
+        dir.applyQuaternion(ctrl.getWorldQuaternion(new THREE.Quaternion())).normalize();
+      } else {
+        const { headPos, forward } = getVRHeadPose();
+        origin.copy(headPos);
+        dir.copy(forward);
+      }
+
+      const placeRay = new THREE.Raycaster(origin, dir);
       const allMeshes = [];
-      scene.traverse(obj => { if (obj.isMesh && obj !== vrCardMesh && obj !== vrAIPanelMesh && obj !== vrMarkerListMesh) allMeshes.push(obj); });
+      scene.traverse(obj => {
+        if (obj.isMesh &&
+            obj !== vrCardMesh &&
+            obj !== vrAIPanelMesh &&
+            obj !== vrMarkerListMesh &&
+            obj !== vrFloatingAIOrbHitbox &&
+            !obj.userData.isMarkerMesh &&
+            !obj.userData.action) {
+          allMeshes.push(obj);
+        }
+      });
       const hits = placeRay.intersectObjects(allMeshes, true);
 
       let px, py, pz;
+      let locName = 'Vị trí tay cầm chỉ';
       if (hits.length > 0) {
         const hit = hits[0];
         const norm = hit.face
           ? hit.face.normal.clone().transformDirection(hit.object.matrixWorld).normalize()
           : new THREE.Vector3(0, 1, 0);
-        px = parseFloat((hit.point.x + norm.x * 0.05).toFixed(2));
-        py = parseFloat((hit.point.y + norm.y * 0.05).toFixed(2));
-        pz = parseFloat((hit.point.z + norm.z * 0.05).toFixed(2));
+        // Đặt lồi ra 8cm so với bề mặt vật thể để mốc hiển thị sắc nét, không bị chìm vào trong tường hoặc đồ đạc
+        px = parseFloat((hit.point.x + norm.x * 0.08).toFixed(2));
+        py = parseFloat((hit.point.y + norm.y * 0.08).toFixed(2));
+        pz = parseFloat((hit.point.z + norm.z * 0.08).toFixed(2));
+        if (hit.object && hit.object.name) {
+          locName = hit.object.name.replace(/_/g, ' ');
+        }
       } else {
-        px = parseFloat((headPos.x + forward.x * 2.0).toFixed(2));
-        py = parseFloat((headPos.y + forward.y * 2.0).toFixed(2));
-        pz = parseFloat((headPos.z + forward.z * 2.0).toFixed(2));
+        // Nếu không trúng vật thể nào, đặt cách đầu laser 2.0 mét
+        px = parseFloat((origin.x + dir.x * 2.0).toFixed(2));
+        py = parseFloat((origin.y + dir.y * 2.0).toFixed(2));
+        pz = parseFloat((origin.z + dir.z * 2.0).toFixed(2));
       }
 
       const newLocus = {
         id: 'locus_' + Date.now(),
         name,
-        year: 'Giai đoạn Lịch sử 12',
-        locName: 'Mốc tạo trong VR',
+        year: 'Lịch sử 12',
+        locName,
         pos: [px, py, pz],
         status: 'unlearned',
-        details: 'Mốc do bạn tự đặt trong VR. Mở app để chỉnh sửa nội dung.',
-        significance: 'Ghi nhớ bằng phương pháp Cung điện Ký ức.',
-        mnemonic: 'Gắn sự kiện này vào đồ vật gần vị trí bạn nhìn!',
+        details: 'Mốc do bạn vừa chỉ tay cầm tạo trong VR. Bấm [✏️ SỬA MỐC] để chọn sự kiện SGK hoặc gõ chữ trực tiếp.',
+        significance: 'Ghi nhớ bằng phương pháp Cung điện Ký ức Loci.',
+        mnemonic: 'Gắn sự kiện này vào đồ vật ngay tại điểm bạn vừa chỉ tia laser!',
         note: ''
       };
 
       lociList.push(newLocus);
       saveLociData();
       refresh3DMarkers();
+      drawJourneyRoute();
       renderBottomPills();
       triggerHaptic(controllerIndex, 0.8, 80);
-      // Open VR card to confirm placement
+
+      // Mở ngay VR card cho phép xem và sửa mốc
       openVRCard(newLocus);
-      try { if (typeof ai !== 'undefined' && ai.speak) ai.speak(`Đã đặt mốc ${name} tại điểm bạn đang nhìn.`); } catch (e) { }
+      try {
+        if (typeof ai !== 'undefined' && ai.speak) {
+          ai.speak(`Đã tạo mốc mới tại điểm bạn chỉ tay cầm. Bạn có thể bấm Sửa mốc để chọn sự kiện ngay.`);
+        }
+      } catch (e) { }
     }
 
     // VR Marker List Panel
@@ -6236,34 +8022,71 @@
             updateVRPointers();
           }
 
-          // Animate Floating AI Companion Orb in room
+          // Animate 3D Robot AI Companion ("Con AI Loci") & Real-time LED Face Expressions
           const time = clock.getElapsedTime();
-          if (vrFloatingAIOrbGroup) {
+          if (vrAICompanionGroup) {
+            // Cập nhật biểu cảm màn hình LED khuôn mặt theo thời gian thực (60fps)
+            renderVRAIFace(time);
+
             if (vrSession) {
-              // Trong VR: Trợ lý Loci AI đồng hành lơ lửng ở góc trên bên trái người dùng
               const { headPos, forward } = getVRHeadPose();
-              const leftVec = new THREE.Vector3(-forward.z, 0, forward.x);
-              if (leftVec.lengthSq() > 0.001) leftVec.normalize();
-              else leftVec.set(-1, 0, 0);
 
-              const companionTarget = headPos.clone()
-                .add(forward.clone().multiplyScalar(1.2))
-                .add(leftVec.clone().multiplyScalar(0.75));
-              companionTarget.y = Math.max(1.1, headPos.y + 0.12 + Math.sin(time * 2.0) * 0.04);
+              if (vrAISummoned) {
+                // 1. KHI ĐƯỢC GỌI [PHÍM B / NÓI LOCI ƠI / LASER CLICK]:
+                // Con AI bay thẳng đến trước mặt người dùng (~1.08m), hơi chếch nhẹ sang trái để bóng chat nằm ngay trong tầm mắt
+                const rightVec = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+                const targetPos = headPos.clone()
+                  .add(forward.clone().multiplyScalar(1.08))
+                  .sub(rightVec.clone().multiplyScalar(0.28));
+                targetPos.y = Math.max(0.9, headPos.y - 0.04 + Math.sin(time * 2.5) * 0.035);
 
-              if (!isNaN(companionTarget.x) && !isNaN(companionTarget.y) && !isNaN(companionTarget.z)) {
-                vrFloatingAIOrbGroup.position.lerp(companionTarget, 0.05);
-                const lookDist = Math.hypot(headPos.x - vrFloatingAIOrbGroup.position.x, headPos.z - vrFloatingAIOrbGroup.position.z);
-                if (lookDist > 0.1) {
-                  vrFloatingAIOrbGroup.lookAt(headPos.x, vrFloatingAIOrbGroup.position.y, headPos.z);
+                if (!isNaN(targetPos.x) && !isNaN(targetPos.y) && !isNaN(targetPos.z)) {
+                  vrAICompanionGroup.position.lerp(targetPos, 0.08);
+                  vrAICompanionGroup.lookAt(headPos.x, headPos.y - 0.02, headPos.z);
+                }
+              } else {
+                // 2. KHI HOVER ĐỒNG HÀNH (COMPANION MODE):
+                // Con AI lơ lửng nhẹ nhàng bên vai người dùng, giữ bạn đồng hành trong suốt căn phòng
+                const leftVec = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
+                const companionTarget = headPos.clone()
+                  .add(forward.clone().multiplyScalar(1.15))
+                  .add(leftVec.clone().multiplyScalar(0.85));
+                companionTarget.y = Math.max(1.1, headPos.y + 0.15 + Math.sin(time * 2.0) * 0.04);
+
+                if (!isNaN(companionTarget.x) && !isNaN(companionTarget.y) && !isNaN(companionTarget.z)) {
+                  vrAICompanionGroup.position.lerp(companionTarget, 0.05);
+                  const lookDist = Math.hypot(headPos.x - vrAICompanionGroup.position.x, headPos.z - vrAICompanionGroup.position.z);
+                  if (lookDist > 0.1) {
+                    vrAICompanionGroup.lookAt(headPos.x, vrAICompanionGroup.position.y, headPos.z);
+                  }
                 }
               }
             } else {
-              vrFloatingAIOrbGroup.position.y = 1.85 + Math.sin(time * 2.0) * 0.05;
+              // Ngoài chế độ VR (Preview Web Desktop)
+              vrAICompanionGroup.position.y = 1.85 + Math.sin(time * 2.0) * 0.05;
             }
-            if (vrFloatingAIOrbRing) {
-              vrFloatingAIOrbRing.rotation.x += 0.015;
-              vrFloatingAIOrbRing.rotation.y += 0.022;
+
+            // Chuyển động xoay vòng năng lượng lượng tử (Orbital Gyro Rings)
+            if (vrAIRobotRings.length >= 2) {
+              vrAIRobotRings[0].rotation.x += 0.02;
+              vrAIRobotRings[0].rotation.y += 0.015;
+              vrAIRobotRings[1].rotation.y -= 0.018;
+              vrAIRobotRings[1].rotation.z += 0.012;
+            }
+
+            // Chuyển động tay robot lơ lửng & vẫy tay chào khi được gọi
+            if (vrAIRobotHands.length >= 2) {
+              vrAIRobotHands[0].position.y = -0.16 + Math.sin(time * 3.0) * 0.02;
+              vrAIRobotHands[1].position.y = -0.16 + Math.cos(time * 3.0) * 0.02;
+              if (vrAISummoned) {
+                vrAIRobotHands[0].rotation.z = Math.sin(time * 4.0) * 0.25;
+              }
+            }
+
+            // Nhịp đập phát sáng của lò phản ứng ngực (Heart Core Pulse)
+            if (vrAICoreMesh) {
+              const pulse = 1.0 + Math.sin(time * 3.8) * 0.4;
+              vrAICoreMesh.material.emissiveIntensity = pulse;
             }
           }
 
@@ -6668,7 +8491,7 @@
 
     // Update model badge with active model
     if (aiModelBadge) {
-      aiModelBadge.textContent = ai.modelName || 'gemini-2.0-flash';
+      aiModelBadge.textContent = ai.modelName || 'gemini-3.5-flash';
     }
 
     // Toggle drawer
@@ -6707,7 +8530,7 @@
             <div class="ai-avatar">✦</div>
             <div class="ai-msg-box">
               <div class="ai-msg-box-header">
-                <span>✨ TRỢ LÝ LOCI LỊCH SỬ 12 (GEMINI 3.5)</span>
+                <span>✨ TRỢ LÝ LOCI LỊCH SỬ 12 (GEMINI 1.5 PRO - CHUYÊN SÂU)</span>
                 <div class="ai-msg-actions">
                   <button class="ai-bubble-btn" onclick="window.speakBubble(this)">🔊 Nghe</button>
                   <button class="ai-bubble-btn" onclick="window.copyBubble(this)">📋 Chép</button>
@@ -6882,7 +8705,7 @@
     // Settings Modal
     aiSettingsBtn.addEventListener('click', () => {
       geminiApiKeyInput.value = ai.getApiKey();
-      if (geminiModelSelect) geminiModelSelect.value = ai.modelName || 'gemini-2.0-flash';
+      if (geminiModelSelect) geminiModelSelect.value = ai.modelName || 'google/gemini-3.5-flash-lite';
       // Tải lại giá trị đã lưu
       if (aiSpeechRate) { aiSpeechRate.value = ai.speechRate || 0.92; if(aiRateVal) aiRateVal.textContent = (ai.speechRate||0.92).toFixed(2)+'x'; }
       if (aiSpeechPitch) { aiSpeechPitch.value = ai.speechPitch || 0.85; if(aiPitchVal) aiPitchVal.textContent = (ai.speechPitch||0.85).toFixed(2); }
@@ -7637,6 +9460,650 @@
         });
       });
     }
+
+    /* ===================================================
+       NOTEBOOKLM KNOWLEDGE STUDIO MODULE
+       Tóm tắt đoạn văn / tài liệu theo chuẩn Google NotebookLM
+       =================================================== */
+    const notebookModal = document.getElementById('notebook-modal');
+    const notebookCloseBtn = document.getElementById('notebook-close-btn');
+    const notebookModalBackdrop = document.getElementById('notebook-modal-backdrop');
+    const openNotebookBtn = document.getElementById('open-notebook-btn');
+    const drawerNotebookBtn = document.getElementById('drawer-notebook-btn');
+    const dockOpenNotebookBtn = document.getElementById('dock-open-notebook-btn');
+    const chipNotebookSample = document.getElementById('chip-notebook-sample');
+    const notebookSourceText = document.getElementById('notebook-source-text');
+    const notebookPresetSelect = document.getElementById('notebook-preset-select');
+    const btnRunSummarize = document.getElementById('btn-run-summarize');
+    const btnClearSource = document.getElementById('btn-clear-source');
+    const notebookOutput = document.getElementById('notebook-output');
+    const resultActions = document.getElementById('result-actions');
+    const btnSpeakSummary = document.getElementById('btn-speak-summary');
+    const btnCopySummary = document.getElementById('btn-copy-summary');
+    const btnTransferSummary = document.getElementById('btn-transfer-summary');
+
+    let lastNotebookSummaryText = '';
+
+    function openNotebookLMStudio() {
+      if (isPointerLocked) document.exitPointerLock();
+      if (notebookModal) notebookModal.style.display = 'flex';
+    }
+
+    function closeNotebookLMStudio() {
+      if (notebookModal) notebookModal.style.display = 'none';
+      if (ai) ai.stopSpeaking();
+    }
+
+    if (openNotebookBtn) openNotebookBtn.addEventListener('click', openNotebookLMStudio);
+    if (drawerNotebookBtn) drawerNotebookBtn.addEventListener('click', openNotebookLMStudio);
+    if (dockOpenNotebookBtn) dockOpenNotebookBtn.addEventListener('click', openNotebookLMStudio);
+    if (notebookCloseBtn) notebookCloseBtn.addEventListener('click', closeNotebookLMStudio);
+    if (notebookModalBackdrop) notebookModalBackdrop.addEventListener('click', closeNotebookLMStudio);
+
+    const aiQuickSummarizeBtn = document.getElementById('ai-quick-summarize-btn');
+    const btnPasteClipboard = document.getElementById('btn-paste-clipboard');
+
+    if (aiQuickSummarizeBtn) {
+      aiQuickSummarizeBtn.addEventListener('click', async () => {
+        let text = (aiTextInput.value || '').trim();
+        if (!text) {
+          try {
+            const clip = await navigator.clipboard.readText();
+            if (clip && clip.trim()) {
+              text = clip.trim();
+              aiTextInput.value = text;
+            }
+          } catch(e) {}
+        }
+        if (!text) {
+          openNotebookLMStudio();
+          return;
+        }
+        aiTextInput.value = '';
+        submitUserQuery(`Hãy tóm tắt toàn diện theo chuẩn NotebookLM đoạn văn sau đây:\n"""\n${text}\n"""`);
+      });
+    }
+
+    if (btnPasteClipboard) {
+      btnPasteClipboard.addEventListener('click', async () => {
+        try {
+          const clipText = await navigator.clipboard.readText();
+          if (clipText && clipText.trim()) {
+            notebookSourceText.value = clipText.trim();
+            btnRunSummarize.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            btnRunSummarize.focus();
+          } else {
+            alert('Khay nhớ tạm đang trống! Bạn hãy sao chép (Ctrl+C) văn bản cần tóm tắt rồi bấm lại nút này nhé.');
+          }
+        } catch(e) {
+          notebookSourceText.focus();
+          alert('Hãy nhấn phím Ctrl + V để dán đoạn văn vào ô tài liệu!');
+        }
+      });
+    }
+
+    if (chipNotebookSample) {
+      chipNotebookSample.addEventListener('click', () => {
+        const q = chipNotebookSample.dataset.query;
+        if (q) submitUserQuery(q);
+      });
+    }
+
+    // Load preset from SGK 12 knowledge base
+    if (notebookPresetSelect) {
+      notebookPresetSelect.addEventListener('change', (e) => {
+        const key = e.target.value;
+        if (!key) return;
+
+        if (!window.HISTORICAL_KNOWLEDGE_BASE || !window.HISTORICAL_KNOWLEDGE_BASE.length) {
+          notebookSourceText.value = `Chiến dịch Điện Biên Phủ diễn ra từ ngày 13/3/1954 đến ngày 07/5/1954 tại lòng chảo Mường Thanh, tỉnh Điện Biên. Đây là đỉnh cao của cuộc tiến công chiến lược Đông - Xuân 1953 - 1954 của quân và dân ta, đập tan hoàn toàn Kế hoạch Nava của thực dân Pháp có đế quốc Mĩ can thiệp. Chiến dịch trải qua 3 đợt tiến công oanh liệt: Đợt 1 (13 - 17/3) tiêu diệt phân khu Bắc (Him Lam, Độc Lập, Bản Kéo); Đợt 2 (30/3 - 26/4) siết chặt vòng vây các đồi phía Đông và sân bay Mường Thanh; Đợt 3 (01 - 07/5) tổng công kích, bắt sống tướng De Castries cùng toàn bộ ban chỉ huy tập đoàn cứ điểm. Chiến thắng buộc Pháp phải ký Hiệp định Giơ-ne-vơ công nhận độc lập, chủ quyền của Việt Nam.`;
+          return;
+        }
+
+        const searchMap = {
+          'dien_bien_phu': 'ĐIỆN BIÊN PHỦ',
+          'cach_mang_thang_tam': 'CÁCH MẠNG THÁNG TÁM',
+          'dong_khoi': 'ĐỒNG KHỞI',
+          'mau_than_1968': 'MẬU THÂN',
+          'ho_chi_minh_1975': 'CHIẾN DỊCH HỒ CHÍ MINH',
+          'hiep_dinh_paris': 'HIỆP ĐỊNH PA-RI'
+        };
+
+        const kw = searchMap[key] || key;
+        const found = window.HISTORICAL_KNOWLEDGE_BASE.find(item => 
+          (item.bai && item.bai.toUpperCase().includes(kw)) || 
+          (item.content && item.content.toUpperCase().includes(kw))
+        );
+
+        if (found && found.content) {
+          notebookSourceText.value = found.content.replace(/\r/g, '').trim();
+        }
+      });
+    }
+
+    if (btnClearSource) {
+      btnClearSource.addEventListener('click', () => {
+        notebookSourceText.value = '';
+        if (notebookPresetSelect) notebookPresetSelect.value = '';
+      });
+    }
+
+    // Format Chips switcher
+    document.querySelectorAll('.format-chips .format-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.format-chips .format-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+
+    // Render markdown to rich HTML with Loci teleports
+    // Render markdown to rich HTML with Loci teleports and Historical Knowledge Map components
+    function renderNotebookMarkdownHtml(mdText) {
+      if (!mdText) return '';
+      let html = mdText
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks (Knowledge Graph / ASCII art)
+      html = html.replace(/```(?:[a-zA-Z0-9_\-]+)?\s*([\s\S]*?)```/g, (match, code) => {
+        return `<div class="nb-kg-box"><pre>${code.trim()}</pre></div>`;
+      });
+
+      // [FACT] badge card
+      html = html.replace(/\[FACT\]\s*([\s\S]*?)(?=(?:\[MEMORY ANCHOR\]|##|###|$))/gi, (match, content) => {
+        return `<div class="fact-box"><div style="font-weight:800; color:#38bdf8; margin-bottom:5px; font-size:0.8rem; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">📌 [FACT] DỮ KIỆN LỊCH SỬ</div><div style="color:#e0f2fe; line-height:1.6;">${content.trim().replace(/\n/g, '<br>')}</div></div>`;
+      });
+
+      // [MEMORY ANCHOR] badge card
+      html = html.replace(/\[MEMORY ANCHOR\]\s*([\s\S]*?)(?=(?:\[FACT\]|##|###|$))/gi, (match, content) => {
+        return `<div class="anchor-box"><div style="font-weight:800; color:#fbbf24; margin-bottom:5px; font-size:0.8rem; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">🧠 [MEMORY ANCHOR] ĐIỂM NEO KÝ ỨC (AI ĐỀ XUẤT)</div><div style="color:#fef08a; line-height:1.6;">${content.trim().replace(/\n/g, '<br>')}</div></div>`;
+      });
+
+      // Headings
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+      // Bold & Italic
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      // Blockquotes
+      html = html.replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+      // Tables
+      html = html.replace(/\|(.+)\|/g, (match) => {
+        const cols = match.split('|').filter(c => c.trim() !== '');
+        if (cols.some(c => c.includes('---'))) return '';
+        const cells = cols.map(c => `<td>${c.trim()}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+      });
+      html = html.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table>$1</table>');
+
+      // Lists
+      html = html.replace(/^\s*[\-\*•]\s+(.*$)/gim, '<li>$1</li>');
+      html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
+      html = html.replace(/<\/ul>\s*<ul>/gim, '');
+
+      // Flashcards
+      html = html.replace(/(?:Hỏi|Câu hỏi):\s*(.+?)\s*(?:Đáp|Trả lời):\s*(.+?)(?=\n|<br>|$)/gi, 
+        '<div class="nb-flashcard"><div class="q">❓ $1</div><div class="a">💡 $2</div></div>');
+
+      // Historical Images Markdown: ![caption](url)
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, caption, url) => {
+        const safeCap = caption.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const safeUrl = url.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        return `<div class="nb-image-card"><div class="nb-img-wrapper"><img src="${safeUrl}" alt="${safeCap}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80';" /><button type="button" class="img-zoom-btn" onclick="window.previewHistoricalImage('${safeUrl}', '${safeCap}')">🔍 Phóng to ảnh</button></div><div class="nb-img-caption"><span>📸 ${safeCap}</span><span class="nb-img-source-tag">Tư liệu xác thực</span></div></div>`;
+      });
+
+      // Interactive 3D Loci Teleport actions
+      html = html.replace(/\[ACTION:(?:teleport|TELEPORT):([a-zA-Z0-9_\u00C0-\u1EF9\-]+)\]/gi, (match, targetId) => {
+        return `<button class="ai-action-chip" style="margin: 6px 0; display: inline-flex;" onclick="window.teleportToLocus('${targetId}')">🚀 Bay đến mốc 3D này ➔</button>`;
+      });
+
+      html = html.replace(/\n\n/g, '<br><br>');
+      html = html.replace(/\n/g, '<br>');
+
+      return `<div class="nb-summary-content">${html}</div>`;
+    }
+
+    // Helper rút gọn văn bản cô đọng tối đa chuẩn NotebookLM (High Information Density)
+    function distillNotebookLMText(str, maxWords = 16) {
+      if (!str) return '';
+      let clean = str.replace(/^(?:theo\s+đó|như\s+vậy|có\s+thể\s+thấy|chúng\s+ta\s+thấy|được\s+biết\s+đến\s+như\s+là|nói\s+cách\s+khác|ngoài\s+ra|mặt\s+khác|bên\s+cạnh\s+đó|cụ\s+thể\s+là)[,:\s]*/i, '').trim();
+      const words = clean.split(/\s+/);
+      if (words.length <= maxWords) return clean;
+      return words.slice(0, maxWords).join(' ') + '...';
+    }
+
+    // Helper trích xuất từ khóa trọng tâm
+    function extractConceptTag(str) {
+      if (!str) return 'Trọng tâm';
+      const pMatch = str.match(/[\("“]([^"”\)]+)[\)"”]/);
+      if (pMatch && pMatch[1].length <= 25) return pMatch[1].trim();
+      const capMatch = str.match(/[A-ZÀ-Ỹ][\w\d\s\-]{2,22}/);
+      if (capMatch) return capMatch[0].trim();
+      return str.split(/\s+/).slice(0, 3).join(' ');
+    }
+
+    // Universal Dynamic NLP Generator: BẢN ĐỒ KIẾN THỨC LỊCH SỬ (HISTORICAL KNOWLEDGE MAP - 12 MỤC & 3 TẦNG)
+    function generateOfflineNotebookSummaryText(sourceText, format) {
+      if (!sourceText || !sourceText.trim()) return '';
+
+      const rawLines = sourceText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+      const cleanText = sourceText.replace(/[#*`_>|]/g, ' ').replace(/\s+/g, ' ').trim();
+      const lower = sourceText.toLowerCase();
+
+      // 1. Tiêu đề
+      let title = "BẢN ĐỒ KIẾN THỨC LỊCH SỬ";
+      if (rawLines.length > 0 && rawLines[0].length <= 80 && !rawLines[0].endsWith('.')) {
+        title = rawLines[0].toUpperCase().replace(/^[-*•\d\.\s#]+/, '').trim();
+      } else {
+        const words = cleanText.split(/\s+/);
+        title = words.slice(0, 7).join(' ').toUpperCase() + '...';
+      }
+
+      // 2. Nhận diện mốc Lịch Sử 12 nếu có (3D Teleport)
+      let actionTag = "";
+      let locusKey = "";
+      if (lower.includes('điện biên')) { actionTag = "[ACTION:teleport:dien_bien_phu]"; locusKey = "Điện Biên Phủ"; }
+      else if (lower.includes('tháng tám')) { actionTag = "[ACTION:teleport:cach_mang_thang_tam]"; locusKey = "Cách mạng tháng Tám 1945"; }
+      else if (lower.includes('đồng khởi')) { actionTag = "[ACTION:teleport:dong_khoi]"; locusKey = "Phong trào Đồng khởi 1959 - 1960"; }
+      else if (lower.includes('hồ chí minh') || lower.includes('30/4')) { actionTag = "[ACTION:teleport:chien_dich_ho_chi_minh]"; locusKey = "Chiến dịch Hồ Chí Minh 1975"; }
+      else if (lower.includes('giơ-ne-vơ') || lower.includes('geneve')) { actionTag = "[ACTION:teleport:hiep_dinh_geneve]"; locusKey = "Hiệp định Giơ-ne-vơ 1954"; }
+
+      // 3. Tự nhận diện Loại kiến thức (Rule 2)
+      const detectedTypes = [];
+      if (/chiến dịch|trận đánh|tiến công|tập đoàn cứ điểm|chiến trường|nava|quân sự|pháo binh/i.test(sourceText)) detectedTypes.push("Chiến tranh / trận đánh");
+      if (/cách mạng|khởi nghĩa|phong trào|đấu tranh chính trị|tổng tuyển cử/i.test(sourceText)) detectedTypes.push("Phong trào / cách mạng");
+      if (/triều đại|thời kỳ|nhà trần|nhà lê|nhà nguyễn|phong kiến/i.test(sourceText)) detectedTypes.push("Triều đại / thời kỳ");
+      if (/chủ tịch|đại tướng|tướng|vua|lãnh tụ|de castries/i.test(sourceText)) detectedTypes.push("Nhân vật lịch sử");
+      if (/hiệp định|hội nghị|ngoại giao|tuyên ngôn|đàm phán|chính trị/i.test(sourceText)) detectedTypes.push("Chính trị / ngoại giao");
+      if (/kinh tế|thương mại|sản xuất|cải cách/i.test(sourceText)) detectedTypes.push("Kinh tế");
+      if (/văn hóa|tư tưởng|giáo dục|tôn giáo/i.test(sourceText)) detectedTypes.push("Văn hóa / xã hội");
+      if (/khoa học|kỹ thuật|công nghệ|vũ khí/i.test(sourceText)) detectedTypes.push("Khoa học / kỹ thuật");
+      if (detectedTypes.length === 0) detectedTypes.push("Sự kiện lịch sử", "Quan hệ giữa các sự kiện");
+
+      // 4. Tách câu xử lý
+      const sentences = cleanText.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 15);
+      const introSentence = sentences[0] || cleanText.substring(0, 140);
+      const coreSentence = sentences[Math.floor(sentences.length / 2)] || sentences[1] || introSentence;
+      const conclusionSentence = sentences[sentences.length - 1] || sentences[2] || introSentence;
+
+      // 5. Timeline
+      const timelineMatches = [];
+      const timeRegex = /(?:\b(?:năm|ngày|tháng|thế kỷ|nửa đầu|nửa cuối|giai đoạn|thời kỳ|đợt)\s+[\w\d\/\-]+|\b(?:1\d{3}|20\d{2})\b)/gi;
+      for (const line of rawLines) {
+        if (timeRegex.test(line) && line.length < 190) {
+          const match = line.match(timeRegex);
+          const timeStr = match ? match[0] : 'Mốc then chốt';
+          const eventStr = line.replace(timeRegex, '').replace(/^[:\-\s]+/, '').trim() || line;
+          timelineMatches.push({ time: timeStr, event: distillNotebookLMText(eventStr, 14) });
+          if (timelineMatches.length >= 4) break;
+        }
+      }
+      if (timelineMatches.length === 0) {
+        const stepCount = Math.min(sentences.length, 3);
+        for (let i = 0; i < stepCount; i++) {
+          timelineMatches.push({ time: `Giai đoạn ${i + 1}`, event: distillNotebookLMText(sentences[i], 14) });
+        }
+      }
+
+      // 6. Nhân vật / Đối tượng
+      const charMatches = [];
+      const charRegex = /(?:Chủ tịch\s+[A-ZÀ-Ỹ][\w\s]+|Đại tướng\s+[A-ZÀ-Ỹ][\w\s]+|Tướng\s+[A-Za-z\s]+|Bộ chỉ huy|Quân đội nhân dân|Nhân dân|Thực dân Pháp|Đế quốc Mĩ|Quân giải phóng)/gi;
+      const foundChars = sourceText.match(charRegex);
+      if (foundChars && foundChars.length > 0) {
+        const uniqueChars = Array.from(new Set(foundChars.map(c => c.trim()))).slice(0, 3);
+        uniqueChars.forEach(c => {
+          charMatches.push(`• **${c}:** Chỉ huy / lực lượng nòng cốt tác động trực tiếp đến tiến trình sự kiện.`);
+        });
+      } else {
+        charMatches.push(`• **Lực lượng quần chúng & Chỉ huy:** Đóng vai trò quyết định thắng lợi được nêu trong văn bản nguồn.`);
+      }
+
+      // 7. Địa điểm
+      const locMatches = [];
+      const locRegex = /(?:Điện Biên Phủ|Mường Thanh|Him Lam|Độc Lập|Bản Kéo|Đồi A1|Hà Nội|Sài Gòn|Bến Tre|Việt Bắc|Tân Trào|Giơ-ne-vơ|Ba Đình)/gi;
+      const foundLocs = sourceText.match(locRegex);
+      if (foundLocs && foundLocs.length > 0) {
+        const uniqueLocs = Array.from(new Set(foundLocs.map(l => l.trim()))).slice(0, 3);
+        uniqueLocs.forEach(l => {
+          locMatches.push(`• **${l}:** Vị trí chiến lược diễn ra các hoạt động mấu chốt của sự kiện.`);
+        });
+      } else {
+        locMatches.push(`• **Địa bàn trọng điểm:** Không gian chiến lược được xác lập theo tư liệu nguồn.`);
+      }
+
+      // 8. Trọng tâm cốt lõi (Key Takeaways)
+      const takeaways = [];
+      for (let i = 0; i < sentences.length; i++) {
+        if (takeaways.length >= 4) break;
+        const s = sentences[i];
+        if (s.length >= 25 && s.length <= 220) takeaways.push(s);
+      }
+      if (takeaways.length === 0) takeaways.push(cleanText.substring(0, 160));
+      const coreBullets = takeaways.map(s => {
+        const tag = extractConceptTag(s);
+        const detail = distillNotebookLMText(s.replace(tag, '').replace(/^[:\-\s,]+/, ''), 16) || distillNotebookLMText(s, 16);
+        return `• **[${tag}]:** ${detail}`;
+      }).join('\n');
+
+      // 9. Timeline Markdown
+      let timelineMd = timelineMatches.map((item, idx) => {
+        return `[${item.time}]\n${item.event}\n→ Nhân vật: Lực lượng thực hiện nhiệm vụ trọng yếu\n→ Kết quả: Tạo bước ngoặt phát triển sự kiện`;
+      }).join('\n\n');
+      if (timelineMatches.length >= 2) {
+        timelineMd += `\n\n**Chuỗi quan hệ:** ` + timelineMatches.map(m => m.time).join(' → ');
+      }
+
+      // 10. Knowledge Graph ASCII
+      const kgNodeA = extractConceptTag(introSentence);
+      const kgNodeB = extractConceptTag(coreSentence);
+      const kgNodeC = extractConceptTag(conclusionSentence);
+      const knowledgeGraphAscii = `\`\`\`
+[${kgNodeA}]
+    ↓ xuất phát điểm / nguyên nhân
+[${kgNodeB}]
+    ↓ diễn biến & đột phá then chốt
+[${kgNodeC}]
+    ↓ dẫn đến kết quả
+[Thắng lợi & Bước ngoặt lịch sử]
+\`\`\``;
+
+      // 11. Memory Anchors
+      const memoryAnchorsMd = `[FACT]
+${distillNotebookLMText(introSentence, 22)}
+
+[MEMORY ANCHOR]
+Hình ảnh sa bàn chiến dịch rực sáng ngọn lửa quyết chiến, lá cờ đỏ sao vàng tung bay trên cao điểm.
+
+[FACT]
+${distillNotebookLMText(conclusionSentence, 22)}
+
+[MEMORY ANCHOR]
+Biểu tượng chiếc đồng hồ cát đảo chiều — đánh dấu bước ngoặt chuyển bại thành thắng của lịch sử.`;
+
+      // 12. Dữ liệu không gian 3D
+      let spatial3DMd = `• **Scene:** Không gian học tập Cung điện ký Ức / Sa bàn tương tác 3D.
+• **Location:** ${locMatches[0] ? locMatches[0].replace(/^[•\s*]+/, '') : 'Vị trí trọng tâm căn phòng'}.
+• **Characters:** ${charMatches[0] ? charMatches[0].replace(/^[•\s*]+/, '') : 'Nhân vật lịch sử tiêu biểu'}.
+• **Objects:** Bản đồ chiến dịch, sa bàn công sự, tài liệu hiệp định lịch sử.
+• **Actions:** Mô phỏng mũi tên tiến công và cắm cờ chiến thắng.`;
+      if (actionTag) spatial3DMd += `\n• **Interactive:** ${actionTag}`;
+
+      // 13. Flashcards
+      const flashcardsMd = `Hỏi: Mục tiêu và ý nghĩa lớn nhất của sự kiện được nêu là gì?
+Đáp: ${distillNotebookLMText(introSentence, 20)}
+
+Hỏi: Bước đột phá hoặc cơ chế hành động mấu chốt diễn ra ra sao?
+Đáp: ${distillNotebookLMText(coreSentence, 20)}
+
+Hỏi: Đúc kết lịch sử quan trọng nhất cần ghi nhớ là gì?
+Đáp: ${distillNotebookLMText(conclusionSentence, 20)}`;
+
+      return `# HISTORICAL KNOWLEDGE MAP
+
+## 1. Tổng quan
+${distillNotebookLMText(introSentence, 24)} ${conclusionSentence && conclusionSentence !== introSentence ? distillNotebookLMText(conclusionSentence, 20) : ''}
+
+## 2. Loại kiến thức
+${detectedTypes.join(' • ')}
+
+## 3. Kiến thức cốt lõi
+${coreBullets}
+
+## 4. Timeline
+${timelineMd}
+
+## 5. Nhân vật / Đối tượng
+${charMatches.join('\n')}
+
+## 6. Địa điểm
+${locMatches.join('\n')}
+
+## 7. Nguyên nhân → Diễn biến → Kết quả
+• **Nguyên nhân:** Bối cảnh chiến lược và yêu cầu khách quan buộc các bên phải hành động.
+• **Diễn biến:** Trải qua các giai đoạn then chốt: ${timelineMatches.map(m => m.event).join('; ')}.
+• **Kết quả & Tác động:** ${distillNotebookLMText(conclusionSentence, 25)}.
+
+## 8. Knowledge Graph
+${knowledgeGraphAscii}
+
+## 9. Memory Anchors
+${memoryAnchorsMd}
+
+## 10. Dữ liệu không gian 3D
+${spatial3DMd}
+
+## 11. Kiến thức cần nhớ
+• **Bản chất:** ${distillNotebookLMText(introSentence, 15)}
+• **Trọng tâm:** ${distillNotebookLMText(coreSentence, 15)}
+• **Ý nghĩa:** ${distillNotebookLMText(conclusionSentence, 15)}
+
+## 12. Kiểm tra ghi nhớ
+${flashcardsMd}`;
+    }
+
+    // Run summarize với Dual-API (OpenRouter + Google Gemini Direct) và Universal Dynamic Fallback
+    async function runNotebookSummarize() {
+      const sourceText = (notebookSourceText.value || '').trim();
+      if (!sourceText) {
+        alert('Vui lòng dán hoặc chọn đoạn văn/tài liệu cần tóm tắt!');
+        return;
+      }
+
+      const selectedFormat = document.querySelector('input[name="nb-format"]:checked')?.value || 'all';
+      btnRunSummarize.disabled = true;
+      btnRunSummarize.innerHTML = `<span>⏳ Đang tạo Historical Knowledge Map...</span>`;
+      resultActions.style.display = 'none';
+
+      notebookOutput.innerHTML = `
+        <div class="notebook-loading-box">
+          <div class="spinner-ring"></div>
+          <h4 style="color:#00f2fe;">AI Gemini đang phân tích theo kiến trúc Historical Knowledge Map...</h4>
+          <p style="margin-top: 8px; font-size: 0.85rem;">Đang xử lý 3 tầng tri thức: TẦNG 1 — FACT • TẦNG 2 — RELATION • TẦNG 3 — MEMORY</p>
+        </div>
+      `;
+
+      const systemPrompt = `Bạn là một AI chuyên xử lý và chuyển đổi kiến thức lịch sử thành dạng dễ hiểu, dễ ghi nhớ và có thể sử dụng cho hệ thống học tập trực quan/3D.
+
+Nhiệm vụ:
+Phân tích nội dung lịch sử được cung cấp và tạo ra một "Bản đồ Kiến thức Lịch sử" (Historical Knowledge Map).
+Mục tiêu không đơn thuần là rút ngắn văn bản. Hãy giữ lại cấu trúc, mối quan hệ và những thông tin có giá trị ghi nhớ nhất.
+
+QUY TẮC QUAN TRỌNG:
+1. GIỮ ĐÚNG KIẾN THỨC: Không tự bịa dữ kiện. Không thay đổi năm tháng, địa điểm, nhân vật hoặc kết quả. Phân biệt rõ dữ kiện có trong nguồn với phần AI đề xuất để hỗ trợ ghi nhớ. Nếu nguồn không đủ thông tin, ghi rõ "Không có thông tin trong nguồn".
+2. TỰ NHẬN DIỆN LOẠI KIẾN THỨC: Xác định nội dung thuộc nhóm: Sự kiện lịch sử, Chiến tranh / trận đánh, Triều đại / thời kỳ, Nhân vật lịch sử, Phong trào / cách mạng, Quốc gia / nền văn minh, Chính trị / ngoại giao, Kinh tế, Xã hội, Văn hóa / tôn giáo, Khoa học / kỹ thuật, Địa lý lịch sử, Quan hệ giữa các sự kiện...
+3. CẤU TRÚC KIẾN THỨC CỐT LÕI (3 TẦNG):
+   - TẦNG 1 — FACT: Kiến thức lịch sử thực tế (Thời gian, Không gian, Nhân vật/Đối tượng, Sự kiện, Nguyên nhân, Diễn biến, Kết quả, Ý nghĩa).
+   - TẦNG 2 — RELATION: Mối quan hệ giữa các kiến thức, sự kiện dẫn đến sự kiện, nhân vật liên quan đến sự kiện, quan hệ nhân quả.
+   - TẦNG 3 — MEMORY: Memory Anchors, Dữ liệu không gian 3D, Kiến thức cần nhớ, Kiểm tra ghi nhớ.
+4. TÓM TẮT THÔNG MINH: Không tóm tắt theo số lượng câu cố định. Ưu tiên thông tin quan trọng, quan hệ nhân quả, trình tự thời gian, nhân vật & vai trò, địa điểm. Loại bỏ câu lặp lại, diễn đạt dài dòng.
+5. TIMELINE: Chỉ tạo Timeline khi nội dung có yếu tố thời gian. Dạng: [THỜI GIAN] Sự kiện → Nhân vật liên quan → Kết quả / ý nghĩa. Nếu có nhiều sự kiện: A → B → C.
+6. KNOWLEDGE GRAPH: Xác định các nút kiến thức quan trọng và mối liên hệ giữa chúng dạng ASCII sơ đồ khối trong khối code markdown:
+\`\`\`
+[Nút A]
+    ↓ [mối quan hệ/hành động]
+[Nút B]
+    ↓ [dẫn đến/mở đường]
+[Nút C]
+\`\`\`
+7. MEMORY ANCHORS: Đề xuất các điểm neo ký ức hỗ trợ ghi nhớ (địa điểm, công trình, vật thể, nhân vật, biểu tượng, hành động, âm thanh, màu sắc, không gian). Phân biệt rõ:
+[FACT]
+Dữ kiện lịch sử
+[MEMORY ANCHOR]
+Hình ảnh được AI đề xuất để giúp ghi nhớ.
+8. KHẢ NĂNG CHUYỂN THÀNH KHÔNG GIAN 3D: Scene, Location, Characters, Objects, Actions, Relationships. Kèm tag [ACTION:teleport:<id>] nếu tương ứng với các mốc 3D (dien_bien_phu, cach_mang_thang_tam, dong_khoi, chien_dich_ho_chi_minh, hiep_dinh_geneve).
+9. KIỂM TRA GHI NHỚ: Flashcards dạng:
+Hỏi: ...
+Đáp: ...
+
+ĐỊNH DẠNG ĐẦU RA BẮT BUỘC:
+# HISTORICAL KNOWLEDGE MAP
+
+## 1. Tổng quan
+## 2. Loại kiến thức
+## 3. Kiến thức cốt lõi
+## 4. Timeline
+## 5. Nhân vật / Đối tượng
+## 6. Địa điểm
+## 7. Nguyên nhân → Diễn biến → Kết quả
+## 8. Knowledge Graph
+## 9. Memory Anchors
+## 10. Dữ liệu không gian 3D
+## 11. Kiến thức cần nhớ
+## 12. Kiểm tra ghi nhớ`;
+
+      const userPrompt = `NỘI DUNG TÀI LIỆU LỊCH SỬ CẦN XỬ LÝ:\n"""\n${sourceText}\n"""\n\nHãy phân tích và tạo "Bản đồ Kiến thức Lịch sử" (Historical Knowledge Map) theo đúng đầy đủ 12 mục và 3 tầng tri thức đã hướng dẫn.`;
+
+      const defaultGoogleKey = 'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA';
+      const defaultOpenRouterKey = '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';
+      const storedKey = localStorage.getItem('loci_gemini_api_key') || (ai ? ai.apiKey : '') || defaultOpenRouterKey;
+
+      let summaryResult = null;
+
+      // HÀM GỌI OPENROUTER
+      async function tryOpenRouter(key) {
+        const models = ['google/gemini-3.5-flash-lite', 'google/gemini-2.5-flash', 'google/gemini-3.7-flash'];
+        for (const m of models) {
+          try {
+            const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${key}`,
+                'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://localhost',
+                'X-Title': 'Loci Historical Knowledge Map'
+              },
+              body: JSON.stringify({
+                model: m,
+                temperature: 0.3,
+                max_tokens: 4000,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: userPrompt }
+                ]
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const txt = data.choices?.[0]?.message?.content;
+              if (txt && txt.trim()) return txt.trim();
+            }
+          } catch (e) {
+            console.warn(`OpenRouter model ${m} error:`, e);
+          }
+        }
+        return null;
+      }
+
+      // HÀM GỌI GOOGLE DIRECT API
+      async function tryGoogleDirect(key) {
+        const models = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+        for (const m of models) {
+          try {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`;
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { temperature: 0.3, maxOutputTokens: 4000 }
+              })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const txt = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (txt && txt.trim()) return txt.trim();
+            }
+          } catch (e) {
+            console.warn(`Google Direct model ${m} error:`, e);
+          }
+        }
+        return null;
+      }
+
+      // Thứ tự ưu tiên thông minh theo dạng key
+      if (storedKey.startsWith('sk-')) {
+        summaryResult = await tryOpenRouter(storedKey);
+        if (!summaryResult) summaryResult = await tryGoogleDirect(defaultGoogleKey);
+      } else {
+        summaryResult = await tryGoogleDirect(storedKey);
+        if (!summaryResult) summaryResult = await tryOpenRouter(defaultOpenRouterKey);
+      }
+
+      // Dự phòng offline siêu thông minh (Universal Dynamic NLP)
+      if (!summaryResult) {
+        summaryResult = generateOfflineNotebookSummaryText(sourceText, selectedFormat);
+      }
+
+      // Tự động chèn ảnh tư liệu lịch sử xác thực nếu có
+      if (typeof window.autoAttachHistoricalImagesToSummary === 'function') {
+        try {
+          summaryResult = await window.autoAttachHistoricalImagesToSummary(sourceText, summaryResult);
+        } catch (e) {
+          console.warn('Auto attach images failed:', e);
+        }
+      }
+
+      lastNotebookSummaryText = summaryResult;
+      window.lastNotebookSummaryText = summaryResult;
+      btnRunSummarize.disabled = false;
+      btnRunSummarize.innerHTML = `<span>✨ Bắt Đầu Phân Tích Bản Đồ Tri Thức</span>`;
+      resultActions.style.display = 'flex';
+      notebookOutput.innerHTML = renderNotebookMarkdownHtml(summaryResult);
+    }
+
+    if (btnRunSummarize) btnRunSummarize.addEventListener('click', runNotebookSummarize);
+
+    // Audio readout TTS
+    if (btnSpeakSummary) {
+      btnSpeakSummary.addEventListener('click', () => {
+        if (!lastNotebookSummaryText) return;
+        if (ai) {
+          if (ai.isSpeaking) {
+            ai.stopSpeaking();
+            btnSpeakSummary.textContent = '🔊 Đọc to (TTS)';
+          } else {
+            const plain = lastNotebookSummaryText.replace(/[*#_`>|]/g, ' ').replace(/\s+/g, ' ').trim();
+            ai.speak(plain);
+            btnSpeakSummary.textContent = '⏹ Dừng đọc';
+          }
+        }
+      });
+    }
+
+    // Copy summary
+    if (btnCopySummary) {
+      btnCopySummary.addEventListener('click', () => {
+        if (!lastNotebookSummaryText) return;
+        navigator.clipboard.writeText(lastNotebookSummaryText).then(() => {
+          const old = btnCopySummary.textContent;
+          btnCopySummary.textContent = '✓ Đã chép!';
+          setTimeout(() => { btnCopySummary.textContent = old; }, 1500);
+        });
+      });
+    }
+
+    // Transfer summary to chat drawer
+    if (btnTransferSummary) {
+      btnTransferSummary.addEventListener('click', () => {
+        closeNotebookLMStudio();
+        if (isPointerLocked) document.exitPointerLock();
+        aiDrawer.classList.add('open');
+        const snippet = (notebookSourceText.value || '').slice(0, 200) + '...';
+        aiTextInput.value = `Dựa trên tài liệu vừa tóm tắt: "${snippet}", hãy phân tích sâu hơn về ý nghĩa lịch sử và ra cho tôi 3 câu trắc nghiệm!`;
+        aiTextInput.focus();
+      });
+    }
+
+    // Global helper to open studio from anywhere
+    window.openNotebookLMStudio = openNotebookLMStudio;
+    window.closeNotebookLMStudio = closeNotebookLMStudio;
+    window.renderNotebookMarkdownHtml = renderNotebookMarkdownHtml;
 
     /* --- RESIZE LISTENER --- */
     window.addEventListener('resize', () => {
