@@ -8028,42 +8028,42 @@
             // Cập nhật biểu cảm màn hình LED khuôn mặt theo thời gian thực (60fps)
             renderVRAIFace(time);
 
-            if (vrSession) {
-              const { headPos, forward } = getVRHeadPose();
+            // Theo sát người dùng (COMPANION MODE) - hoạt động trên CẢ Desktop và VR
+            const { headPos, forward } = getVRHeadPose();
+            // Đảm bảo con AI không chui xuống đất
+            forward.y = 0;
+            if (forward.lengthSq() > 0) forward.normalize();
+            else forward.set(0, 0, -1);
 
-              if (vrAISummoned) {
-                // 1. KHI ĐƯỢC GỌI [PHÍM B / NÓI LOCI ƠI / LASER CLICK]:
-                // Con AI bay thẳng đến trước mặt người dùng (~1.08m), hơi chếch nhẹ sang trái để bóng chat nằm ngay trong tầm mắt
-                const rightVec = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-                const targetPos = headPos.clone()
-                  .add(forward.clone().multiplyScalar(1.08))
-                  .sub(rightVec.clone().multiplyScalar(0.28));
-                targetPos.y = Math.max(0.9, headPos.y - 0.04 + Math.sin(time * 2.5) * 0.035);
+            if (vrAISummoned) {
+              // 1. KHI ĐƯỢC GỌI [PHÍM B / NÓI LOCI ƠI / LASER CLICK]:
+              // Con AI bay thẳng đến trước mặt người dùng (~1.08m), hơi chếch nhẹ sang trái
+              const rightVec = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+              const targetPos = headPos.clone()
+                .add(forward.clone().multiplyScalar(1.08))
+                .sub(rightVec.clone().multiplyScalar(0.28));
+              targetPos.y = Math.max(0.9, headPos.y - 0.04 + Math.sin(time * 2.5) * 0.035);
 
-                if (!isNaN(targetPos.x) && !isNaN(targetPos.y) && !isNaN(targetPos.z)) {
-                  vrAICompanionGroup.position.lerp(targetPos, 0.08);
-                  vrAICompanionGroup.lookAt(headPos.x, headPos.y - 0.02, headPos.z);
-                }
-              } else {
-                // 2. KHI HOVER ĐỒNG HÀNH (COMPANION MODE):
-                // Con AI lơ lửng nhẹ nhàng bên vai người dùng, giữ bạn đồng hành trong suốt căn phòng
-                const leftVec = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
-                const companionTarget = headPos.clone()
-                  .add(forward.clone().multiplyScalar(1.15))
-                  .add(leftVec.clone().multiplyScalar(0.85));
-                companionTarget.y = Math.max(1.1, headPos.y + 0.15 + Math.sin(time * 2.0) * 0.04);
-
-                if (!isNaN(companionTarget.x) && !isNaN(companionTarget.y) && !isNaN(companionTarget.z)) {
-                  vrAICompanionGroup.position.lerp(companionTarget, 0.05);
-                  const lookDist = Math.hypot(headPos.x - vrAICompanionGroup.position.x, headPos.z - vrAICompanionGroup.position.z);
-                  if (lookDist > 0.1) {
-                    vrAICompanionGroup.lookAt(headPos.x, vrAICompanionGroup.position.y, headPos.z);
-                  }
-                }
+              if (!isNaN(targetPos.x) && !isNaN(targetPos.y) && !isNaN(targetPos.z)) {
+                vrAICompanionGroup.position.lerp(targetPos, 0.08);
+                vrAICompanionGroup.lookAt(headPos.x, headPos.y - 0.02, headPos.z);
               }
             } else {
-              // Ngoài chế độ VR (Preview Web Desktop)
-              vrAICompanionGroup.position.y = 1.85 + Math.sin(time * 2.0) * 0.05;
+              // 2. KHI HOVER ĐỒNG HÀNH (COMPANION MODE):
+              // Con AI lơ lửng nhẹ nhàng bên vai người dùng, giữ bạn đồng hành trong suốt căn phòng
+              const leftVec = new THREE.Vector3(-forward.z, 0, forward.x).normalize();
+              const companionTarget = headPos.clone()
+                .add(forward.clone().multiplyScalar(0.75))
+                .add(leftVec.clone().multiplyScalar(0.85));
+              companionTarget.y = Math.max(1.1, headPos.y + 0.15 + Math.sin(time * 2.0) * 0.04);
+
+              if (!isNaN(companionTarget.x) && !isNaN(companionTarget.y) && !isNaN(companionTarget.z)) {
+                vrAICompanionGroup.position.lerp(companionTarget, 0.05);
+                const lookDist = Math.hypot(headPos.x - vrAICompanionGroup.position.x, headPos.z - vrAICompanionGroup.position.z);
+                if (lookDist > 0.1) {
+                  vrAICompanionGroup.lookAt(headPos.x, vrAICompanionGroup.position.y, headPos.z);
+                }
+              }
             }
 
             // Chuyển động xoay vòng năng lượng lượng tử (Orbital Gyro Rings)
