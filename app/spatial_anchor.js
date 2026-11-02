@@ -1,10 +1,14 @@
-/* LOCI Spatial Anchor — gắn mốc kiến thức vào không gian thật bằng mã neo QR + AR camera.
-   Phụ thuộc: app/spatial_math.js, app/jsqr.min.js, app/qrcode.min.js
-   Dữ liệu lưu trong space.spatial = { v, calib, anchors } (đồng bộ cùng không gian 360). */
+/* LOCI Spatial Anchor — gắn mốc kiến thức vào không gian thật.
+   Hai cách khóa không gian:
+   1) Nhận dạng thị giác (mặc định): chụp khung cảnh lúc đặt mốc, lần sau mở app
+      chỉ cần chiếu camera về khu vực đó — không cần dán mã QR.
+   2) Mã neo QR (tuỳ chọn): khóa chính xác tuyệt đối khi cần hiệu chỉnh lại.
+   Phụ thuộc: app/spatial_math.js, app/visual_recall.js, app/jsqr.min.js, app/qrcode.min.js
+   Dữ liệu lưu trong space.spatial = { v, frameId, calib, anchors } (đồng bộ cùng không gian 360). */
 (function () {
     'use strict';
 
-    const VERSION = '1.0.0';
+    const VERSION = '1.1.0';
     if (window.LociSpatial && window.LociSpatial.__version === VERSION) return;
 
     const M = window.LociSpatialMath;
@@ -18,6 +22,14 @@
     const PLACE_MAX_CM = 800;
     const PLACE_DEFAULT_CM = 200;
     const FOCAL_HFOV_DEFAULT = 64;
+    const VISUAL_INTERVAL_MS = 1000;
+    const VISUAL_REFS_PER_TRY = 2;
+    const VISUAL_MAX_REFS = 10;
+    const VISUAL_MIN_INLIERS = 12;
+    const VISUAL_MIN_INLIERS_TRACKING = 16;
+    const VISUAL_MAX_RMS = 4.6;
+    const R_UPRIGHT = [[1, 0, 0], [0, 0, 1], [0, -1, 0]];
+    const R_CAM2DEV = [[1, 0, 0], [0, -1, 0], [0, 0, -1]];
 
     const S = {
         open: false,
@@ -41,6 +53,7 @@
         pose: null,
         poseLock: null,
         poseLockYaw: 0,
+        poseLockSource: null,
         yawOffset: null,
         lastLockAt: 0,
         drift: [0, 0, 0],
@@ -48,6 +61,7 @@
         pdr: { on: true, steps: 0, baseline: 9.81, wasBelow: true, lastPeak: 0 },
         stepCm: STEP_CM_DEFAULT,
         scanTimer: null,
+        visualTimer: null,
         rafId: 0,
         lastStatus: '',
         lastWarnAt: 0,
@@ -59,7 +73,20 @@
         calibSaveAt: 0,
         focalOverride: 0,
         aimUv: null,
-        tapStart: null
+        tapStart: null,
+        visual: {
+            refs: [],
+            ready: false,
+            cursor: 0,
+            lastTry: 0,
+            busy: false,
+            lastOk: 0,
+            lastInliers: 0,
+            focalNorm: 0,
+            lastCaptureAt: 0,
+            lastCapturePos: null,
+            lockedOnce: false
+        }
     };
 
     /* ---------------- helpers ---------------- */
@@ -72,6 +99,7 @@
             const old = space.spatial || {};
             space.spatial = {
                 v: 1,
+                frameId: old.frameId || null,
                 calib: old.calib || null,
                 anchors: old.anchors || {}
             };
@@ -85,7 +113,18 @@
         const calib = S.spatial && S.spatial.calib;
         if (calib && calib.focalNorm > 0) return calib.focalNorm * vw;
         if (S.focalOverride > 0) return S.focalOverride * vw;
+        if (S.visual.focalNorm > 0) return S.visual.focalNorm * vw;
         return 0.5 * vw / Math.tan((FOCAL_HFOV_DEFAULT * M.D2R) / 2);
+    }
+
+    function currentFocalNorm() {
+        const vw = (S.video && S.video.videoWidth) || 0;
+        if (vw > 0) return focalPx() / vw;
+        return 0.5 / Math.tan((FOCAL_HFOV_DEFAULT * M.D2R) / 2);
+    }
+
+    function visualApi() {
+        return (typeof window !== 'undefined' && window.LociVisualRecall) || null;
     }
 
     function camYawOf(R) {
@@ -343,9 +382,23 @@
     function updateCalibBadge() {
         const badge = $('lsa-lock-badge');
         if (!badge) return;
-        const locked = !!(S.pose && S.poseLock);
-        badge.textContent = locked ? (S.pose.source === 'qr' ? 'ĐÃ KHÓA' : 'BÁM CẢM BIẾN') : 'CHƯA KHÓA';
-        badge.className = 'lsa-badge ' + (locked ? (S.pose.source === 'qr' ? 'ok' : 'warn') : '');
+        const src = S.pose && S.pose.source;
+        let label = 'CHƯA KHÓA', cls = '';
+        if (S.poseLock || S.pose) {
+            if (src === 'qr') { label = 'ĐÃ KHÓA'; cls = 'ok'; }
+            else if (src === 'visual') { label = 'NHẬN DIỆN'; cls = 'ok'; }
+            else { label = 'CẢM BIẾN'; cls = 'warn'; }
+        }
+        badge.textContent = label;
+        badge.className = 'lsa-badge ' + cls;
+    }
+
+    function poseSourceLabel() {
+        const src = S.pose && S.pose.source;
+        if (src === 'qr') return 'mã neo QR';
+        if (src === 'visual') return 'nhận dạng khung cảnh';
+        if (src === 'sensor' || src === 'init') return 'cảm biến chuyển động';
+        return 'chưa khóa';
     }
 
     /* ---------------- camera ---------------- */
@@ -536,8 +589,20 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
     function lockPose(world, reproj, parsed, focalNorm, widthPx, firstLock) {
         const wasLocked = !!S.poseLock;
+        const oldPose = S.pose;
+        const spatial = ensureSpatial(S.space);
+        const qrFrameId = 'qr:' + parsed.spaceId + ':' + parsed.sizeCm;
+        if (S.spatial.frameId && S.spatial.frameId !== qrFrameId) {
+            if (oldPose && oldPose.R && oldPose.C) {
+                rebaseAnchors(oldPose.R, oldPose.C, world.R, world.C);
+            }
+            clearVisualRefs();
+        }
+        spatial.frameId = qrFrameId;
+
         S.poseLock = { R: world.R, C: world.C.slice() };
         S.poseLockYaw = camYawOf(world.R);
+        S.poseLockSource = 'qr';
         S.drift = [0, 0, 0];
         S.lastLockAt = performance.now();
         applyPose(world, 'qr');
@@ -546,7 +611,6 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const sy = currentSensorYaw();
         if (sy != null) S.yawOffset = M.normalizeAngle(S.poseLockYaw - sy);
 
-        const spatial = ensureSpatial(S.space);
         const quality = reproj < widthPx * 0.03 ? 'tốt' : 'trung bình';
         spatial.calib = {
             payload: `${QR_PREFIX}|${parsed.spaceId}|${parsed.sizeCm}`,
@@ -563,6 +627,10 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         saveSoon();
         renderSheet();
         refreshPinVisibility();
+        setTimeout(() => {
+            if (!S.open || !S.pose || S.pose.source !== 'qr') return;
+            captureReference('qr:' + parsed.spaceId);
+        }, 1600);
     }
 
     function saveSoon() {
@@ -572,13 +640,265 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         try { S.bridge && S.bridge.persist && S.bridge.persist(); } catch (e) { }
     }
 
+    /* ---------------- visual recall (không cần mã QR) ---------------- */
+    function rebaseAnchors(Rold, Cold, Rnew, Cnew) {
+        if (!Rold || !Cold || !S.spatial) return 0;
+        const Rt = M.transpose(Rold);
+        let n = 0;
+        for (const id in S.spatial.anchors) {
+            const a = S.spatial.anchors[id];
+            if (!a || !a.world) continue;
+            const rel = [a.world[0] - Cold[0], a.world[1] - Cold[1], a.world[2] - Cold[2]];
+            const q = M.mulVec(Rt, rel);
+            const w = M.mulVec(Rnew, q);
+            a.world = [
+                Math.round((w[0] + Cnew[0]) * 10) / 10,
+                Math.round((w[1] + Cnew[1]) * 10) / 10,
+                Math.round((w[2] + Cnew[2]) * 10) / 10
+            ];
+            n++;
+        }
+        return n;
+    }
+
+    function clearVisualRefs() {
+        const V = visualApi();
+        S.visual.refs = [];
+        S.visual.cursor = 0;
+        S.visual.lockedOnce = false;
+        S.visual.lastCapturePos = null;
+        S.visual.lastCaptureAt = 0;
+        if (V && S.space) {
+            try { V.deleteRefs(S.space.id).catch(() => { }); } catch (e) { }
+        }
+    }
+
+    function captureReference(tag, opts) {
+        const V = visualApi();
+        if (!V || !S.open || !S.pose || !S.video || S.video.readyState < 2) return Promise.resolve(null);
+        let frame = null;
+        try { frame = V.captureFrame(S.video, 400); } catch (e) { frame = null; }
+        if (!frame || frame.count < 70) return Promise.resolve(null);
+        const rec = {
+            at: Date.now(),
+            tag: tag || 'manual',
+            anchorId: (opts && opts.anchorId) || null,
+            w: frame.w,
+            h: frame.h,
+            kps: frame.kps,
+            desc: frame.desc,
+            pose: { R: S.pose.R.map(r => r.slice()), C: S.pose.C.slice() },
+            focalNorm: currentFocalNorm(),
+            frameId: (S.spatial && S.spatial.frameId) || null
+        };
+        S.visual.lastCaptureAt = performance.now();
+        S.visual.lastCapturePos = S.pose.C.slice();
+        let task;
+        try { task = V.saveRef(S.space.id, rec); } catch (e) { task = Promise.resolve(null); }
+        return Promise.resolve(task).then(saved => {
+            if (!saved) return null;
+            if (!opts || opts.replaceTag !== false) {
+                S.visual.refs.forEach(r => {
+                    if (r.tag === rec.tag && r.id !== saved.id) {
+                        try { V.deleteRef(r.id); } catch (e) { }
+                    }
+                });
+                S.visual.refs = S.visual.refs.filter(r => r.tag !== rec.tag);
+            }
+            S.visual.refs.unshift(saved);
+            if (S.visual.refs.length > VISUAL_MAX_REFS) S.visual.refs.length = VISUAL_MAX_REFS;
+            if (S.open) renderSheet();
+            return saved;
+        }).catch(() => null);
+    }
+
+    function maybeAutoCapture() {
+        if (!S.open || !S.pose || !S.spatial || !S.spatial.frameId) return;
+        if (S.visual.busy) return;
+        const now = performance.now();
+        if (now - S.visual.lastCaptureAt < 12000) return;
+        const p = S.visual.lastCapturePos;
+        if (p) {
+            const d = Math.hypot(S.pose.C[0] - p[0], S.pose.C[1] - p[1], S.pose.C[2] - p[2]);
+            if (d < 90) return;
+        }
+        captureReference('roam:' + Date.now(), { replaceTag: false });
+    }
+
+    function applyVisualLock(best, Rlive) {
+        const wasSource = S.pose && S.pose.source;
+        S.poseLock = { R: Rlive, C: best.ref.pose.C.slice() };
+        S.poseLockYaw = camYawOf(Rlive);
+        S.poseLockSource = 'visual';
+        S.drift = [0, 0, 0];
+        if (best.ref.focalNorm > 0) S.visual.focalNorm = best.ref.focalNorm;
+        const sy = currentSensorYaw();
+        S.yawOffset = sy == null ? null : M.normalizeAngle(S.poseLockYaw - sy);
+        applyPose(S.poseLock, 'visual');
+        S.lastLockAt = performance.now();
+        S.visual.lastOk = S.lastLockAt;
+        S.visual.lastInliers = best.m.inliers;
+        S.visual.lastCaptureAt = S.lastLockAt;
+        S.visual.lastCapturePos = S.pose.C.slice();
+        updateCalibBadge();
+        renderPins();
+        if (!S.visual.lockedOnce || wasSource !== 'visual') {
+            S.visual.lockedOnce = true;
+            setStatus('Đã nhận ra khung cảnh', `${best.m.inliers} điểm khớp · mốc đang neo theo vị trí đã lưu`);
+            toast('🧠 Đã nhận ra khu vực — mốc hiện đúng chỗ đã đặt.');
+            renderSheet();
+        } else {
+            const sub = $('lsa-substatus');
+            if (sub) sub.textContent = `Theo dõi thị giác · ${best.m.inliers} điểm khớp`;
+        }
+    }
+
+    function tryVisualRelocalize(force) {
+        if (!S.open || S.visual.busy) return;
+        const V = visualApi();
+        if (!V || !S.visual.ready || !S.visual.refs.length) return;
+        if (!S.video || S.video.readyState < 2 || !S.video.videoWidth) return;
+        const now = performance.now();
+        if (!force && now - S.visual.lastTry < VISUAL_INTERVAL_MS) return;
+        if (S.pose && S.pose.source === 'qr' && now - S.lastQrAt < 2500) return;
+        if (S.placing) return;
+        if (!force && typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+        S.visual.lastTry = now;
+        const frameId = S.spatial && S.spatial.frameId;
+        const refs = S.visual.refs.filter(r => !frameId || !r.frameId || r.frameId === frameId);
+        if (!refs.length) return;
+
+        S.visual.busy = true;
+        let frame = null;
+        try { frame = V.captureFrame(S.video, 400); } catch (e) { frame = null; }
+        if (!frame || frame.count < 60) { S.visual.busy = false; return; }
+
+        const total = Math.min(VISUAL_REFS_PER_TRY, refs.length);
+        const start = S.visual.cursor % refs.length;
+        let best = null;
+        for (let i = 0; i < total; i++) {
+            const ref = refs[(start + i) % refs.length];
+            let m = null;
+            try { m = V.matchFrames(ref, frame); } catch (e) { m = null; }
+            if (!m) continue;
+            if (!best || m.inliers > best.m.inliers || (m.inliers === best.m.inliers && m.rms < best.m.rms)) {
+                best = { ref, m };
+            }
+        }
+        S.visual.cursor = (start + total) % refs.length;
+        S.visual.busy = false;
+        if (!best) return;
+
+        const minInliers = S.poseLock ? VISUAL_MIN_INLIERS_TRACKING : VISUAL_MIN_INLIERS;
+        if (best.m.inliers < minInliers || best.m.rms > VISUAL_MAX_RMS) return;
+
+        const focalNorm = best.ref.focalNorm > 0 ? best.ref.focalNorm : currentFocalNorm();
+        const rel = V.rotationFromHomography(best.m.H, focalNorm, best.ref.w, best.ref.h, frame.w, frame.h);
+        if (!rel) return;
+        const Rlive = M.mul3(best.ref.pose.R, M.transpose(rel));
+        if (S.pose) {
+            const dYaw = Math.abs(M.normalizeAngle(camYawOf(Rlive) - camYawOf(S.pose.R)));
+            if (dYaw > 35 * M.D2R && best.m.inliers < 24) return;
+        }
+        applyVisualLock(best, Rlive);
+    }
+
+    function canInitFrame() {
+        if (S.poseLock || S.pose) return false;
+        if (S.visual.refs.length) return false;
+        if (S.spatial && S.spatial.calib && S.spatial.calib.focalNorm > 0) return false;
+        if (S.spatial && S.spatial.anchors && Object.keys(S.spatial.anchors).length) return false;
+        return true;
+    }
+
+    function initFromSensor(silent) {
+        if (!S.spatial || S.poseLock) return false;
+        if (!S.spatial.frameId) S.spatial.frameId = 'init:' + Date.now().toString(36);
+        let R = R_UPRIGHT;
+        const s = S.sensor.last;
+        if (s) R = M.mul3(M.sensorMatrix(s.alpha, s.beta, s.gamma), R_CAM2DEV);
+        S.poseLock = { R, C: [0, 0, 0] };
+        S.poseLockYaw = camYawOf(R);
+        S.poseLockSource = 'init';
+        S.drift = [0, 0, 0];
+        const sy = currentSensorYaw();
+        S.yawOffset = sy == null ? null : M.normalizeAngle(S.poseLockYaw - sy);
+        applyPose(S.poseLock, s ? 'sensor' : 'init');
+        updateCalibBadge();
+        setStatus('Đã dựng không gian bằng cảm biến', 'Chạm vào màn hình để đặt mốc — app sẽ ghi nhớ khung cảnh để lần sau nhận ra');
+        if (!silent) toast('📍 Giữ máy một chút — đang ghi nhớ khung cảnh xung quanh.');
+        setTimeout(() => {
+            if (!S.open || !S.poseLock || S.poseLockSource !== 'init') return;
+            captureReference('home').then(saved => {
+                if (saved) {
+                    S.visual.lastCaptureAt = performance.now();
+                    S.visual.lastCapturePos = S.pose.C.slice();
+                }
+            });
+        }, 900);
+        saveSoon();
+        renderSheet();
+        return true;
+    }
+
+    async function restartWithSensor() {
+        if (!S.spatial) return;
+        if (Object.keys(S.spatial.anchors || {}).length) {
+            toast('Không gian đã có mốc AR — hãy quét mã neo để khôi phục đúng hệ toạ độ.');
+            return;
+        }
+        const V = visualApi();
+        if (V && S.space) { try { await V.deleteRefs(S.space.id); } catch (e) { } }
+        S.visual.refs = [];
+        S.visual.cursor = 0;
+        S.visual.lockedOnce = false;
+        S.visual.lastCapturePos = null;
+        S.visual.lastCaptureAt = 0;
+        S.spatial.frameId = null;
+        S.poseLock = null;
+        S.pose = null;
+        S.yawOffset = null;
+        initFromSensor(false);
+    }
+
+    async function loadVisualRefs() {
+        const V = visualApi();
+        S.visual.refs = [];
+        S.visual.ready = !V;
+        if (!V || !S.space) return;
+        try {
+            const rows = await V.listRefs(S.space.id);
+            const fid = S.spatial && S.spatial.frameId;
+            S.visual.refs = (rows || []).filter(r => !fid || !r.frameId || r.frameId === fid);
+            if (S.visual.refs[0] && S.visual.refs[0].focalNorm > 0) {
+                S.visual.focalNorm = S.visual.refs[0].focalNorm;
+            }
+        } catch (e) { }
+        S.visual.ready = true;
+    }
+
+    function waitForSensor(ms) {
+        return new Promise(resolve => {
+            if (currentSensorYaw() != null) return resolve(true);
+            const t0 = performance.now();
+            const id = setInterval(() => {
+                if (currentSensorYaw() != null) { clearInterval(id); resolve(true); }
+                else if (performance.now() - t0 > ms) { clearInterval(id); resolve(false); }
+            }, 60);
+        });
+    }
+
+    function isTrackingPose() {
+        return !!(S.pose && S.poseLock && (S.pose.source === 'sensor' || S.pose.source === 'visual'));
+    }
+
     /* ---------------- sensors & PDR ---------------- */
     function onOrientation(e) {
         if (!S.open) return;
         if (e.alpha == null && e.beta == null) return;
         S.sensor.last = { alpha: e.alpha || 0, beta: e.beta || 0, gamma: e.gamma || 0 };
         S.sensor.at = performance.now();
-        if (S.poseLock && S.pose.source === 'sensor') updateSensorPose();
+        if (isTrackingPose()) updateSensorPose();
         refreshSensorUI();
     }
 
@@ -602,7 +922,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 S.drift[0] += h[0] * S.stepCm;
                 S.drift[1] += h[1] * S.stepCm;
             }
-            if (S.pose.source === 'sensor') updateSensorPose();
+            if (isTrackingPose()) updateSensorPose();
             refreshSensorUI();
         } else if (dev < 0.35) {
             p.wasBelow = true;
@@ -624,7 +944,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const dYaw = M.normalizeAngle(yawNow - S.poseLockYaw);
         const R = M.mul3(M.rotZ(dYaw), S.poseLock.R);
         const C = [S.poseLock.C[0] + S.drift[0], S.poseLock.C[1] + S.drift[1], S.poseLock.C[2]];
-        S.pose = { R, C, source: 'sensor' };
+        S.pose = { R, C, source: S.poseLockSource === 'visual' ? 'visual' : 'sensor' };
         updateCalibBadge();
     }
 
@@ -648,7 +968,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const steps = S.pdr.steps;
         el.textContent = sy == null
             ? `Cảm biến: chưa có dữ liệu · ${steps} bước`
-            : `Cảm biến: OK · ${steps} bước · ${S.pose && S.pose.source === 'qr' ? 'đang khóa QR' : 'bám cảm biến'}`;
+            : `Cảm biến: OK · ${steps} bước · ${S.pose && S.pose.source === 'qr' ? 'đang khóa QR' : (S.pose && S.pose.source === 'visual' ? 'theo dõi thị giác' : 'bám cảm biến')}`;
     }
 
     /* ---------------- projection / pins ---------------- */
@@ -857,6 +1177,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         setPlacing(id, false);
         renderSheet();
         renderPins();
+        setTimeout(() => {
+            if (S.open) captureReference('anchor:' + id, { anchorId: id });
+        }, 350);
     }
 
     function removeAnchorPos(id) {
@@ -943,7 +1266,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
         const sel = S.placing ? anchors.find(a => a.id === S.placing.id) : null;
         return `
-            <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : 'Quét mã neo ở tab 🎯 Mã neo để khóa không gian trước khi gắn mốc.'}</p>
+            <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : (S.visual.refs.length ? 'Đang tìm lại khung cảnh đã ghi nhớ — chiếu camera về khu vực đặt mốc. Không cần mã QR.' : 'Bấm “Ghi nhớ khung cảnh” ở tab ⚙ hoặc quét mã neo để khóa không gian trước khi gắn mốc.')}</p>
             ${rows}
             ${sel ? `
                 <div class="lsa-field"><span>Khoảng cách tới mốc</span><b style="color:#7dd3fc">${(S.distanceCm / 100).toFixed(1)} m</b></div>
@@ -961,10 +1284,20 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
     function renderCalibTab() {
         const calib = S.spatial && S.spatial.calib;
         const locked = !!S.poseLock;
+        const refs = S.visual.refs.length;
+        const anchorCount = Object.keys((S.spatial && S.spatial.anchors) || {}).length;
+        const src = poseSourceLabel();
         return `
-            <p class="lsa-hint">Mã neo QR giúp điện thoại nhận ra đúng căn phòng và giữ mốc cố định trong không gian thật, kể cả khi mở app lần sau.</p>
+            <p class="lsa-hint"><b>Không cần dán mã QR.</b> Khi bạn đặt mốc, app tự ghi nhớ khung cảnh. Lần sau mở lại, chỉ cần chiếu camera về khu vực đó là app nhận ra và mốc vẫn nằm đúng chỗ.</p>
             <div class="lsa-row" style="margin-top:0">
-                <button class="lsa-btn pri" id="lsa-make-qr">🎯 Tạo mã neo</button>
+                <button class="lsa-btn pri" id="lsa-remember" ${S.pose ? '' : 'disabled'}>🧠 Ghi nhớ khung cảnh</button>
+            </div>
+            <p class="lsa-hint">Đã lưu <b>${refs}</b> khung cảnh cho không gian này${S.visual.lastInliers ? ` · lần khớp gần nhất ${S.visual.lastInliers} điểm` : ''}.</p>
+            <div class="lsa-field"><span>Nguồn định vị</span><b style="color:#7dd3fc">${src}</b></div>
+            ${!S.pose && !anchorCount ? `<div class="lsa-row" style="margin-top:0"><button class="lsa-btn ghost" id="lsa-init-sensor" style="flex:1">📐 Bắt đầu bằng cảm biến</button></div>` : ''}
+            <p class="lsa-hint" style="margin-top:14px"><b>Mã neo QR (tuỳ chọn)</b> — in một tờ dán lên tường nếu muốn khóa vị trí chính xác tuyệt đối, hoặc khi không thể nhận dạng khung cảnh.</p>
+            <div class="lsa-row" style="margin-top:0">
+                <button class="lsa-btn ghost" id="lsa-make-qr">🎯 Tạo mã neo</button>
                 <button class="lsa-btn ghost" id="lsa-help-btn">❓ Cách dùng</button>
             </div>
             <div class="lsa-field" style="margin-top:10px"><span>Khoảng cách thật tới mã khi quét</span>
@@ -973,14 +1306,10 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                     <span style="font-size:11px;color:#94a3b8">cm</span>
                 </div>
             </div>
-            <div class="lsa-field"><span>Trạng thái</span>
-                <span class="lsa-badge ${locked ? 'ok' : ''}">${locked ? (S.pose.source === 'qr' ? 'ĐÃ KHÓA' : 'BÁM CẢM BIẾN') : 'CHƯA QUÉT'}</span>
-            </div>
             ${calib ? `<div class="lsa-field"><span>Mã ${calib.qrSizeCm} cm · sai số quét</span><b style="color:#7dd3fc">${calib.reprojPx} px (${calib.quality})</b></div>` : ''}
             ${calib ? `<div class="lsa-row" style="margin-top:0"><button class="lsa-btn ghost" id="lsa-recalib" style="flex:1">♻ Hiệu chỉnh lại tiêu cự (quét lại mã)</button></div>` : ''}
             <p class="lsa-hint" id="lsa-sensor-info">Cảm biến: đang kiểm tra…</p>
             ${S.space && S.space._isShared ? `<p class="lsa-hint" style="color:#fcd34d">Đây là không gian chia sẻ (chỉ xem). Hãy bấm "Lưu bản sao" ở góc trên để giữ dữ liệu AR bạn tạo.</p>` : ''}
-            ${!calib ? `<p class="lsa-hint" style="color:#fcd34d">Lần đầu: in mã, dán lên tường, đứng cách 1,5 m rồi đưa camera vào mã. Tiêu cự camera sẽ được ước lượng từ khoảng cách bạn nhập.</p>` : ''}
         `;
     }
 
@@ -996,7 +1325,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 </div>
             </div>
             <div class="lsa-field"><span>Tiêu cự ước lượng</span><b style="color:#7dd3fc">${(focalPx() / ((S.video && S.video.videoWidth) || 1)).toFixed(3)} × W</b></div>
-            <p class="lsa-hint">Dữ liệu AR được lưu cùng không gian 360 và đồng bộ theo tài khoản Firebase. Quét lại mã neo bất cứ lúc nào để xóa sai số trôi.</p>
+            <p class="lsa-hint">Khung cảnh ghi nhớ chỉ lưu trên thiết bị này (ảnh xám + điểm đặc trưng), không gửi lên máy chủ. Mốc AR được lưu cùng không gian 360 và đồng bộ theo tài khoản Firebase.</p>
+            ${S.visual.refs.length ? `<div class="lsa-row"><button class="lsa-btn ghost" id="lsa-forget-scenes" style="flex:1">🧠 Xoá ${S.visual.refs.length} khung cảnh đã nhớ</button></div>` : ''}
             <div class="lsa-row"><button class="lsa-btn danger" id="lsa-reset-ar" style="flex:1">🗑 Xoá toàn bộ dữ liệu AR của không gian</button></div>
         `;
     }
@@ -1031,6 +1361,25 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (make) make.onclick = () => { renderQr(); $('lsa-qr-modal').classList.add('on'); };
         const help = $('lsa-help-btn');
         if (help) help.onclick = () => $('lsa-help-modal').classList.add('on');
+        const remember = $('lsa-remember');
+        if (remember) remember.onclick = () => {
+            if (!S.pose) { toast('Chưa xác định được hướng nhìn — hãy chờ nhận dạng hoặc quét mã neo.'); return; }
+            remember.disabled = true;
+            captureReference('manual:' + Date.now()).then(saved => {
+                remember.disabled = false;
+                toast(saved ? '🧠 Đã ghi nhớ khung cảnh. Lần sau chỉ cần chiếu camera vào đây.' : 'Khung cảnh ít đặc điểm — hãy xoay camera sang vùng có nhiều đồ vật rồi thử lại.');
+                if (S.open) renderSheet();
+            });
+        };
+        const initBtn = $('lsa-init-sensor');
+        if (initBtn) initBtn.onclick = () => restartWithSensor();
+        const forget = $('lsa-forget-scenes');
+        if (forget) forget.onclick = () => {
+            if (!confirm('Xoá toàn bộ khung cảnh đã ghi nhớ trên thiết bị này?')) return;
+            clearVisualRefs();
+            renderSheet();
+            toast('Đã xoá khung cảnh đã nhớ.');
+        };
         const recalib = $('lsa-recalib');
         if (recalib) recalib.onclick = () => {
             if (!S.spatial.calib) return;
@@ -1038,6 +1387,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             S.poseLock = null;
             S.pose = null;
             S.yawOffset = null;
+            clearVisualRefs();
             try { S.bridge.persist(); } catch (e) { }
             renderSheet();
             updateCalibBadge();
@@ -1059,10 +1409,12 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         };
         const reset = $('lsa-reset-ar');
         if (reset) reset.onclick = () => {
-            if (!confirm('Xoá toàn bộ mã neo và vị trí AR của không gian này?')) return;
+            if (!confirm('Xoá toàn bộ mã neo, khung cảnh đã nhớ và vị trí AR của không gian này?')) return;
             S.spatial.calib = null;
             S.spatial.anchors = {};
+            S.spatial.frameId = null;
             S.poseLock = null; S.pose = null; S.yawOffset = null;
+            clearVisualRefs();
             try { S.bridge.persist(); } catch (e) { }
             renderSheet(); renderPins(); updateCalibBadge();
             toast('Đã xoá dữ liệu AR.');
@@ -1074,7 +1426,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
     function tick() {
         if (!S.open) return;
         S.rafId = requestAnimationFrame(tick);
-        if (S.pose && S.poseLock && S.pose.source === 'sensor') updateSensorPose();
+        if (isTrackingPose()) updateSensorPose();
+        maybeAutoCapture();
         renderPins();
     }
 
@@ -1091,6 +1444,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.spatial = ensureSpatial(space);
         S.pose = null;
         S.poseLock = null;
+        S.poseLockSource = null;
         S.yawOffset = null;
         S.drift = [0, 0, 0];
         S.selectedId = null;
@@ -1101,6 +1455,15 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.tab = 'anchors';
         S.focalOverride = opts.focalNorm || 0;
         if (!S.calibDistanceCm) S.calibDistanceCm = 150;
+        S.visual.busy = false;
+        S.visual.lastTry = 0;
+        S.visual.lastOk = 0;
+        S.visual.lastInliers = 0;
+        S.visual.lockedOnce = false;
+        S.visual.cursor = 0;
+        S.visual.lastCaptureAt = 0;
+        S.visual.lastCapturePos = null;
+        const refsTask = loadVisualRefs();
 
         buildDom();
         bindSceneTaps();
@@ -1138,15 +1501,27 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         }
         await sensorAttempt;
         if (!S.open) return;
+        await refsTask;
+        if (!S.open) return;
 
         S.pose = S.poseLock = null;
-        if (S.spatial.calib && S.spatial.calib.focalNorm > 0) {
-            setStatus('Đang tìm mã neo…', 'Đưa mã QR vào khung hình để khóa lại không gian');
-        } else {
-            setStatus('Chưa khóa không gian', 'Tạo mã neo ở tab 🎯 Mã neo rồi quét để bắt đầu');
+        await waitForSensor(900);
+        if (!S.open) return;
+        if (canInitFrame()) initFromSensor(false);
+
+        if (!S.pose) {
+            if (S.visual.refs.length) {
+                setStatus('Đang tìm lại khung cảnh…', 'Chiếu camera về khu vực đã ghi nhớ — không cần mã QR');
+            } else if (S.spatial.calib && S.spatial.calib.focalNorm > 0) {
+                setStatus('Đang tìm mã neo…', 'Đưa mã QR vào khung hình để khóa lại không gian');
+            } else {
+                setStatus('Chưa khóa không gian', 'Ghi nhớ khung cảnh ở tab ⚙ hoặc quét mã neo để bắt đầu');
+            }
         }
         clearInterval(S.scanTimer);
         S.scanTimer = setInterval(scanOnce, SCAN_INTERVAL_MS);
+        clearInterval(S.visualTimer);
+        S.visualTimer = setInterval(tryVisualRelocalize, VISUAL_INTERVAL_MS + 60);
         cancelAnimationFrame(S.rafId);
         S.rafId = requestAnimationFrame(tick);
         renderSheet();
@@ -1175,7 +1550,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.open = false;
         cancelAnimationFrame(S.rafId);
         clearInterval(S.scanTimer);
+        clearInterval(S.visualTimer);
         S.scanTimer = null;
+        S.visualTimer = null;
+        S.visual.busy = false;
+        S.visual.ready = false;
         window.removeEventListener('deviceorientation', onOrientation, true);
         window.removeEventListener('deviceorientationabsolute', onOrientation, true);
         window.removeEventListener('devicemotion', onMotion, true);
@@ -1203,14 +1582,18 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             spaceId: S.space && S.space.id,
             calib: S.spatial && S.spatial.calib,
             anchors: S.spatial && S.spatial.anchors,
+            frameId: S.spatial && S.spatial.frameId,
             pose: S.pose,
             locked: !!S.poseLock,
             poseSource: S.pose && S.pose.source,
+            poseLockSource: S.poseLockSource,
             yawOffset: S.yawOffset,
             sensor: S.sensor.last,
             steps: S.pdr.steps,
             distanceCm: S.distanceCm,
-            placingId: S.placing && S.placing.id
+            placingId: S.placing && S.placing.id,
+            visualRefs: S.visual.refs.length,
+            visualInliers: S.visual.lastInliers
         }),
         _test: {
             setStream: stream => { window.__LSA_TEST_STREAM__ = stream; },
@@ -1230,6 +1613,22 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             poseFromQRCorners: M.poseFromQRCorners,
             markerToWorld: M.markerToWorld,
             projectWorld: M.projectWorld,
+            visual: {
+                refs: () => S.visual.refs,
+                ready: () => S.visual.ready,
+                capture: (tag, opts) => captureReference(tag, opts),
+                relocalize: () => { tryVisualRelocalize(true); return { inliers: S.visual.lastInliers, source: S.pose && S.pose.source }; },
+                setRefs: rows => { S.visual.refs = rows || []; S.visual.ready = true; },
+                clear: clearVisualRefs,
+                initSensor: () => initFromSensor(true),
+                state: () => ({
+                    ready: S.visual.ready,
+                    refs: S.visual.refs.length,
+                    inliers: S.visual.lastInliers,
+                    lastOk: S.visual.lastOk,
+                    focalNorm: S.visual.focalNorm
+                })
+            },
             pinRects: () => {
                 const out = {};
                 for (const id in S.pinEls) {
