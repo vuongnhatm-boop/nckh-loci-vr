@@ -57,7 +57,9 @@
         scanMisses: 0,
         lastQrAt: 0,
         calibSaveAt: 0,
-        focalOverride: 0
+        focalOverride: 0,
+        aimUv: null,
+        tapStart: null
     };
 
     /* ---------------- helpers ---------------- */
@@ -156,7 +158,8 @@
 .lsa-dist-chip{position:absolute;left:50%;top:calc(50% + 52px);transform:translateX(-50%);font-size:12px;font-weight:800;color:#e0f2fe;background:rgba(2,6,23,.72);border:1px solid rgba(56,189,248,.4);border-radius:99px;padding:4px 12px;white-space:nowrap}
 .lsa-sheet{position:absolute;left:0;right:0;bottom:0;z-index:7;background:rgba(8,15,30,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(148,163,184,.22);border-radius:22px 22px 0 0;box-shadow:0 -18px 40px rgba(0,0,0,.45);padding:8px 14px calc(env(safe-area-inset-bottom, 10px) + 12px);max-height:46vh;overflow:auto;transition:max-height .25s ease;touch-action:pan-y}
 .lsa-sheet.collapsed{max-height:64px;overflow:hidden}
-.lsa-grab{width:44px;height:4px;border-radius:99px;background:rgba(148,163,184,.45);margin:2px auto 8px}
+.lsa-grab{width:64px;height:22px;margin:0 auto 2px;position:relative;touch-action:none;cursor:grab}
+.lsa-grab::before{content:'';position:absolute;left:12px;right:12px;top:9px;height:4px;border-radius:99px;background:rgba(148,163,184,.45)}
 .lsa-tabs{display:flex;gap:6px;margin-bottom:10px}
 .lsa-tabs button{flex:1;padding:9px 6px;border-radius:12px;border:1px solid rgba(148,163,184,.22);background:rgba(30,41,59,.45);color:#cbd5e1;font-size:12px;font-weight:700;cursor:pointer}
 .lsa-tabs button.on{background:linear-gradient(135deg,rgba(2,132,199,.9),rgba(79,70,229,.9));color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(2,132,199,.35)}
@@ -290,7 +293,33 @@
         $('lsa-close').onclick = close;
         $('lsa-help').onclick = () => $('lsa-help-modal').classList.add('on');
         $('lsa-help-close').onclick = () => $('lsa-help-modal').classList.remove('on');
-        $('lsa-grab').onclick = () => $('lsa-sheet').classList.toggle('collapsed');
+        (function bindSheetSwipe() {
+            const grab = $('lsa-grab');
+            const sheet = $('lsa-sheet');
+            let startY = null, startCollapsed = false, dragged = false;
+            grab.addEventListener('pointerdown', e => {
+                startY = e.clientY;
+                dragged = false;
+                startCollapsed = sheet.classList.contains('collapsed');
+                sheet.style.transition = 'none';
+                try { grab.setPointerCapture(e.pointerId); } catch (_) { }
+            });
+            grab.addEventListener('pointermove', e => {
+                if (startY == null) return;
+                const dy = e.clientY - startY;
+                if (Math.abs(dy) > 12) dragged = true;
+                if (!startCollapsed && dy > 30) sheet.classList.add('collapsed');
+                else if (startCollapsed && dy < -26) sheet.classList.remove('collapsed');
+            });
+            const end = e => {
+                if (startY == null) return;
+                startY = null;
+                sheet.style.transition = '';
+                if (!dragged && e.type === 'pointerup') sheet.classList.toggle('collapsed');
+            };
+            grab.addEventListener('pointerup', end);
+            grab.addEventListener('pointercancel', end);
+        })();
         root.querySelectorAll('.lsa-tabs button').forEach(b => {
             b.onclick = () => { S.tab = b.dataset.tab; renderSheet(); };
         });
@@ -706,7 +735,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             else {
                 const fwd = M.poseForwardWorld(S.pose);
                 const P = [S.pose.C[0] + fwd[0] * S.distanceCm, S.pose.C[1] + fwd[1] * S.distanceCm, S.pose.C[2] + fwd[2] * S.distanceCm];
-                const uv = M.projectWorld(S.pose, P, f, cx, cy);
+                const uv = S.aimUv || M.projectWorld(S.pose, P, f, cx, cy);
                 if (!uv) ghost.style.display = 'none';
                 else place(ghost, uv, S.distanceCm, { ghost: true });
             }
@@ -731,6 +760,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
     function setPlacing(id, on) {
         S.selectedId = on ? id : null;
         S.placing = on ? { id } : null;
+        if (!on) { S.aimUv = null; S.tapStart = null; }
         if (on) $('lsa-sheet').classList.add('collapsed');
         else $('lsa-sheet').classList.remove('collapsed');
         renderSheet();
@@ -758,6 +788,57 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const h = M.norm([fwd[0], fwd[1], 0]);
         const P = [S.pose.C[0] + h[0] * 25, S.pose.C[1] + h[1] * 25, S.pose.C[2]];
         saveAnchorPos(S.placing.id, P, 'stand');
+    }
+
+    function screenToVideo(clientX, clientY) {
+        const map = viewMapping();
+        const u = (clientX - map.ox) / map.scale;
+        const v = (clientY - map.oy) / map.scale;
+        return { u, v, map };
+    }
+
+    function placeAtScreen(clientX, clientY) {
+        if (!S.placing) return false;
+        if (!S.pose) { toast('Chưa khóa được không gian — hãy quét mã neo trước.'); return false; }
+        const { u, v, map } = screenToVideo(clientX, clientY);
+        if (u < 0 || u > map.vw || v < 0 || v > map.vh) return false;
+        const P = M.pointAlongRay(S.pose, u, v, focalPx(), map.vw / 2, map.vh / 2, S.distanceCm);
+        if (!P) return false;
+        saveAnchorPos(S.placing.id, P, 'tap');
+        return true;
+    }
+
+    function onScenePointerDown(e) {
+        if (!S.placing) return;
+        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-pin,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        S.tapStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+        const { u, v, map } = screenToVideo(e.clientX, e.clientY);
+        if (u >= 0 && u <= map.vw && v >= 0 && v <= map.vh) S.aimUv = [u, v];
+    }
+
+    function onScenePointerMove(e) {
+        if (!S.placing || e.pointerType === 'mouse' && e.buttons === 0) return;
+        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        const { u, v, map } = screenToVideo(e.clientX, e.clientY);
+        if (u >= 0 && u <= map.vw && v >= 0 && v <= map.vh) S.aimUv = [u, v];
+    }
+
+    function onScenePointerUp(e) {
+        if (!S.placing || !S.tapStart) return;
+        const dx = e.clientX - S.tapStart.x, dy = e.clientY - S.tapStart.y;
+        const dt = performance.now() - S.tapStart.t;
+        S.tapStart = null;
+        if (dx * dx + dy * dy > 100 || dt > 900) return;
+        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-pin,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        placeAtScreen(e.clientX, e.clientY);
+    }
+
+    function bindSceneTaps() {
+        if (!S.root || S.root.dataset.tapsBound) return;
+        S.root.dataset.tapsBound = '1';
+        S.root.addEventListener('pointerdown', onScenePointerDown, true);
+        S.root.addEventListener('pointermove', onScenePointerMove, true);
+        S.root.addEventListener('pointerup', onScenePointerUp, true);
     }
 
     function saveAnchorPos(id, P, source) {
@@ -862,17 +943,17 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
         const sel = S.placing ? anchors.find(a => a.id === S.placing.id) : null;
         return `
-            <p class="lsa-hint">${locked ? 'Chọn mốc → ngắm tâm vào đúng vị trí thật → chọn khoảng cách → thả.' : 'Quét mã neo ở tab 🎯 Mã neo để khóa không gian trước khi gắn mốc.'}</p>
+            <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : 'Quét mã neo ở tab 🎯 Mã neo để khóa không gian trước khi gắn mốc.'}</p>
             ${rows}
             ${sel ? `
                 <div class="lsa-field"><span>Khoảng cách tới mốc</span><b style="color:#7dd3fc">${(S.distanceCm / 100).toFixed(1)} m</b></div>
                 <input class="lsa-range" type="range" id="lsa-dist" min="${PLACE_MIN_CM}" max="${PLACE_MAX_CM}" step="10" value="${S.distanceCm}">
                 <div class="lsa-row">
-                    <button class="lsa-btn ok" id="lsa-place-center" ${locked ? '' : 'disabled'}>📍 Thả tại tâm ngắm</button>
+                    <button class="lsa-btn ok" id="lsa-place-center" ${locked ? '' : 'disabled'}>📍 Đặt tại tâm ngắm</button>
                     <button class="lsa-btn ghost" id="lsa-place-stand" ${locked ? '' : 'disabled'}>🧍 Tại chỗ đứng</button>
                 </div>
                 <div class="lsa-row"><button class="lsa-btn ghost" id="lsa-place-cancel" style="flex:1">Hủy chọn mốc</button></div>
-                <p class="lsa-hint" style="margin-top:8px">Mẹo: ước lượng khoảng cách tới chỗ đặt mốc bằng bước chân (1 bước ≈ 0,7 m).</p>
+                <p class="lsa-hint" style="margin-top:8px">Chạm trực tiếp vào màn hình để đặt mốc đang chọn; kéo thanh khoảng cách nếu cần chỉnh xa/gần.</p>
             ` : ''}
         `;
     }
@@ -1022,6 +1103,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (!S.calibDistanceCm) S.calibDistanceCm = 150;
 
         buildDom();
+        bindSceneTaps();
+        S.aimUv = null;
+        S.tapStart = null;
         if (S.spatial.calib) {
             if (S.spatial.calib.qrSizeCm) S.qrSizeCm = S.spatial.calib.qrSizeCm;
             if (S.spatial.calib.distanceCm) S.calibDistanceCm = S.spatial.calib.distanceCm;
@@ -1133,6 +1217,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             scan: scanOnce,
             placeAtCenter,
             placeAtStand,
+            placeAtScreen,
+            aimUv: () => S.aimUv,
+            sheetCollapsed: () => $('lsa-sheet').classList.contains('collapsed'),
             select: id => setPlacing(id, true),
             setDistance: cm => { S.distanceCm = cm; updateReticle(); },
             anchorsTab: () => { S.tab = 'anchors'; renderSheet(); },

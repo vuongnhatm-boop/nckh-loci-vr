@@ -160,6 +160,19 @@
         return projectCam(worldToCamera(pose, P), f, cx, cy);
     }
 
+    // Tia từ tâm camera qua điểm ảnh (u,v) trong hệ toạ độ camera (x phải, y xuống, z tới)
+    function rayFromUv(pose, u, v, f, cx, cy) {
+        if (!(f > 0)) return null;
+        const dCam = norm([(u - cx) / f, (v - cy) / f, 1]);
+        return norm(mulVec(pose.R, dCam));
+    }
+
+    function pointAlongRay(pose, u, v, f, cx, cy, distCm) {
+        const d = rayFromUv(pose, u, v, f, cx, cy);
+        if (!d) return null;
+        return add(pose.C, scale(d, distCm));
+    }
+
     // W3C deviceorientation -> rotation device->earth (Z up, Y north)
     function sensorMatrix(alpha, beta, gamma) {
         return mul3(mul3(rotZ((alpha || 0) * D2R), rotX((beta || 0) * D2R)), rotY((gamma || 0) * D2R));
@@ -189,6 +202,7 @@
         solveLinear, homographyFrom4,
         poseFromQRCorners, markerToWorld, worldToCamera,
         projectCam, projectWorld, poseForwardWorld,
+        rayFromUv, pointAlongRay,
         sensorMatrix, sensorForward, sensorYaw,
         estimateFocalPx
     };

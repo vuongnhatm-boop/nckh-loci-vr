@@ -456,6 +456,29 @@
             transform: scale(1.1);
         }
 
+        .sp .btn-card-ar {
+            position: absolute;
+            top: 8px;
+            right: 76px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(5, 150, 105, 0.9);
+            color: #fff;
+            font-size: 13px;
+            display: grid;
+            place-items: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .sp .btn-card-ar:hover {
+            background: #059669;
+            transform: scale(1.1);
+        }
+
         .empty {
             color: var(--text-muted);
             padding: 24px;
@@ -957,7 +980,9 @@
         /* Minimap top-down: sơ đồ các điểm chụp trong không gian */
         #minimap-box {
             position: absolute;
-            right: 12px;
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
             bottom: calc(20px + var(--safe-bottom));
             width: 136px;
             height: 136px;
@@ -975,6 +1000,27 @@
 
         #minimap-box.show {
             display: block;
+            pointer-events: auto;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        #minimap-box.show:active {
+            transform: translateX(-50%) scale(.97);
+        }
+
+        @media (max-width: 760px), (pointer: coarse) {
+            #minimap-box {
+                left: auto;
+                right: 12px;
+                transform: none;
+                bottom: calc(50vh + 14px + var(--safe-bottom));
+                z-index: 25;
+            }
+
+            #minimap-box.show:active {
+                transform: scale(.97);
+            }
         }
 
         #minimap {
@@ -1142,7 +1188,7 @@
             transition: transform .3s cubic-bezier(.16, 1, .3, 1);
         }
 
-        @media (min-width: 761px) {
+        @media (min-width: 761px) and (pointer: fine) {
             .panel {
                 top: 80px;
                 right: 16px;
@@ -1162,7 +1208,7 @@
             }
         }
 
-        @media (max-width: 760px) {
+        @media (max-width: 760px), (pointer: coarse) {
             .panel {
                 left: 0;
                 right: 0;
@@ -2619,6 +2665,7 @@
                 <b>${esc(s.name)}</b>
                 <small>${Object.keys(s.markers || {}).length} mốc đã gắn</small>
             </div>
+            <button class="btn-card-ar" data-ar="${s.id}" title="Mở camera thực tế — đặt mốc ngoài đời">📷</button>
             <button class="btn-card-share" data-share="${s.id}" title="Chia sẻ không gian qua liên kết">🔗</button>
             <button class="del" data-del="${s.id}" aria-label="Xóa">✕</button>
         </div>
@@ -2660,6 +2707,10 @@
                             localStorage.setItem(META_KEY, JSON.stringify(loadMeta().filter(x => x.id !== e.target.dataset.del)));
                             renderSaved();
                         }
+                    } else if (e.target.dataset.ar || e.target.closest('[data-ar]')) {
+                        e.stopPropagation();
+                        const aid = e.target.dataset.ar || e.target.closest('[data-ar]').dataset.ar;
+                        window.openSpatialAr(aid);
                     } else if (e.target.dataset.share || e.target.closest('[data-share]')) {
                         e.stopPropagation();
                         const sid = e.target.dataset.share || e.target.closest('[data-share]').dataset.share;
@@ -2679,6 +2730,55 @@
             });
         }
         window.renderSaved = renderSaved;
+
+        /* ===== CHẾ ĐỘ CAMERA THỰC TẾ (AR) MỞ THẲNG TỪ THẺ KHÔNG GIAN ===== */
+        function spaceForAr(m) {
+            const markers = (m.nodes && m.nodes[0] && m.nodes[0].markers) || m.markers || {};
+            return {
+                id: m.id,
+                name: m.name,
+                lesson: m.lesson,
+                customAnchors: m.customAnchors || [],
+                markers,
+                spatial: m.spatial || null
+            };
+        }
+
+        function persistArSpace(sp) {
+            const list = loadMeta();
+            const i = list.findIndex(x => x.id === sp.id);
+            if (i < 0) return;
+            list[i].spatial = sp.spatial || null;
+            localStorage.setItem(META_KEY, JSON.stringify(list));
+            if (window.LociFirebase && window.LociFirebase.currentUser) {
+                window.LociFirebase.syncSpaces(list).catch(() => { });
+            }
+        }
+
+        window.openSpatialAr = function (id) {
+            if (!window.LociSpatial) { toast('Mô-đun AR chưa tải xong, vui lòng thử lại.'); return; }
+            const m = loadMeta().find(x => x.id === id);
+            if (!m) { toast('Không tìm thấy không gian này.'); return; }
+            const sp = spaceForAr(m);
+            const findAnchor = aid => {
+                const custom = (sp.customAnchors || []).find(a => a.id === aid);
+                if (custom) return custom;
+                for (const l of Object.values(window.LOCI_ANCHORS || {})) {
+                    for (const a of (l.anchors || [])) if (a.id === aid) return a;
+                }
+            };
+            window.LociSpatial.open({
+                bridge: {
+                    getSpace: () => sp,
+                    getAnchors: () => [...(((window.LOCI_ANCHORS || {})[sp.lesson] || {}).anchors || []), ...(sp.customAnchors || [])],
+                    findAnchor,
+                    getPanoMarker: aid => sp.markers[aid] || null,
+                    persist: () => { persistArSpace(sp); return Promise.resolve(); },
+                    setPaused: () => { },
+                    toast
+                }
+            });
+        };
 
         /* ========================================================
            2. TIỆN ÍCH HÌNH ẢNH & THUMBNAIL
@@ -6431,12 +6531,13 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 $('v-panel-toggle').onclick = () => setPanelOpen(panelEl.classList.contains('hide'));
                 $('panel-close').onclick = () => setPanelOpen(false);
 
-                let sheetStartY = null, sheetDy = 0;
+                let sheetStartY = null, sheetDy = 0, sheetStartT = 0;
                 const dragZone = $('panel-drag');
                 dragZone.addEventListener('pointerdown', e => {
                     if (e.target.closest('.panel-close')) return;
-                    if (!window.matchMedia('(max-width: 760px)').matches) return;
+                    if (!window.matchMedia('(max-width: 760px), (pointer: coarse)').matches) return;
                     sheetStartY = e.clientY;
+                    sheetStartT = performance.now();
                     sheetDy = 0;
                     panelEl.classList.add('dragging');
                     try { dragZone.setPointerCapture(e.pointerId); } catch (_) { }
@@ -6448,15 +6549,18 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 });
                 const endSheetDrag = () => {
                     if (sheetStartY == null) return;
-                    const shouldClose = sheetDy > 72;
+                    const quick = performance.now() - sheetStartT < 280;
+                    const shouldClose = sheetDy > 72 || (quick && sheetDy > 34);
                     sheetStartY = null;
                     sheetDy = 0;
+                    sheetStartT = 0;
                     panelEl.classList.remove('dragging');
                     panelEl.style.transform = '';
                     if (shouldClose) setPanelOpen(false);
                 };
                 dragZone.addEventListener('pointerup', endSheetDrag);
                 dragZone.addEventListener('pointercancel', endSheetDrag);
+                dragZone.addEventListener('lostpointercapture', endSheetDrag);
 
                 $('btn-custom-anchor').onclick = () => {
                     const title = prompt('Nhập nội dung điểm neo bạn muốn thả (vd: Chìa khóa, Bức tranh...):');
@@ -6697,6 +6801,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 /* ===== MINIMAP: SƠ ĐỒ TOP-DOWN CÁC ĐIỂM CHỤP ===== */
                 let miniOn = false;
                 let miniTick = 0;
+                let miniNodes = [];
 
                 function updateMinimapVisibility() {
                     const btn = $('v-minimap');
@@ -6723,6 +6828,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     const s = Math.min((W - pad * 2) / Math.max(maxX - minX, 1), (H - pad * 2) / Math.max(maxZ - minZ, 1));
                     const ccx = (minX + maxX) / 2, ccz = (minZ + maxZ) / 2;
                     const toPx = p => [W / 2 + (p.x - ccx) * s, H / 2 - (p.z - ccz) * s];
+                    miniNodes = pts.map((p, i) => {
+                        const xy = toPx(p);
+                        return { i, x: xy[0], y: xy[1] };
+                    });
 
                     ctx.strokeStyle = 'rgba(56, 189, 248, .55)';
                     ctx.lineWidth = 2;
@@ -6771,6 +6880,25 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     updateMinimapVisibility();
                     if (miniOn) drawMinimap();
                 };
+
+                // Chạm vào một điểm trên minimap để bay tới điểm chụp đó
+                $('minimap-box').addEventListener('click', e => {
+                    if (!miniOn || !space) return;
+                    const cv = $('minimap');
+                    const r = cv.getBoundingClientRect();
+                    if (!r.width || !r.height) return;
+                    const x = (e.clientX - r.left) * cv.width / r.width;
+                    const y = (e.clientY - r.top) * cv.height / r.height;
+                    let best = null, bestD = 28;
+                    for (const n of miniNodes) {
+                        const d = Math.hypot(n.x - x, n.y - y);
+                        if (d < bestD) { bestD = d; best = n; }
+                    }
+                    if (!best) return;
+                    if (best.i === curNode) { toast('Bạn đang đứng ở điểm này.'); return; }
+                    toast(`Đang bay tới điểm ${best.i + 1}…`);
+                    goToNode(best.i);
+                });
 
                 function loadPano(src) {
                     return new Promise(res => {
@@ -7742,7 +7870,9 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 if (shareId) {
                     handleOpenSharedSpace(shareId);
                 } else if (openId) {
-                    setTimeout(async () => {
+                    if (urlParams.get('ar') === '1' && typeof window.openSpatialAr === 'function') {
+                        setTimeout(() => window.openSpatialAr(openId), 250);
+                    } else setTimeout(async () => {
                         const m = loadMeta().find(x => x.id === openId);
                         if (m) {
                             const img = await dbGetImage(m.id);
