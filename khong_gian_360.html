@@ -8366,6 +8366,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 <span class="tag">AR</span>
             </button>
             <a class="lmar-newtab" id="lmar-newtab" href="#" target="_blank" rel="noopener noreferrer">Mở AR trong tab mới ↗</a>
+            <button class="lmar-newtab" id="lmar-safari" type="button">Sao chép liên kết để mở bằng Safari</button>
         </div>
     </div>
 
@@ -8429,6 +8430,11 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
         const lmarEmbedded = (() => {
             try { return window.self !== window.top; } catch (_) { return true; }
         })();
+        const lmarUA = navigator.userAgent || '';
+        const lmarIsIOS = /iPad|iPhone|iPod/.test(lmarUA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        // Trên iOS chỉ Safari mới mở được AR Quick Look; Chrome/Edge/Firefox dùng WKWebView
+        // vẫn báo "hỗ trợ AR" (false positive) nhưng bấm vào không có gì xảy ra.
+        const lmarIOSNeedsSafari = lmarIsIOS && !(/Safari/.test(lmarUA) && !/(CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|Mercury)/i.test(lmarUA));
 
         function lmarBuildStandaloneUrl() {
             let url;
@@ -8450,9 +8456,12 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
         function lmarUpdateNewTabButton() {
             const link = $lmar('lmar-newtab');
-            if (!link) return;
-            link.href = lmarBuildStandaloneUrl() || '#';
-            link.classList.toggle('show', lmarEmbedded);
+            if (link) {
+                link.href = lmarBuildStandaloneUrl() || '#';
+                link.classList.toggle('show', lmarEmbedded);
+            }
+            const safari = $lmar('lmar-safari');
+            if (safari) safari.classList.toggle('show', !lmarEmbedded && lmarIOSNeedsSafari);
         }
 
         function lmarOpenInNewTab() {
@@ -8692,10 +8701,13 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             if (lmarEmbedded) {
                 lmarSetStatus('Đang mở trong khung nhúng · AR cần tab riêng');
                 lmarSetHint('Khung nhúng của cổng học tập không được cấp quyền camera nên AR bị chặn. Bấm nút bên dưới để mở tab riêng — tab mới vào thẳng camera AR với đúng mô hình đang chọn.');
+            } else if (lmarIOSNeedsSafari) {
+                lmarSetStatus('iPhone: cần mở bằng Safari để đặt mô hình');
+                lmarSetHint('Chrome/Edge trên iPhone báo "AR sẵn sàng" nhưng Apple không cho mở AR Quick Look. Bấm "Sao chép liên kết" bên dưới, mở Safari rồi dán vào thanh địa chỉ — sau đó bấm nút AR để đặt mô hình vào không gian thật.');
             } else if (canAr) {
-                lmarSetStatus(cameraOn ? 'Camera trực tiếp · bấm AR để ghim mô hình vào sàn' : 'AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
+                lmarSetStatus(cameraOn ? 'Camera trực tiếp · chạm vào khung hình để đặt mô hình' : 'AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
                 lmarSetHint(cameraOn
-                    ? 'Mô hình đang nổi trên hình ảnh camera thật. Bấm nút bên dưới để ARCore/ARKit quét mặt phẳng và ghim mô hình — quay đi chỗ khác rồi quay lại, mô hình vẫn ở đúng vị trí.'
+                    ? 'Mô hình đang nổi trên hình ảnh camera thật. Chạm vào khung hình (hoặc bấm nút bên dưới) để ARCore/ARKit mở camera AR, quét sàn rồi chạm lần nữa để ghim — quay đi chỗ khác rồi quay lại, mô hình vẫn đúng vị trí.'
                     : 'Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
             } else if (!secure) {
                 lmarSetStatus('Cần HTTPS để mở AR trên điện thoại');
@@ -8747,8 +8759,32 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 e.stopPropagation();
                 newTab.href = lmarBuildStandaloneUrl() || '#';
             });
+            const safariBtn = $lmar('lmar-safari');
+            if (safariBtn) safariBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                let copied = false;
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    copied = true;
+                } catch (_) { /* bỏ qua */ }
+                lmarShowToast(copied
+                    ? 'Đã sao chép liên kết. Mở Safari, dán vào thanh địa chỉ rồi bấm nút AR để đặt mô hình.'
+                    : 'Hãy sao chép địa chỉ trang, mở Safari và dán vào thanh địa chỉ.', 7000);
+            });
 
             if (mv) {
+                let lmarTap = null;
+                mv.addEventListener('pointerdown', (e) => {
+                    if (e.pointerType !== 'touch' || lmarEmbedded) return;
+                    lmarTap = { x: e.clientX, y: e.clientY, t: Date.now() };
+                });
+                mv.addEventListener('pointerup', (e) => {
+                    if (e.pointerType !== 'touch' || !lmarTap) return;
+                    const moved = Math.hypot(e.clientX - lmarTap.x, e.clientY - lmarTap.y);
+                    const quick = Date.now() - lmarTap.t < 600;
+                    lmarTap = null;
+                    if (moved < 12 && quick) lmarActivate();
+                });
                 mv.addEventListener('progress', (e) => {
                     if (lmarState.readyUrl && lmarState.readyUrl === mv.getAttribute('src')) return;
                     const p = (e.detail && typeof e.detail.totalProgress === 'number') ? e.detail.totalProgress : 0;
@@ -8881,6 +8917,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             if (lmarEmbedded) {
                 lmarStopCamera();
                 lmarOpenInNewTab();
+                return;
+            }
+            if (lmarIOSNeedsSafari) {
+                lmarShowToast('iPhone chỉ đặt được mô hình bằng Safari. Bấm "Sao chép liên kết" rồi mở Safari, dán vào thanh địa chỉ.', 7000);
                 return;
             }
             const mv = $lmar('lmar-mv');
