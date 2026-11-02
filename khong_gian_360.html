@@ -8055,11 +8055,59 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
         #loci-model-ar.open { display: flex; }
         body.lmar-open { overflow: hidden; }
 
+        #loci-model-ar .lmar-cam {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .45s ease;
+        }
+
+        #loci-model-ar.cam-on .lmar-cam { opacity: 1; }
+
+        #loci-model-ar .lmar-top,
+        #loci-model-ar .lmar-bottom {
+            position: relative;
+            z-index: 2;
+        }
+
+        #loci-model-ar .lmar-live {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            flex: none;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: .7px;
+            color: #d8ffe9;
+            background: rgba(6, 24, 16, .62);
+            border: 1px solid rgba(34, 197, 94, .45);
+            backdrop-filter: blur(4px);
+        }
+
+        #loci-model-ar .lmar-live.show { display: inline-flex; }
+
+        #loci-model-ar .lmar-live i {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, .18);
+        }
+
         #loci-model-ar .lmar-top {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 22px;
+            background: linear-gradient(to bottom, rgba(7, 11, 24, .94), rgba(7, 11, 24, .55) 58%, transparent);
         }
 
         #loci-model-ar .lmar-heading { flex: 1; min-width: 0; }
@@ -8097,6 +8145,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             flex: 1;
             min-height: 0;
             width: 100%;
+            position: relative;
+            z-index: 1;
             background: transparent;
             --poster-color: transparent;
             --progress-bar-color: transparent;
@@ -8282,11 +8332,13 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
     </style>
 
     <div id="loci-model-ar" role="dialog" aria-modal="true" aria-label="Đặt mô hình 3D vào không gian thật">
+        <video id="lmar-cam" class="lmar-cam" playsinline muted autoplay aria-hidden="true"></video>
         <div class="lmar-top">
             <div class="lmar-heading">
                 <b id="lmar-title">Mô hình 3D</b>
                 <small id="lmar-status">Đang chuẩn bị…</small>
             </div>
+            <span class="lmar-live" id="lmar-live"><i></i>CAMERA</span>
             <button class="lmar-close" id="lmar-close" type="button" aria-label="Đóng trình xem AR">×</button>
         </div>
         <model-viewer id="lmar-mv" alt="Mô hình 3D đặt trong không gian thật" loading="eager"
@@ -8414,6 +8466,59 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             }
             const win = window.open(url, '_blank', 'noopener');
             if (!win) lmarShowToast('Trình duyệt chặn tab mới. Hãy mở trang này trong tab riêng rồi bấm lại.', 6000);
+        }
+
+        const lmarCam = { stream: null, starting: false };
+
+        async function lmarStartCamera() {
+            if (lmarCam.stream || lmarCam.starting) return;
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') return;
+            lmarCam.starting = true;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                    audio: false
+                });
+                if (!lmarState.open) {
+                    stream.getTracks().forEach(t => { try { t.stop(); } catch (_) { /* bỏ qua */ } });
+                    return;
+                }
+                lmarCam.stream = stream;
+                const video = $lmar('lmar-cam');
+                if (video) {
+                    video.srcObject = stream;
+                    video.play().catch(() => { /* bỏ qua */ });
+                }
+                const overlay = $lmar('loci-model-ar');
+                if (overlay) overlay.classList.add('cam-on');
+                const live = $lmar('lmar-live');
+                if (live) live.classList.add('show');
+                if (lmarState.readyUrl) {
+                    lmarSetStatus('Camera trực tiếp · bấm AR để ghim mô hình vào sàn');
+                    lmarSetHint('Đây là hình ảnh camera thật. Bấm nút bên dưới để ARCore/ARKit quét mặt phẳng và ghim mô hình — quay đi chỗ khác rồi quay lại, mô hình vẫn ở đúng vị trí.');
+                }
+            } catch (err) {
+                console.warn('[LociModelAR] Không mở được camera xem trước', err);
+                const name = err && err.name;
+                lmarShowToast(name === 'NotAllowedError'
+                    ? 'Bạn chưa cho phép Camera. Bấm nút AR để xin quyền lại, hoặc bật Camera cho trang này trong cài đặt trình duyệt.'
+                    : 'Không mở được camera xem trước. Bạn vẫn xem 3D được, bấm nút AR để dùng camera thật.', 5600);
+            } finally {
+                lmarCam.starting = false;
+            }
+        }
+
+        function lmarStopCamera() {
+            if (lmarCam.stream) {
+                lmarCam.stream.getTracks().forEach(t => { try { t.stop(); } catch (_) { /* bỏ qua */ } });
+                lmarCam.stream = null;
+            }
+            const video = $lmar('lmar-cam');
+            if (video) video.srcObject = null;
+            const overlay = $lmar('loci-model-ar');
+            if (overlay) overlay.classList.remove('cam-on');
+            const live = $lmar('lmar-live');
+            if (live) live.classList.remove('show');
         }
 
         function lmarHandleUrlParams() {
@@ -8583,15 +8688,21 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
             const canAr = !!mv.canActivateAR;
             const secure = window.isSecureContext;
+            const cameraOn = !!lmarCam.stream;
             if (lmarEmbedded) {
                 lmarSetStatus('Đang mở trong khung nhúng · AR cần tab riêng');
                 lmarSetHint('Khung nhúng của cổng học tập không được cấp quyền camera nên AR bị chặn. Bấm nút bên dưới để mở tab riêng — tab mới vào thẳng camera AR với đúng mô hình đang chọn.');
             } else if (canAr) {
-                lmarSetStatus('AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
-                lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
+                lmarSetStatus(cameraOn ? 'Camera trực tiếp · bấm AR để ghim mô hình vào sàn' : 'AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
+                lmarSetHint(cameraOn
+                    ? 'Mô hình đang nổi trên hình ảnh camera thật. Bấm nút bên dưới để ARCore/ARKit quét mặt phẳng và ghim mô hình — quay đi chỗ khác rồi quay lại, mô hình vẫn ở đúng vị trí.'
+                    : 'Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
             } else if (!secure) {
                 lmarSetStatus('Cần HTTPS để mở AR trên điện thoại');
                 lmarSetHint('Trang đang chạy qua kết nối không bảo mật nên AR bị chặn. Hãy mở bằng HTTPS (hoặc localhost) trên điện thoại.');
+            } else if (cameraOn) {
+                lmarSetStatus('Camera trực tiếp · thiết bị này chưa hỗ trợ ghim AR');
+                lmarSetHint('Bạn đang xem mô hình trên nền camera. Để ghim mô hình vào không gian thật, mở bằng Chrome trên Android hoặc Safari trên iPhone.');
             } else {
                 lmarSetStatus('Đang xem 3D · thiết bị này chưa hỗ trợ AR');
                 lmarSetHint('Thiết bị này chỉ xem được mô hình 3D. Mở trên điện thoại Android/iOS qua HTTPS để dùng camera AR.');
@@ -8665,8 +8776,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     } else if (status === 'failed') {
                         lmarSetStatus('Không mở được AR trên thiết bị này');
                         lmarShowToast('Không mở được AR. Hãy dùng Chrome trên Android hoặc Safari trên iPhone, mở trang qua HTTPS.', 5400);
+                        if (!lmarEmbedded) lmarStartCamera();
                     } else if (status === 'not-presenting') {
                         lmarMarkReady();
+                        if (!lmarEmbedded) lmarStartCamera();
                     }
                 });
                 mv.addEventListener('ar-tracking', (e) => {
@@ -8719,6 +8832,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             lmarSetCtaEnabled(false);
             overlay.classList.add('open');
             document.body.classList.add('lmar-open');
+            if (!lmarEmbedded) lmarStartCamera();
             try {
                 if (window.Loci360Bridge && typeof window.Loci360Bridge.setPaused === 'function') window.Loci360Bridge.setPaused(true);
             } catch (_) { /* bỏ qua */ }
@@ -8740,6 +8854,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             const overlay = $lmar('loci-model-ar');
             const mv = $lmar('lmar-mv');
             lmarState.open = false;
+            lmarStopCamera();
             clearTimeout(lmarState.pollTimer);
             clearTimeout(lmarState.toastTimer);
             if (overlay) overlay.classList.remove('open');
@@ -8764,6 +8879,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
         async function lmarActivate() {
             if (lmarEmbedded) {
+                lmarStopCamera();
                 lmarOpenInNewTab();
                 return;
             }
@@ -8787,6 +8903,11 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             }
             const btn = $lmar('lmar-cta');
             if (btn) btn.disabled = true;
+            lmarStopCamera();
+            // Android: chờ một nhịp để nhả camera trước khi WebXR chiếm lại (Quick Look trên iOS không cần).
+            const uaNow = navigator.userAgent || '';
+            const isIOSDevice = /iPad|iPhone|iPod/.test(uaNow) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            if (!isIOSDevice) await new Promise(r => setTimeout(r, 150));
             try {
                 await mv.activateAR();
             } catch (err) {
