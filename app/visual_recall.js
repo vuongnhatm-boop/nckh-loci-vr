@@ -6,7 +6,7 @@
 (function (root) {
     'use strict';
 
-    const VERSION = '1.0.0';
+    const VERSION = '1.1.0';
     const M = (root && root.LociSpatialMath) ||
         (typeof module === 'object' && typeof require === 'function' ? require('./spatial_math.js') : null);
     if (!M) { console.warn('[LociVisualRecall] thiếu spatial_math.js'); return; }
@@ -17,10 +17,10 @@
     const PER_CELL = 6;
     const DESCRIPTOR_LEN = 256;
     const DESCRIPTOR_WORDS = DESCRIPTOR_LEN / 32;
-    const MAX_REF_DIST = 92;
-    const RATIO = 0.8;
+    const MAX_REF_DIST = 100;
+    const RATIO = 0.86;
     const INLIER_PX = 4.5;
-    const MAX_REFS_PER_SPACE = 10;
+    const MAX_REFS_PER_SPACE = 24;
     const DB_NAME = 'loci_visual_recall';
     const DB_STORE = 'keyframes';
 
@@ -105,6 +105,29 @@
             out[i] = (src[j] * 77 + src[j + 1] * 150 + src[j + 2] * 29) >> 8;
         }
         return { w, h, data: out };
+    }
+
+    /* Chuẩn hoá tương phản toàn khung: camera điện thoại đổi sáng/tối rất nhanh,
+       chuẩn hoá giúp ngưỡng FAST và descriptor ổn định giữa các lần nhìn. */
+    function normalizeContrast(gray) {
+        const d = gray.data, n = d.length;
+        let sum = 0, sum2 = 0;
+        for (let i = 0; i < n; i++) {
+            const v = d[i];
+            sum += v;
+            sum2 += v * v;
+        }
+        const mean = sum / n;
+        const std = Math.sqrt(Math.max(1, sum2 / n - mean * mean));
+        if (std >= 34 && std <= 76) return gray;
+        const gain = Math.max(0.55, Math.min(3.2, 54 / std));
+        const lut = new Uint8Array(256);
+        for (let v = 0; v < 256; v++) {
+            const x = 128 + (v - mean) * gain;
+            lut[v] = x < 0 ? 0 : (x > 255 ? 255 : x | 0);
+        }
+        for (let i = 0; i < n; i++) d[i] = lut[d[i]];
+        return gray;
     }
 
     function grabGray(source, maxDim) {
@@ -248,6 +271,7 @@
 
     function frameFromGray(gray) {
         if (!gray) return null;
+        normalizeContrast(gray);
         const kps = detect(gray);
         const desc = describe(gray, kps, MAX_KP);
         return { w: gray.w, h: gray.h, kps, desc, count: Math.floor(kps.length / 3) };
@@ -378,37 +402,111 @@
         return { H, inliers, rms, total: n, ratio: inliers / n };
     }
 
-    function matchFrames(ref, live) {
+    function countInliers(src, dst, H, px) {
+        if (!H) return { inliers: 0, rms: 0 };
+        const p2 = px * px;
+        let inliers = 0, sum = 0;
+        for (let i = 0; i < src.length; i++) {
+            const p = applyH(H, src[i][0], src[i][1]);
+            if (!p) continue;
+            const dx = p[0] - dst[i][0], dy = p[1] - dst[i][1];
+            const e2 = dx * dx + dy * dy;
+            if (e2 <= p2) { inliers++; sum += e2; }
+        }
+        return { inliers, rms: inliers ? Math.sqrt(sum / inliers) : 0 };
+    }
+
+    function matchFrames(ref, live, opts) {
+        opts = opts || {};
         if (!ref || !live || !ref.desc || !live.desc) return null;
         const rn = Math.floor(ref.kps.length / 3);
         const ln = Math.min(Math.floor(live.kps.length / 3), MAX_KP_LIVE);
         if (rn < 8 || ln < 8) return null;
+        const maxDist = opts.maxDist || MAX_REF_DIST;
         const bestL = new Int32Array(ln).fill(-1);
         const distL = new Float32Array(ln).fill(1e9);
+        const secL = new Float32Array(ln).fill(1e9);
         const bestR = new Int32Array(rn).fill(-1);
         const distR = new Float32Array(rn).fill(1e9);
         for (let i = 0; i < ln; i++) {
             for (let j = 0; j < rn; j++) {
                 const d = hamming(live.desc, i, ref.desc, j);
-                if (d < distL[i]) { distL[i] = d; bestL[i] = j; }
+                if (d < distL[i]) { secL[i] = distL[i]; distL[i] = d; bestL[i] = j; }
+                else if (d < secL[i]) secL[i] = d;
                 if (d < distR[j]) { distR[j] = d; bestR[j] = i; }
             }
         }
         const src = [], dst = [];
+        const usedLive = new Uint8Array(ln);
+        const usedRef = new Uint8Array(rn);
         for (let i = 0; i < ln; i++) {
             const j = bestL[i];
             if (j < 0 || bestR[j] !== i) continue;
-            if (distL[i] > MAX_REF_DIST) continue;
+            if (distL[i] > maxDist) continue;
             src.push([ref.kps[j * 3], ref.kps[j * 3 + 1]]);
             dst.push([live.kps[i * 3], live.kps[i * 3 + 1]]);
+            usedLive[i] = 1;
+            usedRef[j] = 1;
+        }
+        // Vùng lặp/ánh sáng khó: bổ sung cặp theo tỉ lệ khoảng cách để không mất dấu.
+        if (src.length < 12 && opts.ratio !== false) {
+            for (let i = 0; i < ln; i++) {
+                if (usedLive[i]) continue;
+                const j = bestL[i];
+                if (j < 0 || usedRef[j]) continue;
+                if (distL[i] > maxDist + 6) continue;
+                if (!(distL[i] < RATIO * secL[i])) continue;
+                src.push([ref.kps[j * 3], ref.kps[j * 3 + 1]]);
+                dst.push([live.kps[i * 3], live.kps[i * 3 + 1]]);
+                usedLive[i] = 1;
+                usedRef[j] = 1;
+            }
         }
         if (src.length < 6) return null;
+        const n = src.length;
+
+        // Khi đã có hướng dự đoán (cảm biến/khung trước), kiểm tra trực tiếp trước:
+        // nhanh hơn RANSAC và giữ được khóa khi chuyển động nhỏ.
+        if (opts.priorH) {
+            const c = countInliers(src, dst, opts.priorH, INLIER_PX + 1.8);
+            if (c.inliers >= (opts.priorMin || 10) && c.rms <= 6.5) {
+                const is = [], id = [];
+                const p2 = (INLIER_PX + 1.8) * (INLIER_PX + 1.8);
+                for (let i = 0; i < n; i++) {
+                    const p = applyH(opts.priorH, src[i][0], src[i][1]);
+                    if (!p) continue;
+                    const dx = p[0] - dst[i][0], dy = p[1] - dst[i][1];
+                    if (dx * dx + dy * dy <= p2) { is.push(src[i]); id.push(dst[i]); }
+                }
+                let H = is.length >= 6 ? homographyFromCorrespondences(is, id) : null;
+                if (!H) H = opts.priorH;
+                const c2 = countInliers(src, dst, H, INLIER_PX);
+                return {
+                    H,
+                    inliers: Math.max(c.inliers, c2.inliers),
+                    rms: c2.inliers ? c2.rms : c.rms,
+                    total: n,
+                    ratio: c2.inliers / n,
+                    prior: true,
+                    matches: n
+                };
+            }
+        }
+
         const out = ransacHomography(src, dst);
-        if (out) out.matches = src.length;
+        if (out) out.matches = n;
         return out;
     }
 
     /* ---------------- pure-rotation decomposition ---------------- */
+    function homographyFromRotation(R, focalNorm, refW, refH, liveW, liveH) {
+        if (!R || !(focalNorm > 0)) return null;
+        const fr = focalNorm * refW, fl = focalNorm * liveW;
+        const Kl = [[fl, 0, liveW / 2], [0, fl, liveH / 2], [0, 0, 1]];
+        const Kri = [[1 / fr, 0, -(refW / 2) / fr], [0, 1 / fr, -(refH / 2) / fr], [0, 0, 1]];
+        return matMul3(matMul3(Kl, R), Kri);
+    }
+
     function rotationFromHomography(H, focalNorm, refW, refH, liveW, liveH) {
         if (!H || !(focalNorm > 0)) return null;
         const fr = focalNorm * refW, fl = focalNorm * liveW;
@@ -554,7 +652,10 @@
         describe,
         frameFromGray,
         captureFrame,
+        normalizeContrast,
         matchFrames,
+        countInliers,
+        homographyFromRotation,
         rotationFromHomography,
         rotationAngleDeg,
         listRefs,

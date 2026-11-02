@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '1.1.0';
+    const VERSION = '1.2.0';
     if (window.LociSpatial && window.LociSpatial.__version === VERSION) return;
 
     const M = window.LociSpatialMath;
@@ -22,12 +22,22 @@
     const PLACE_MAX_CM = 800;
     const PLACE_DEFAULT_CM = 200;
     const FOCAL_HFOV_DEFAULT = 64;
-    const VISUAL_INTERVAL_MS = 1000;
-    const VISUAL_REFS_PER_TRY = 2;
-    const VISUAL_MAX_REFS = 10;
+    const VISUAL_INTERVAL_MS = 800;
+    const VISUAL_TRACK_MS = 220;
+    const VISUAL_REFS_PER_TRY = 3;
+    const VISUAL_MAX_REFS = 24;
     const VISUAL_MIN_INLIERS = 12;
-    const VISUAL_MIN_INLIERS_TRACKING = 16;
-    const VISUAL_MAX_RMS = 4.6;
+    const VISUAL_MIN_INLIERS_TRACKING = 12;
+    const VISUAL_MAX_RMS = 5.2;
+    const VISUAL_FRAME_DIM = 440;
+    const VISUAL_TRACK_DIM = 380;
+    const TRACK_MIN_INLIERS = 9;
+    const TRACK_MAX_RMS = 5.0;
+    const TRACK_MAX_STEP_DEG = 45;
+    const TRACK_FAIL_LIMIT = 4;
+    const AUTO_CAPTURE_MS = 6000;
+    const AUTO_CAPTURE_DIST_CM = 60;
+    const AUTO_CAPTURE_YAW_DEG = 20;
     const R_UPRIGHT = [[1, 0, 0], [0, 0, 1], [0, -1, 0]];
     const R_CAM2DEV = [[1, 0, 0], [0, -1, 0], [0, 0, -1]];
 
@@ -62,6 +72,7 @@
         stepCm: STEP_CM_DEFAULT,
         scanTimer: null,
         visualTimer: null,
+        trackTimer: null,
         rafId: 0,
         lastStatus: '',
         lastWarnAt: 0,
@@ -85,7 +96,14 @@
             focalNorm: 0,
             lastCaptureAt: 0,
             lastCapturePos: null,
-            lockedOnce: false
+            lastCaptureYaw: null,
+            lockedOnce: false,
+            trackFrame: null,
+            trackPoseR: null,
+            trackAt: 0,
+            trackFails: 0,
+            lostNotified: false,
+            lastStatusAt: 0
         }
     };
 
@@ -525,6 +543,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
     function scanOnce() {
         if (!S.open || !S.video || !S.video.videoWidth || S.video.readyState < 2) return;
+        // Đang bám cảnh tốt thì tạm nghỉ quét QR để dành CPU cho việc bám khung hình.
+        if (S.pose && S.pose.source === 'visual' && performance.now() - S.visual.lastOk < 3000) return;
         if (typeof window.jsQR !== 'function') {
             setStatus('Đang tải bộ giải mã QR…', '');
             return;
@@ -668,17 +688,32 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.visual.lockedOnce = false;
         S.visual.lastCapturePos = null;
         S.visual.lastCaptureAt = 0;
+        S.visual.lastCaptureYaw = null;
+        S.visual.trackFrame = null;
+        S.visual.trackPoseR = null;
+        S.visual.trackFails = 0;
+        S.visual.lostNotified = false;
         if (V && S.space) {
             try { V.deleteRefs(S.space.id).catch(() => { }); } catch (e) { }
         }
+    }
+
+    function seedVisualTrack(frame, R) {
+        if (!frame || !R) return;
+        S.visual.trackFrame = frame;
+        S.visual.trackPoseR = R.map(r => r.slice());
+        S.visual.trackAt = performance.now();
+        S.visual.trackFails = 0;
+        S.visual.lostNotified = false;
     }
 
     function captureReference(tag, opts) {
         const V = visualApi();
         if (!V || !S.open || !S.pose || !S.video || S.video.readyState < 2) return Promise.resolve(null);
         let frame = null;
-        try { frame = V.captureFrame(S.video, 400); } catch (e) { frame = null; }
+        try { frame = V.captureFrame(S.video, VISUAL_FRAME_DIM); } catch (e) { frame = null; }
         if (!frame || frame.count < 70) return Promise.resolve(null);
+        const yaw = camYawOf(S.pose.R);
         const rec = {
             at: Date.now(),
             tag: tag || 'manual',
@@ -689,10 +724,13 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             desc: frame.desc,
             pose: { R: S.pose.R.map(r => r.slice()), C: S.pose.C.slice() },
             focalNorm: currentFocalNorm(),
-            frameId: (S.spatial && S.spatial.frameId) || null
+            frameId: (S.spatial && S.spatial.frameId) || null,
+            yaw
         };
         S.visual.lastCaptureAt = performance.now();
         S.visual.lastCapturePos = S.pose.C.slice();
+        S.visual.lastCaptureYaw = yaw;
+        seedVisualTrack(frame, S.pose.R);
         let task;
         try { task = V.saveRef(S.space.id, rec); } catch (e) { task = Promise.resolve(null); }
         return Promise.resolve(task).then(saved => {
@@ -714,20 +752,42 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
     function maybeAutoCapture() {
         if (!S.open || !S.pose || !S.spatial || !S.spatial.frameId) return;
-        if (S.visual.busy) return;
+        if (S.visual.busy || S.placing) return;
         const now = performance.now();
-        if (now - S.visual.lastCaptureAt < 12000) return;
+        if (now - S.visual.lastCaptureAt < AUTO_CAPTURE_MS) return;
+        let moved = true;
         const p = S.visual.lastCapturePos;
-        if (p) {
-            const d = Math.hypot(S.pose.C[0] - p[0], S.pose.C[1] - p[1], S.pose.C[2] - p[2]);
-            if (d < 90) return;
+        if (p) moved = Math.hypot(S.pose.C[0] - p[0], S.pose.C[1] - p[1], S.pose.C[2] - p[2]) >= AUTO_CAPTURE_DIST_CM;
+        let turned = true;
+        if (S.visual.lastCaptureYaw != null) {
+            const dy = Math.abs(M.normalizeAngle(camYawOf(S.pose.R) - S.visual.lastCaptureYaw));
+            turned = dy >= AUTO_CAPTURE_YAW_DEG * M.D2R;
         }
+        if (!moved && !turned) return;
         captureReference('roam:' + Date.now(), { replaceTag: false });
     }
 
-    function applyVisualLock(best, Rlive) {
+    function orderedRefs(refs) {
+        const sy = currentSensorYaw();
+        let liveYaw = S.pose ? camYawOf(S.pose.R) : null;
+        if (liveYaw == null && sy != null) liveYaw = S.yawOffset == null ? sy : M.normalizeAngle(sy + S.yawOffset);
+        if (liveYaw == null || refs.length <= VISUAL_REFS_PER_TRY) return refs;
+        const ranked = refs.map(r => {
+            const y = (r.yaw != null) ? r.yaw : (r.pose && r.pose.R ? camYawOf(r.pose.R) : null);
+            return { r, d: y == null ? 9 : Math.abs(M.normalizeAngle(y - liveYaw)) };
+        }).sort((a, b) => a.d - b.d).map(x => x.r);
+        const top = ranked.slice(0, 2);
+        const rest = ranked.slice(2);
+        if (!rest.length) return top;
+        const pick = rest[S.visual.cursor % rest.length];
+        return [pick].concat(top);
+    }
+
+    function applyVisualLock(best, Rlive, frame) {
         const wasSource = S.pose && S.pose.source;
-        S.poseLock = { R: Rlive, C: best.ref.pose.C.slice() };
+        const tracking = !!(S.poseLock && S.pose && (S.poseLockSource === 'visual' || S.poseLockSource === 'sensor'));
+        const C = tracking ? S.pose.C.slice() : best.ref.pose.C.slice();
+        S.poseLock = { R: Rlive, C };
         S.poseLockYaw = camYawOf(Rlive);
         S.poseLockSource = 'visual';
         S.drift = [0, 0, 0];
@@ -738,19 +798,84 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.lastLockAt = performance.now();
         S.visual.lastOk = S.lastLockAt;
         S.visual.lastInliers = best.m.inliers;
-        S.visual.lastCaptureAt = S.lastLockAt;
-        S.visual.lastCapturePos = S.pose.C.slice();
-        updateCalibBadge();
-        renderPins();
+        if (frame) seedVisualTrack(frame, Rlive);
         if (!S.visual.lockedOnce || wasSource !== 'visual') {
             S.visual.lockedOnce = true;
+            S.visual.lostNotified = false;
             setStatus('Đã nhận ra khung cảnh', `${best.m.inliers} điểm khớp · mốc đang neo theo vị trí đã lưu`);
             toast('🧠 Đã nhận ra khu vực — mốc hiện đúng chỗ đã đặt.');
             renderSheet();
         } else {
             const sub = $('lsa-substatus');
-            if (sub) sub.textContent = `Theo dõi thị giác · ${best.m.inliers} điểm khớp`;
+            if (sub) sub.textContent = `Đang bám cảnh · ${best.m.inliers} điểm khớp`;
         }
+        updateCalibBadge();
+        renderPins();
+    }
+
+    function tryVisualTrack() {
+        if (!S.open || S.visual.busy || !S.pose || !S.poseLock) return;
+        const V = visualApi();
+        if (!V || !S.visual.ready || !S.video || S.video.readyState < 2) return;
+        if (S.placing) return;
+        if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+        const now = performance.now();
+        if (now - S.visual.trackAt < VISUAL_TRACK_MS) return;
+        S.visual.trackAt = now;
+        S.visual.busy = true;
+        let frame = null;
+        try { frame = V.captureFrame(S.video, VISUAL_FRAME_DIM); } catch (e) { frame = null; }
+        S.visual.busy = false;
+        if (!frame || frame.count < 55) return;
+        const prev = S.visual.trackFrame;
+        const prevR = S.visual.trackPoseR;
+        if (!prev || !prevR) {
+            S.visual.trackFrame = frame;
+            S.visual.trackPoseR = S.pose.R.map(r => r.slice());
+            return;
+        }
+        const prevYaw = camYawOf(prevR);
+        const fNorm = S.visual.focalNorm > 0 ? S.visual.focalNorm : currentFocalNorm();
+        let m = null;
+        try {
+            const Rrel = M.mul3(M.transpose(S.pose.R), prevR);
+            const priorH = V.homographyFromRotation(Rrel, fNorm, prev.w, prev.h, frame.w, frame.h);
+            m = V.matchFrames(prev, frame, { maxDist: 104, priorH, priorMin: 10 });
+        } catch (e) { m = null; }
+        let rel = null;
+        if (m && m.inliers >= TRACK_MIN_INLIERS && m.rms <= TRACK_MAX_RMS) {
+            try { rel = V.rotationFromHomography(m.H, fNorm, prev.w, prev.h, frame.w, frame.h); } catch (e) { rel = null; }
+            if (rel && V.rotationAngleDeg(rel) > TRACK_MAX_STEP_DEG) rel = null;
+        }
+        if (!rel) {
+            S.visual.trackFails++;
+            S.visual.trackFrame = null;
+            S.visual.trackPoseR = null;
+            if (S.visual.trackFails >= TRACK_FAIL_LIMIT && !S.visual.lostNotified) {
+                S.visual.lostNotified = true;
+                setStatus('Đang tìm lại khung cảnh…', 'Xoay camera về khu vực đã ghi nhớ — mốc sẽ hiện lại');
+            }
+            return;
+        }
+        const Rnew = M.mul3(prevR, M.transpose(rel));
+        const C = S.pose.C.slice();
+        S.poseLock = { R: Rnew, C };
+        S.poseLockYaw = camYawOf(Rnew);
+        S.poseLockSource = 'visual';
+        S.drift = [0, 0, 0];
+        S.pose = { R: Rnew, C: C.slice(), source: 'visual' };
+        const sy = currentSensorYaw();
+        if (sy != null) S.yawOffset = M.normalizeAngle(S.poseLockYaw - sy);
+        S.visual.trackFrame = frame;
+        S.visual.trackPoseR = Rnew;
+        S.visual.trackFails = 0;
+        S.visual.lastInliers = m.inliers;
+        S.visual.lastOk = now;
+        if (S.visual.lostNotified) {
+            S.visual.lostNotified = false;
+            setStatus('Đã bám lại khung cảnh', `${m.inliers} điểm khớp · mốc giữ nguyên vị trí`);
+        }
+        updateCalibBadge();
     }
 
     function tryVisualRelocalize(force) {
@@ -770,22 +895,30 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
         S.visual.busy = true;
         let frame = null;
-        try { frame = V.captureFrame(S.video, 400); } catch (e) { frame = null; }
+        try { frame = V.captureFrame(S.video, VISUAL_FRAME_DIM); } catch (e) { frame = null; }
         if (!frame || frame.count < 60) { S.visual.busy = false; return; }
 
-        const total = Math.min(VISUAL_REFS_PER_TRY, refs.length);
-        const start = S.visual.cursor % refs.length;
+        const ordered = orderedRefs(refs);
+        const total = Math.min(VISUAL_REFS_PER_TRY, ordered.length);
         let best = null;
         for (let i = 0; i < total; i++) {
-            const ref = refs[(start + i) % refs.length];
+            const ref = ordered[i];
             let m = null;
-            try { m = V.matchFrames(ref, frame); } catch (e) { m = null; }
+            try {
+                let priorH = null;
+                if (S.pose && ref.pose && ref.pose.R) {
+                    const fRef = ref.focalNorm > 0 ? ref.focalNorm : currentFocalNorm();
+                    const Rrel = M.mul3(M.transpose(S.pose.R), ref.pose.R);
+                    priorH = V.homographyFromRotation(Rrel, fRef, ref.w, ref.h, frame.w, frame.h);
+                }
+                m = V.matchFrames(ref, frame, { priorH, priorMin: 12 });
+            } catch (e) { m = null; }
             if (!m) continue;
             if (!best || m.inliers > best.m.inliers || (m.inliers === best.m.inliers && m.rms < best.m.rms)) {
                 best = { ref, m };
             }
         }
-        S.visual.cursor = (start + total) % refs.length;
+        S.visual.cursor++;
         S.visual.busy = false;
         if (!best) return;
 
@@ -795,12 +928,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const focalNorm = best.ref.focalNorm > 0 ? best.ref.focalNorm : currentFocalNorm();
         const rel = V.rotationFromHomography(best.m.H, focalNorm, best.ref.w, best.ref.h, frame.w, frame.h);
         if (!rel) return;
+        // Lệch góc lớn chỉ chấp nhận khi có rất nhiều điểm khớp (tránh nhận nhầm cảnh khác).
+        const viewDeg = V.rotationAngleDeg(rel);
+        if (viewDeg > 50 && best.m.inliers < 22) return;
         const Rlive = M.mul3(best.ref.pose.R, M.transpose(rel));
-        if (S.pose) {
-            const dYaw = Math.abs(M.normalizeAngle(camYawOf(Rlive) - camYawOf(S.pose.R)));
-            if (dYaw > 35 * M.D2R && best.m.inliers < 24) return;
-        }
-        applyVisualLock(best, Rlive);
+        applyVisualLock(best, Rlive, frame);
     }
 
     function canInitFrame() {
@@ -854,6 +986,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.visual.lockedOnce = false;
         S.visual.lastCapturePos = null;
         S.visual.lastCaptureAt = 0;
+        S.visual.lastCaptureYaw = null;
+        S.visual.trackFrame = null;
+        S.visual.trackPoseR = null;
+        S.visual.trackFails = 0;
+        S.visual.lostNotified = false;
         S.spatial.frameId = null;
         S.poseLock = null;
         S.pose = null;
@@ -1285,6 +1422,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const calib = S.spatial && S.spatial.calib;
         const locked = !!S.poseLock;
         const refs = S.visual.refs.length;
+        const tracking = !!(S.visual.trackFrame && S.pose && performance.now() - S.visual.lastOk < 2500);
         const anchorCount = Object.keys((S.spatial && S.spatial.anchors) || {}).length;
         const src = poseSourceLabel();
         return `
@@ -1292,7 +1430,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             <div class="lsa-row" style="margin-top:0">
                 <button class="lsa-btn pri" id="lsa-remember" ${S.pose ? '' : 'disabled'}>🧠 Ghi nhớ khung cảnh</button>
             </div>
-            <p class="lsa-hint">Đã lưu <b>${refs}</b> khung cảnh cho không gian này${S.visual.lastInliers ? ` · lần khớp gần nhất ${S.visual.lastInliers} điểm` : ''}.</p>
+            <p class="lsa-hint">Đã lưu <b>${refs}</b> khung cảnh cho không gian này${tracking ? ' · đang bám liên tục' : ''}${S.visual.lastInliers ? ` · lần khớp gần nhất ${S.visual.lastInliers} điểm` : ''}.</p>
             <div class="lsa-field"><span>Nguồn định vị</span><b style="color:#7dd3fc">${src}</b></div>
             ${!S.pose && !anchorCount ? `<div class="lsa-row" style="margin-top:0"><button class="lsa-btn ghost" id="lsa-init-sensor" style="flex:1">📐 Bắt đầu bằng cảm biến</button></div>` : ''}
             <p class="lsa-hint" style="margin-top:14px"><b>Mã neo QR (tuỳ chọn)</b> — in một tờ dán lên tường nếu muốn khóa vị trí chính xác tuyệt đối, hoặc khi không thể nhận dạng khung cảnh.</p>
@@ -1463,6 +1601,12 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.visual.cursor = 0;
         S.visual.lastCaptureAt = 0;
         S.visual.lastCapturePos = null;
+        S.visual.lastCaptureYaw = null;
+        S.visual.trackFrame = null;
+        S.visual.trackPoseR = null;
+        S.visual.trackAt = 0;
+        S.visual.trackFails = 0;
+        S.visual.lostNotified = false;
         const refsTask = loadVisualRefs();
 
         buildDom();
@@ -1522,6 +1666,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.scanTimer = setInterval(scanOnce, SCAN_INTERVAL_MS);
         clearInterval(S.visualTimer);
         S.visualTimer = setInterval(tryVisualRelocalize, VISUAL_INTERVAL_MS + 60);
+        clearInterval(S.trackTimer);
+        S.trackTimer = setInterval(tryVisualTrack, VISUAL_TRACK_MS);
         cancelAnimationFrame(S.rafId);
         S.rafId = requestAnimationFrame(tick);
         renderSheet();
@@ -1551,10 +1697,15 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         cancelAnimationFrame(S.rafId);
         clearInterval(S.scanTimer);
         clearInterval(S.visualTimer);
+        clearInterval(S.trackTimer);
         S.scanTimer = null;
         S.visualTimer = null;
+        S.trackTimer = null;
         S.visual.busy = false;
         S.visual.ready = false;
+        S.visual.trackFrame = null;
+        S.visual.trackPoseR = null;
+        S.visual.trackFails = 0;
         window.removeEventListener('deviceorientation', onOrientation, true);
         window.removeEventListener('deviceorientationabsolute', onOrientation, true);
         window.removeEventListener('devicemotion', onMotion, true);
@@ -1618,6 +1769,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 ready: () => S.visual.ready,
                 capture: (tag, opts) => captureReference(tag, opts),
                 relocalize: () => { tryVisualRelocalize(true); return { inliers: S.visual.lastInliers, source: S.pose && S.pose.source }; },
+                track: () => { S.visual.trackAt = 0; tryVisualTrack(); return { inliers: S.visual.lastInliers, fails: S.visual.trackFails, source: S.pose && S.pose.source }; },
                 setRefs: rows => { S.visual.refs = rows || []; S.visual.ready = true; },
                 clear: clearVisualRefs,
                 initSensor: () => initFromSensor(true),
@@ -1626,7 +1778,10 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                     refs: S.visual.refs.length,
                     inliers: S.visual.lastInliers,
                     lastOk: S.visual.lastOk,
-                    focalNorm: S.visual.focalNorm
+                    focalNorm: S.visual.focalNorm,
+                    trackFails: S.visual.trackFails,
+                    tracking: !!S.visual.trackFrame,
+                    lastCaptureYaw: S.visual.lastCaptureYaw
                 })
             },
             pinRects: () => {
