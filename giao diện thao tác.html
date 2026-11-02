@@ -1,0 +1,3916 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Thiên Đường Phiêu Lưu - Pixel Island Hub & Wardrobe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #120e24;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            touch-action: none;
+        }
+
+        .pixel-panel {
+            background: #242238;
+            border: 3px solid #111;
+            box-shadow:
+                inset -3px -3px 0px 0px #151324,
+                inset 3px 3px 0px 0px #4e4a71,
+                0 4px 0 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .pixel-btn {
+            border: 2px solid #101018;
+            box-shadow: 0 3px 0 #101018;
+            transition: transform 0.06s ease, box-shadow 0.06s ease;
+        }
+
+        .pixel-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #101018;
+        }
+
+        .season-btn-active {
+            border-color: #ffd700 !important;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.7), 0 3px 0 #101018 !important;
+            transform: translateY(-2px);
+        }
+
+        .wardrobe-item-active {
+            outline: 2px solid #ffd700;
+            background-color: rgba(255, 215, 0, 0.25) !important;
+            transform: scale(1.04);
+        }
+
+        .scanlines {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+                    rgba(0, 0, 0, 0.08) 50%), linear-gradient(90deg,
+                    rgba(255, 0, 0, 0.02),
+                    rgba(0, 255, 0, 0.01),
+                    rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #5d5982;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center w-full h-full relative overflow-hidden bg-slate-950">
+
+    <!-- 🎵 NHẠC NỀN GIAO DIỆN -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="Âm thanh/Nhạc giao diện.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Nút điều khiển nhạc (góc trên phải) -->
+    <div id="music-toggle-btn" title="Bật/Tắt nhạc nền" style="
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 9999;
+        width: 42px;
+        height: 42px;
+        background: rgba(20,16,40,0.88);
+        border: 2px solid #7c5fc4;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 0 12px rgba(124,95,196,0.55), 0 2px 0 #101018;
+        transition: box-shadow 0.2s, border-color 0.2s;
+        font-size: 18px;
+        user-select: none;
+    " onclick="toggleBgMusic()">🎵</div>
+
+    <!-- Thanh âm lượng mini (hiện khi hover) -->
+    <div id="music-vol-bar" style="
+        position: fixed;
+        top: 62px;
+        right: 10px;
+        z-index: 9998;
+        background: rgba(20,16,40,0.92);
+        border: 2px solid #7c5fc4;
+        border-radius: 8px;
+        padding: 6px 10px;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 0 10px rgba(124,95,196,0.4);
+    ">
+        <span style="font-size:9px;color:#c4b5fd;font-family:'Press Start 2P',monospace;">VOL</span>
+        <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.35"
+            style="width:80px;accent-color:#7c5fc4;cursor:pointer;"
+            oninput="document.getElementById('bgMusic').volume=this.value">
+    </div>
+
+    <div id="game-container" class="relative w-full h-full flex items-center justify-center">
+        <canvas id="gameCanvas" class="w-full h-full object-contain"></canvas>
+        <div class="absolute inset-0 scanlines z-10 pointer-events-none"></div>
+
+        <!-- OPEN WORLD LIVE MULTIPLAYER CHAT DOCK -->
+        <div id="open-world-chat-widget"
+            class="absolute bottom-4 left-4 z-30 hidden flex flex-col w-[340px] max-w-[88vw] h-[190px] pixel-panel rounded-lg p-2.5 shadow-2xl pointer-events-auto">
+            <div
+                class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-indigo-500/40 text-[9px] text-cyan-300">
+                <div class="flex items-center gap-1.5 font-bold">
+                    <span
+                        class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]"></span>
+                    <span>CHAT THẾ GIỚI MỞ</span>
+                </div>
+                <span id="chat-online-badge"
+                    class="text-[8px] text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/60 font-bold">🟢
+                    6 Online</span>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages-container"
+                class="flex-1 overflow-y-auto space-y-1.5 pr-1 text-[8.5px] leading-relaxed text-gray-200">
+                <!-- Chat messages will be added here dynamically -->
+            </div>
+
+            <!-- Chat Input Bar -->
+            <form id="chat-form" class="mt-1.5 flex items-center gap-1.5 pt-1.5 border-t border-indigo-500/40">
+                <input id="chat-input" type="text" maxlength="60" placeholder="Gõ tin nhắn... (Enter)"
+                    autocomplete="off"
+                    class="flex-1 bg-[#120e24] text-white text-[9px] px-2 py-1.5 rounded border border-indigo-400/50 focus:border-cyan-400 focus:outline-none placeholder-gray-500" />
+                <button type="submit"
+                    class="pixel-btn bg-gradient-to-b from-cyan-500 to-cyan-700 hover:from-cyan-400 hover:to-cyan-600 text-white text-[8.5px] px-2.5 py-1.5 rounded font-bold border border-cyan-300">
+                    GỬI
+                </button>
+            </form>
+        </div>
+
+        <!-- TOP HUD: Faithful replica of celestial UI -->
+        <header
+            class="absolute top-2 left-0 right-0 px-3 sm:px-6 py-1 flex items-center justify-between pointer-events-none z-20">
+
+            <!-- Top Left HUD: Hearts, Angel Halo, Key, Wardrobe Button -->
+            <div
+                class="flex items-center gap-2 sm:gap-3 pointer-events-auto bg-[#1b192cd9] px-3 py-1.5 rounded-md border-2 border-[#fcd289] shadow-lg">
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-6 h-6 text-red-500 fill-current drop-shadow" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    <svg class="w-6 h-6 text-red-500 fill-current drop-shadow" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    <svg class="w-6 h-6 text-red-500 fill-current drop-shadow" viewBox="0 0 24 24">
+                        <path
+                            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </div>
+
+                <div class="px-1" title="Vòng Hào Quang Thánh">
+                    <div
+                        class="w-7 h-3.5 border-2 border-amber-300 rounded-full bg-amber-400/20 shadow-[0_0_8px_#ffd700] ring-1 ring-yellow-200">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 pl-1" title="Chìa khóa thần bí">
+                    <svg class="w-5 h-5 text-amber-400 fill-current" viewBox="0 0 24 24">
+                        <path
+                            d="M7 14c-1.66 0-3-1.34-3-3 0-1.31.84-2.41 2-2.83V2h2v3h2V2h2v6.17c1.16.42 2 1.52 2 2.83 0 1.66-1.34 3-3 3v4h2v3h-2v2H7v-9zm2-2c.55 0 1-.45 1-1s-.45-1-1-1-1 .45-1 1 .45 1 1 1z"
+                            transform="rotate(45 12 12)" />
+                    </svg>
+                    <span class="text-[10px] text-amber-200 font-bold">1</span>
+                </div>
+
+                <!-- NEW: Dedicated HUD Wardrobe Button -->
+                <button id="btn-open-wardrobe-hud"
+                    class="pixel-btn ml-1 sm:ml-2 bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-400 hover:to-indigo-600 text-amber-200 px-2 sm:px-2.5 py-1 rounded text-[8px] sm:text-[9px] flex items-center gap-1.5 border border-indigo-300"
+                    title="Mở Tủ Đồ">
+                    <span>👗</span>
+                    <span class="hidden sm:inline">TỦ ĐỒ</span>
+                </button>
+            </div>
+
+            <!-- Top Right HUD: Coins, Progress, Sound, Return to Hub Button -->
+            <div
+                class="flex items-center gap-2 sm:gap-3 pointer-events-auto bg-[#1b192cd9] px-3 py-1.5 rounded-md border-2 border-[#fcd289] shadow-lg">
+                <div class="flex items-center gap-1.5 text-yellow-300">
+                    <div
+                        class="w-5 h-5 rounded-full bg-gradient-to-b from-amber-300 to-yellow-500 border border-amber-800 flex items-center justify-center font-bold text-[9px] text-amber-950 shadow-inner">
+                        C
+                    </div>
+                    <span id="hud-coin-count" class="text-[11px] font-bold tracking-wider">125</span>
+                </div>
+
+                <div class="flex items-center gap-1 text-amber-100 pl-1 border-l border-indigo-700/60 pl-2">
+                    <span class="text-[10px]">1/3</span>
+                    <svg class="w-4 h-4 text-amber-300 fill-current drop-shadow-[0_0_4px_#ffd54f]" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                </div>
+
+                <button id="btn-toggle-sound"
+                    class="text-white hover:text-amber-300 focus:outline-none p-1 border-l border-indigo-700/60 pl-2"
+                    title="Bật/Tắt Âm Thanh">
+                    <svg id="sound-on-svg" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M11 5L6 9H2v6h4l5 4V5z" />
+                    </svg>
+                    <svg id="sound-off-svg" class="w-4 h-4 hidden text-gray-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z m12-6l-6 6m0-6l6 6" />
+                    </svg>
+                </button>
+
+                <!-- Return to Hub Button (Visible only in Open World) -->
+                <button id="btn-return-hub"
+                    class="pixel-btn hidden bg-gradient-to-b from-sky-500 to-indigo-700 hover:from-sky-400 hover:to-indigo-600 text-cyan-100 px-2 sm:px-2.5 py-1 rounded text-[8px] sm:text-[9px] flex items-center gap-1.5 border border-sky-300 ml-1"
+                    title="Quay lại Đảo Trung Tâm">
+                    <span>🏛️</span>
+                    <span>VỀ ĐẢO HUB</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- SEASON SWITCHER BAR -->
+        <nav
+            class="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 sm:gap-2 bg-[#12111fd0] backdrop-blur-xs p-1.5 rounded-lg border-2 border-[#574d75] shadow-2xl max-w-[96vw] overflow-x-auto">
+            <span class="hidden md:inline-block text-[8px] text-amber-200 px-1 font-bold">KHÔNG GIAN:</span>
+            <button data-season="heavenly"
+                class="season-btn season-btn-active pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-sky-700 text-white hover:bg-sky-600 flex items-center gap-1">
+                <span>☁️</span> <span class="hidden sm:inline">Thiên Giới</span>
+            </button>
+            <button data-season="spring"
+                class="season-btn pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-pink-700 text-white hover:bg-pink-600 flex items-center gap-1">
+                <span>🌸</span> <span class="hidden sm:inline">Mùa Xuân</span>
+            </button>
+            <button data-season="summer"
+                class="season-btn pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-amber-600 text-white hover:bg-amber-500 flex items-center gap-1">
+                <span>🏖️</span> <span class="hidden sm:inline">Bãi Biển</span>
+            </button>
+            <button data-season="autumn"
+                class="season-btn pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-orange-700 text-white hover:bg-orange-600 flex items-center gap-1">
+                <span>🍁</span> <span class="hidden sm:inline">Mùa Thu</span>
+            </button>
+            <button data-season="winter"
+                class="season-btn pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-cyan-800 text-white hover:bg-cyan-700 flex items-center gap-1">
+                <span>❄️</span> <span class="hidden sm:inline">Mùa Đông</span>
+            </button>
+            <button data-season="mystic"
+                class="season-btn pixel-btn text-[8px] sm:text-[9px] px-2 sm:px-2.5 py-1.5 rounded bg-purple-900 text-fuchsia-200 hover:bg-purple-800 flex items-center gap-1">
+                <span>🌌</span> <span class="hidden sm:inline">Đêm Sao</span>
+            </button>
+        </nav>
+
+        <!-- Proximity Toast Prompt -->
+        <div id="proximity-prompt"
+            class="absolute bottom-20 sm:bottom-14 z-20 pointer-events-none opacity-0 transition-opacity duration-200 flex flex-col items-center">
+            <div
+                class="bg-[#151224] text-yellow-300 px-4 py-2 rounded-md border-2 border-amber-400 text-[10px] sm:text-xs shadow-2xl animate-bounce flex items-center gap-2">
+                <span class="bg-amber-400 text-black px-1.5 py-0.5 rounded text-[8px] font-bold">E / CHẠM</span>
+                <span id="proximity-text">Khám phá</span>
+            </div>
+        </div>
+
+        <!-- Virtual Mobile D-Pad -->
+        <div id="mobile-dpad"
+            class="absolute bottom-4 left-4 z-20 flex flex-col items-center sm:hidden opacity-90 select-none">
+            <button id="pad-up"
+                class="w-12 h-12 bg-gray-900/85 border-2 border-gray-600 active:bg-amber-500 rounded-t text-white flex items-center justify-center text-lg active:scale-95">▲</button>
+            <div class="flex">
+                <button id="pad-left"
+                    class="w-12 h-12 bg-gray-900/85 border-2 border-gray-600 active:bg-amber-500 rounded-l text-white flex items-center justify-center text-lg active:scale-95">◀</button>
+                <button id="pad-act"
+                    class="w-12 h-12 bg-amber-600/90 border-2 border-amber-300 active:bg-amber-400 rounded text-black font-bold text-xs flex items-center justify-center">E</button>
+                <button id="pad-right"
+                    class="w-12 h-12 bg-gray-900/85 border-2 border-gray-600 active:bg-amber-500 rounded-r text-white flex items-center justify-center text-lg active:scale-95">▶</button>
+            </div>
+            <button id="pad-down"
+                class="w-12 h-12 bg-gray-900/85 border-2 border-gray-600 active:bg-amber-500 rounded-b text-white flex items-center justify-center text-lg active:scale-95">▼</button>
+        </div>
+
+        <!-- OPEN WORLD RADAR / MINI-MAP (Visible when in Open World) -->
+        <div id="open-world-minimap-widget"
+            class="hidden absolute top-28 sm:top-20 right-3 z-30 flex flex-col items-end pointer-events-auto">
+            <div
+                class="pixel-panel p-1.5 rounded-lg border-2 border-[#38bdf8] bg-[#0c0a18f2] shadow-2xl backdrop-blur-md">
+                <div class="flex items-center justify-between pb-1 border-b border-sky-800/60 mb-1 px-1 gap-2">
+                    <span id="minimap-zone-label" class="text-[7px] text-cyan-300 font-bold tracking-wider">📍 QUẢNG
+                        TRƯỜNG</span>
+                    <span class="text-[6px] text-gray-400 font-sans">BẢN ĐỒ</span>
+                </div>
+                <canvas id="minimap-canvas" width="120" height="80"
+                    class="border border-sky-900 rounded bg-slate-950 block"></canvas>
+            </div>
+        </div>
+
+        <!-- OPEN WORLD LIVE CHAT DOCK (Visible when in Open World) -->
+        <div id="open-world-chat-widget"
+            class="hidden absolute bottom-3 left-3 z-30 w-72 sm:w-80 max-w-[88vw] flex flex-col pointer-events-auto">
+            <!-- Header bar with online count and badge -->
+            <div
+                class="bg-[#121024f2] border-2 border-b-0 border-[#38bdf8] rounded-t-lg px-2.5 py-1.5 flex items-center justify-between backdrop-blur-md shadow-lg">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-[9px] text-cyan-300 font-bold tracking-wider">QUẢNG TRƯỜNG MỞ</span>
+                </div>
+                <div
+                    class="flex items-center gap-1 text-[8px] text-sky-200 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-500/40">
+                    <span>👥</span>
+                    <span id="chat-online-count">6 Online</span>
+                </div>
+            </div>
+            <!-- Message feed container -->
+            <div id="chat-messages-container"
+                class="h-28 sm:h-32 bg-[#0c0a1af2] border-x-2 border-[#38bdf8] p-2 overflow-y-auto space-y-1.5 text-[9px] font-sans text-gray-200 backdrop-blur-md">
+                <!-- System and player messages will be injected here -->
+            </div>
+            <!-- Input form -->
+            <form id="open-world-chat-form"
+                class="flex bg-[#121024f8] border-2 border-[#38bdf8] rounded-b-lg p-1 gap-1 backdrop-blur-md">
+                <input id="open-world-chat-input" type="text" maxlength="60" placeholder="Chat với mọi người... [Enter]"
+                    autocomplete="off"
+                    class="flex-1 bg-black/60 border border-sky-700/60 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-cyan-400 font-sans" />
+                <button type="submit"
+                    class="pixel-btn bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[8px] sm:text-[9px] px-2.5 py-1 rounded border border-cyan-300 flex items-center gap-0.5">
+                    GỬI ➔
+                </button>
+            </form>
+        </div>
+
+        <!-- On-screen Guide Text -->
+        <div id="general-guide-text" class="hidden sm:block absolute bottom-3 z-20 text-center pointer-events-none">
+            <p
+                class="text-[9px] text-[#2c223b] bg-white/85 px-4 py-1.5 rounded-full border border-amber-300 backdrop-blur-xs shadow-md">
+                Di chuyển: <span class="font-bold text-amber-900">[W, A, S, D / Mũi tên]</span> | Tương tác & Mở Rương:
+                <span class="font-bold text-amber-900">[E / Space]</span> | Chạm mặt đất để đi!
+            </p>
+        </div>
+    </div>
+
+    <!-- MODAL: Mode Exploration Station -->
+    <div id="modal-station"
+        class="fixed inset-0 bg-black/65 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="pixel-panel w-full max-w-md p-5 rounded-lg relative border-4 border-[#ffde9e] text-white">
+            <button id="btn-close-modal"
+                class="absolute -top-3 -right-3 w-8 h-8 bg-red-600 hover:bg-red-500 text-white rounded border-2 border-white font-bold flex items-center justify-center text-xs shadow-lg">✕</button>
+
+            <div class="flex items-center gap-3 border-b-2 border-indigo-500/40 pb-3 mb-4">
+                <div id="modal-icon-badge"
+                    class="w-12 h-12 rounded bg-indigo-900/80 border-2 border-amber-400 flex items-center justify-center text-2xl shadow">
+                    📖</div>
+                <div>
+                    <h2 id="modal-station-title" class="text-sm sm:text-base text-yellow-300 font-bold">Chế Độ Cốt
+                        Truyện</h2>
+                    <span id="modal-station-subtitle" class="text-[9px] text-gray-300">Thánh Điện Ký Ức</span>
+                </div>
+            </div>
+
+            <div id="modal-station-body" class="text-xs text-gray-200 leading-relaxed font-sans min-h-[90px]"></div>
+
+            <div class="mt-5 flex gap-2 justify-end">
+                <button id="btn-cancel-modal"
+                    class="pixel-btn bg-gray-700 hover:bg-gray-600 text-white text-[10px] px-3 py-2 rounded">Trở
+                    Lại</button>
+                <button id="btn-confirm-modal"
+                    class="pixel-btn bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-[10px] px-4 py-2 rounded flex items-center gap-1">
+                    <span>Tiến Vào</span> ▶
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Character Customization & Wardrobe (Tủ Đồ Cá Nhân) -->
+    <div id="modal-wardrobe"
+        class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div
+            class="pixel-panel w-full max-w-2xl max-h-[95vh] p-4 sm:p-6 rounded-lg relative border-4 border-[#ffd700] text-white flex flex-col overflow-hidden">
+            <!-- Close Button -->
+            <button id="btn-close-wardrobe"
+                class="absolute top-3 right-3 w-8 h-8 bg-red-600 hover:bg-red-500 text-white rounded border-2 border-white font-bold flex items-center justify-center text-xs shadow-lg z-10">✕</button>
+
+            <!-- Modal Header -->
+            <div class="flex items-center gap-3 border-b-2 border-amber-400/40 pb-3 mb-3">
+                <div
+                    class="w-10 h-10 rounded bg-amber-600/30 border border-amber-400 flex items-center justify-center text-2xl shadow">
+                    🧰</div>
+                <div>
+                    <h2 class="text-xs sm:text-sm text-yellow-300 font-bold tracking-wide">RƯƠNG TỦ ĐỒ MA THUẬT</h2>
+                    <span class="text-[8px] sm:text-[9px] text-gray-300 font-sans">Tuỳ chỉnh giới tính, tóc, áo quần &
+                        phụ kiện thiên giới</span>
+                </div>
+            </div>
+
+            <!-- Main Layout: Preview Left & Customization Tabs Right -->
+            <div class="flex-1 flex flex-col md:flex-row gap-4 overflow-y-auto pr-1">
+
+                <!-- Left: Live Character Preview -->
+                <div
+                    class="flex flex-col items-center justify-center bg-[#171526] p-3 rounded-lg border-2 border-indigo-900/80 md:w-5/12 shrink-0">
+                    <span class="text-[8px] text-amber-200 mb-2 font-bold tracking-wider">XEM TRƯỚC (LIVE)</span>
+                    <div
+                        class="relative w-36 h-48 bg-radial from-indigo-900/60 to-[#0e0c18] rounded-md border border-amber-500/30 flex items-center justify-center overflow-hidden shadow-inner">
+                        <canvas id="previewCanvas" width="120" height="150" class="image-rendering-pixelated"></canvas>
+                        <div class="absolute bottom-1 right-2 text-[7px] text-indigo-300 font-sans">8-Bit Mode</div>
+                    </div>
+                    <!-- Rotate / Direction selector in Preview -->
+                    <div class="flex gap-1.5 mt-3">
+                        <button id="prev-dir-down"
+                            class="pixel-btn text-[8px] px-2 py-1 bg-indigo-800 text-amber-300 rounded font-bold">Trước</button>
+                        <button id="prev-dir-left"
+                            class="pixel-btn text-[8px] px-2 py-1 bg-gray-800 text-gray-300 rounded">Trái</button>
+                        <button id="prev-dir-right"
+                            class="pixel-btn text-[8px] px-2 py-1 bg-gray-800 text-gray-300 rounded">Phải</button>
+                        <button id="prev-dir-up"
+                            class="pixel-btn text-[8px] px-2 py-1 bg-gray-800 text-gray-300 rounded">Sau</button>
+                    </div>
+                </div>
+
+                <!-- Right: Options Panels -->
+                <div class="flex-1 space-y-3 font-sans text-xs overflow-y-auto">
+
+                    <!-- Category 1: Gender / Persona -->
+                    <div class="p-2 bg-[#1b192c] rounded border border-gray-700">
+                        <label class="block text-[9px] font-mono text-amber-300 font-bold mb-1.5">1. GIỚI TÍNH & DÁNG
+                            HÌNH</label>
+                        <div class="grid grid-cols-2 gap-2" id="group-gender">
+                            <button data-val="boy"
+                                class="wardrobe-opt wardrobe-item-active pixel-btn py-1.5 px-2 bg-[#2a2744] hover:bg-[#343054] text-white rounded text-[10px] flex items-center justify-center gap-1.5">
+                                <span>👦</span> <span>Cậu Bé (Boy)</span>
+                            </button>
+                            <button data-val="girl"
+                                class="wardrobe-opt pixel-btn py-1.5 px-2 bg-[#2a2744] hover:bg-[#343054] text-white rounded text-[10px] flex items-center justify-center gap-1.5">
+                                <span>👧</span> <span>Cô Gái (Girl)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Hair Color -->
+                    <div class="p-2 bg-[#1b192c] rounded border border-gray-700">
+                        <label class="block text-[9px] font-mono text-amber-300 font-bold mb-1.5">2. MÀU TÓC</label>
+                        <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5" id="group-hair">
+                            <button data-val="brown"
+                                class="wardrobe-opt wardrobe-item-active pixel-btn py-1 px-1 bg-[#4e2a16] text-white rounded text-[9px] text-center"
+                                title="Nâu Tự Nhiên">Nâu</button>
+                            <button data-val="blonde"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#d4af37] text-gray-900 font-bold rounded text-[9px] text-center"
+                                title="Vàng Ánh Kim">Vàng</button>
+                            <button data-val="black"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#1a171c] text-white rounded text-[9px] text-center"
+                                title="Đen Huyền">Đen</button>
+                            <button data-val="pink"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#f472b6] text-gray-950 font-bold rounded text-[9px] text-center"
+                                title="Hồng Pastel">Hồng</button>
+                            <button data-val="silver"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#e2e8f0] text-gray-900 font-bold rounded text-[9px] text-center"
+                                title="Bạc Thiên Thần">Bạc</button>
+                            <button data-val="blue"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#38bdf8] text-gray-950 font-bold rounded text-[9px] text-center"
+                                title="Xanh Biển">Xanh</button>
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Outfit / Tunic -->
+                    <div class="p-2 bg-[#1b192c] rounded border border-gray-700">
+                        <label class="block text-[9px] font-mono text-amber-300 font-bold mb-1.5">3. TRANG PHỤC /
+                            ÁO</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5" id="group-outfit">
+                            <button data-val="blue"
+                                class="wardrobe-opt wardrobe-item-active pixel-btn py-1.5 px-2 bg-[#1b3b6f] text-sky-100 rounded text-[10px] text-left flex items-center justify-between">
+                                <span>Áo Lam Cổ Điển</span> <span class="w-3 h-3 rounded-full bg-[#2b5ea9]"></span>
+                            </button>
+                            <button data-val="red"
+                                class="wardrobe-opt pixel-btn py-1.5 px-2 bg-[#701c1c] text-rose-100 rounded text-[10px] text-left flex items-center justify-between">
+                                <span>Áo Đỏ Chiến Binh</span> <span class="w-3 h-3 rounded-full bg-[#b91c1c]"></span>
+                            </button>
+                            <button data-val="green"
+                                class="wardrobe-opt pixel-btn py-1.5 px-2 bg-[#14532d] text-emerald-100 rounded text-[10px] text-left flex items-center justify-between">
+                                <span>Áo Lục Tu Sĩ</span> <span class="w-3 h-3 rounded-full bg-[#16a34a]"></span>
+                            </button>
+                            <button data-val="purple"
+                                class="wardrobe-opt pixel-btn py-1.5 px-2 bg-[#4c1d95] text-purple-100 rounded text-[10px] text-left flex items-center justify-between">
+                                <span>Dạ Hội Tím Ma Thuật</span> <span class="w-3 h-3 rounded-full bg-[#9333ea]"></span>
+                            </button>
+                            <button data-val="gold"
+                                class="wardrobe-opt pixel-btn py-1.5 px-2 bg-[#713f12] text-yellow-100 rounded text-[10px] text-left flex items-center justify-between sm:col-span-2">
+                                <span>Giáp Vàng Thiên Thần (Angel)</span> <span
+                                    class="w-3 h-3 rounded-full bg-[#facc15]"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Category 4: Pants / Bottoms -->
+                    <div class="p-2 bg-[#1b192c] rounded border border-gray-700">
+                        <label class="block text-[9px] font-mono text-amber-300 font-bold mb-1.5">4. QUẦN / VÁY</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="group-pants">
+                            <button data-val="dark"
+                                class="wardrobe-opt wardrobe-item-active pixel-btn py-1.5 px-1 bg-[#28231d] text-white rounded text-[9px] text-center">Quần
+                                Nâu Đen</button>
+                            <button data-val="blue"
+                                class="wardrobe-opt pixel-btn py-1.5 px-1 bg-[#1e293b] text-sky-200 rounded text-[9px] text-center">Quần
+                                Bò Xám</button>
+                            <button data-val="white"
+                                class="wardrobe-opt pixel-btn py-1.5 px-1 bg-[#cbd5e1] text-gray-900 font-bold rounded text-[9px] text-center">Quần
+                                Hiệp Sĩ</button>
+                            <button data-val="skirt"
+                                class="wardrobe-opt pixel-btn py-1.5 px-1 bg-[#be185d] text-rose-100 rounded text-[9px] text-center">Váy
+                                Hồng</button>
+                        </div>
+                    </div>
+
+                    <!-- Category 5: Special Accessories -->
+                    <div class="p-2 bg-[#1b192c] rounded border border-gray-700">
+                        <label class="block text-[9px] font-mono text-amber-300 font-bold mb-1.5">5. PHỤ KIỆN ĐẶC
+                            BIỆT</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="group-accessory">
+                            <button data-val="backpack"
+                                class="wardrobe-opt wardrobe-item-active pixel-btn py-1 px-1 bg-[#3f2715] text-amber-200 rounded text-[9px] text-center">🎒
+                                Ba Lô</button>
+                            <button data-val="wings"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#243552] text-cyan-200 rounded text-[9px] text-center">🪽
+                                Cánh Sứ</button>
+                            <button data-val="halo"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#473b18] text-yellow-300 rounded text-[9px] text-center">✨
+                                Hào Quang</button>
+                            <button data-val="scarf"
+                                class="wardrobe-opt pixel-btn py-1 px-1 bg-[#4a1c1d] text-rose-300 rounded text-[9px] text-center">🧣
+                                Khăn Đỏ</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="mt-3 pt-3 border-t-2 border-indigo-900/60 flex items-center justify-between">
+                <button id="btn-random-wardrobe"
+                    class="pixel-btn bg-purple-800 hover:bg-purple-700 text-white text-[9px] px-3 py-2 rounded flex items-center gap-1">
+                    <span>🎲</span> <span class="hidden sm:inline">Ngẫu Nhiên</span>
+                </button>
+                <div class="flex gap-2">
+                    <button id="btn-cancel-wardrobe"
+                        class="pixel-btn bg-gray-700 hover:bg-gray-600 text-white text-[9px] px-3 py-2 rounded">Huỷ
+                        Bỏ</button>
+                    <button id="btn-save-wardrobe"
+                        class="pixel-btn bg-amber-400 hover:bg-amber-300 text-black font-bold text-[9px] px-4 py-2 rounded shadow-lg flex items-center gap-1.5">
+                        <span>MẶC ĐỒ NGAY</span> <span>✨</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Retro 8-bit Audio Synthesizer using Web Audio API */
+        const RetroAudio = {
+            ctx: null,
+            enabled: true,
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            },
+            beep(freq, duration = 0.08, type = 'square', gainVal = 0.08) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) { }
+            },
+            footstep() {
+                this.beep(110 + Math.random() * 30, 0.04, 'triangle', 0.02);
+            },
+            interact() {
+                this.beep(490, 0.08, 'sine', 0.09);
+                setTimeout(() => this.beep(740, 0.12, 'sine', 0.09), 70);
+            },
+            wardrobeOpen() {
+                [350, 440, 580, 720].forEach((freq, i) => {
+                    setTimeout(() => this.beep(freq, 0.08, 'sine', 0.07), i * 50);
+                });
+            },
+            wardrobeEquip() {
+                [523, 659, 783, 1046].forEach((freq, i) => {
+                    setTimeout(() => this.beep(freq, 0.09, 'triangle', 0.08), i * 40);
+                });
+            },
+            seasonSwitch() {
+                [400, 550, 700, 880, 1100].forEach((freq, idx) => {
+                    setTimeout(() => this.beep(freq, 0.1, 'sine', 0.07), idx * 45);
+                });
+            },
+            fanfare() {
+                [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+                    setTimeout(() => this.beep(freq, 0.18, 'square', 0.08), i * 80);
+                });
+            },
+            // Teleport Beam-Up arpeggio whoosh
+            teleportStart() {
+                [440, 660, 880, 1320, 1760].forEach((freq, i) => {
+                    setTimeout(() => this.beep(freq, 0.06, 'sine', 0.09), i * 40);
+                });
+            },
+            // Teleport Materialize landing boom & chime
+            teleportArrival() {
+                this.beep(180, 0.15, 'triangle', 0.12);
+                setTimeout(() => {
+                    [880, 1174, 1567].forEach((freq, i) => {
+                        setTimeout(() => this.beep(freq, 0.1, 'sine', 0.08), i * 60);
+                    });
+                }, 60);
+            }
+        };
+
+        // Toggle Sound Button
+        const btnSound = document.getElementById('btn-toggle-sound');
+        const svgSoundOn = document.getElementById('sound-on-svg');
+        const svgSoundOff = document.getElementById('sound-off-svg');
+        btnSound.addEventListener('click', () => {
+            RetroAudio.enabled = !RetroAudio.enabled;
+            if (RetroAudio.enabled) {
+                RetroAudio.init();
+                svgSoundOn.classList.remove('hidden');
+                svgSoundOff.classList.add('hidden');
+                RetroAudio.beep(660, 0.1, 'sine');
+            } else {
+                svgSoundOn.classList.add('hidden');
+                svgSoundOff.classList.remove('hidden');
+            }
+        });
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const V_WIDTH = 960;
+        const V_HEIGHT = 540;
+
+        function resizeCanvas() {
+            canvas.width = V_WIDTH;
+            canvas.height = V_HEIGHT;
+            ctx.imageSmoothingEnabled = false;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        /* 6 Seasonal Theme Palettes */
+        const SEASONS = {
+            heavenly: {
+                name: 'Thiên Giới',
+                skyTop: '#fce4c8', skyMid: '#efd5bd', skyBot: '#b4b7d9',
+                cloudTop: '#ffffff', cloudShade: '#eed3c4',
+                islandBase: '#301f3e', islandMid: '#523a63',
+                leftBiome: '#3a4b83', leftHighlight: '#83aef5',
+                rightTopBiome: '#5d8ec9', rightTopHighlight: '#a8d2ff',
+                pathColor: '#bde08f', centerPlain: '#9ac077',
+                bottomRightSoil: '#cfa278', bottomRightDark: '#563e3b',
+                particleType: 'divine_sparkle',
+                particleColor: 'rgba(255, 255, 255, 0.85)',
+                castleGlow: 'rgba(255, 235, 140, 0.85)'
+            },
+            spring: {
+                name: 'Mùa Xuân (Hoa Anh Đào)',
+                skyTop: '#ffecf1', skyMid: '#fcd3e1', skyBot: '#b9c7ea',
+                cloudTop: '#ffffff', cloudShade: '#f5c9d9',
+                islandBase: '#3a2034', islandMid: '#633959',
+                leftBiome: '#b74f7d', leftHighlight: '#ffb9d6',
+                rightTopBiome: '#8bb975', rightTopHighlight: '#c6f5b0',
+                pathColor: '#96db7a', centerPlain: '#76b85d',
+                bottomRightSoil: '#9c6f5d', bottomRightDark: '#4b2f29',
+                particleType: 'sakura_petals',
+                particleColor: '#ffb8d1',
+                castleGlow: 'rgba(255, 210, 230, 0.85)'
+            },
+            summer: {
+                name: 'Bãi Biển Nhiệt Đới',
+                skyTop: '#68d8d6', skyMid: '#9ceaef', skyBot: '#f7d6a5',
+                cloudTop: '#ffffff', cloudShade: '#cce6f4',
+                islandBase: '#1a3349', islandMid: '#24597d',
+                leftBiome: '#087e8b', leftHighlight: '#59e1eb',
+                rightTopBiome: '#0b9bb0', rightTopHighlight: '#80f1ff',
+                pathColor: '#f3c98b', centerPlain: '#e8b871',
+                bottomRightSoil: '#df9e58', bottomRightDark: '#754b23',
+                particleType: 'bubbles',
+                particleColor: 'rgba(255, 255, 255, 0.7)',
+                castleGlow: 'rgba(255, 240, 150, 0.9)'
+            },
+            autumn: {
+                name: 'Mùa Thu Lá Phong',
+                skyTop: '#ffd194', skyMid: '#ea8b58', skyBot: '#703b5b',
+                cloudTop: '#fff2df', cloudShade: '#d89b7a',
+                islandBase: '#331a19', islandMid: '#5c2d28',
+                leftBiome: '#a33327', leftHighlight: '#ff7b54',
+                rightTopBiome: '#d36b2b', rightTopHighlight: '#ffb26b',
+                pathColor: '#c59359', centerPlain: '#a77642',
+                bottomRightSoil: '#6e473b', bottomRightDark: '#39211c',
+                particleType: 'autumn_leaves',
+                particleColor: '#e75a2a',
+                castleGlow: 'rgba(255, 185, 90, 0.85)'
+            },
+            winter: {
+                name: 'Mùa Đông Băng Giá',
+                skyTop: '#d7e8f7', skyMid: '#aac9e5', skyBot: '#6680a6',
+                cloudTop: '#ffffff', cloudShade: '#c2d5eb',
+                islandBase: '#1d2a3a', islandMid: '#344b66',
+                leftBiome: '#7ca2cd', leftHighlight: '#e8f5ff',
+                rightTopBiome: '#628bb9', rightTopHighlight: '#daf0ff',
+                pathColor: '#e9f3fb', centerPlain: '#c2dced',
+                bottomRightSoil: '#53657a', bottomRightDark: '#2e3845',
+                particleType: 'snowflakes',
+                particleColor: '#ffffff',
+                castleGlow: 'rgba(200, 235, 255, 0.85)'
+            },
+            mystic: {
+                name: 'Đêm Sao Huyền Bí',
+                skyTop: '#0b091a', skyMid: '#1a1438', skyBot: '#321c54',
+                cloudTop: '#422f68', cloudShade: '#21163a',
+                islandBase: '#0c0717', islandMid: '#1f1338',
+                leftBiome: '#2e1c66', leftHighlight: '#b36bff',
+                rightTopBiome: '#183669', rightTopHighlight: '#4ef2d2',
+                pathColor: '#3c3b6e', centerPlain: '#2c2b54',
+                bottomRightSoil: '#382245', bottomRightDark: '#1a0c24',
+                particleType: 'fireflies',
+                particleColor: '#7cfbcf',
+                castleGlow: 'rgba(180, 110, 255, 0.8)'
+            }
+        };
+
+        let activeSeasonKey = 'heavenly';
+        let currentSeason = SEASONS[activeSeasonKey];
+
+        // Screen Transition Effect Manager
+        const Transition = {
+            active: false,
+            progress: 0,
+            targetSeason: null,
+            start(targetKey) {
+                if (this.active || targetKey === activeSeasonKey) return;
+                this.active = true;
+                this.progress = 0;
+                this.targetSeason = targetKey;
+                RetroAudio.seasonSwitch();
+            },
+            update() {
+                if (!this.active) return;
+                this.progress += 0.04;
+                if (this.progress >= 0.5 && activeSeasonKey !== this.targetSeason) {
+                    activeSeasonKey = this.targetSeason;
+                    currentSeason = SEASONS[activeSeasonKey];
+                }
+                if (this.progress >= 1) {
+                    this.active = false;
+                    this.progress = 0;
+                }
+            },
+            draw() {
+                if (!this.active) return;
+                const alpha = Math.sin(this.progress * Math.PI);
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.95})`;
+                ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+                const maxR = V_WIDTH * 0.7;
+                const radius = (1 - alpha) * maxR;
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 12;
+                ctx.beginPath();
+                ctx.arc(V_WIDTH / 2, V_HEIGHT / 2, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        };
+
+        /* Hero Custom Outfit State */
+        const outfitConfig = {
+            gender: 'boy',       // 'boy' | 'girl'
+            hairColor: 'brown',   // 'brown' | 'blonde' | 'black' | 'pink' | 'silver' | 'blue'
+            outfitColor: 'blue',  // 'blue' | 'red' | 'green' | 'purple' | 'gold'
+            pantsColor: 'dark',   // 'dark' | 'blue' | 'white' | 'skirt'
+            accessory: 'backpack' // 'backpack' | 'wings' | 'halo' | 'scarf'
+        };
+
+        // Pending selection state when browsing in modal
+        let previewOutfit = { ...outfitConfig };
+        let previewDirection = 'down';
+
+        // Color palettes for character customization
+        const OUTFIT_PALETTES = {
+            hair: {
+                brown: { main: '#4e2a16', shadow: '#391d0e', light: '#733e21' },
+                blonde: { main: '#eab308', shadow: '#a16207', light: '#fde047' },
+                black: { main: '#18181b', shadow: '#09090b', light: '#27272a' },
+                pink: { main: '#f472b6', shadow: '#be185d', light: '#fbcfe8' },
+                silver: { main: '#e2e8f0', shadow: '#94a3b8', light: '#ffffff' },
+                blue: { main: '#38bdf8', shadow: '#0284c7', light: '#bae6fd' }
+            },
+            tunic: {
+                blue: { main: '#2b5ea9', shadow: '#1b3b6f', light: '#60a5fa' },
+                red: { main: '#dc2626', shadow: '#7f1d1d', light: '#f87171' },
+                green: { main: '#16a34a', shadow: '#14532d', light: '#4ade80' },
+                purple: { main: '#9333ea', shadow: '#581c87', light: '#c084fc' },
+                gold: { main: '#eab308', shadow: '#854d0e', light: '#fef08a' }
+            },
+            pants: {
+                dark: { main: '#28231d', shadow: '#181410' },
+                blue: { main: '#334155', shadow: '#1e293b' },
+                white: { main: '#e2e8f0', shadow: '#94a3b8' },
+                skirt: { main: '#e11d48', shadow: '#881337' }
+            }
+        };
+
+        // 4 Corner Stations + 1 Wardrobe Magic Chest
+        const STATIONS = {
+            STORY: {
+                id: 'open_world',
+                x: 215, y: 145, radius: 75,
+                arriveX: 250, arriveY: 185, faceDir: 'up',
+                themeColor: '#38bdf8',
+                title: 'Thế Giới Mở Trực Tuyến', subtitle: 'Cổng Không Gian • Multi-Player Realm',
+                iconBadge: '🌌',
+                desc: 'Bước qua cánh cổng không gian để tiến vào Quảng Trường Mở (Open World). Nơi bạn có thể tự do dạo chơi, chat trực tuyến và gặp gỡ nhiều người chơi khác cùng lúc!',
+                btnText: 'Vào Thế Giới Mở ➔'
+            },
+            ENDLESS: {
+                id: 'endless',
+                x: 775, y: 140, radius: 75,
+                arriveX: 740, arriveY: 185, faceDir: 'up',
+                themeColor: '#fde047',
+                title: 'Chế Độ Vô Tận', subtitle: 'Đài Tưởng Niệm Vô Cực',
+                iconBadge: '♾️',
+                desc: 'Hành trình vượt qua các tầng mê cung biến chuyển liên tục dưới vầng trăng khuyết huyền thoại. Thu thập chìa khóa, né bẫy gai và lập kỷ lục chuỗi sống sót cao nhất.',
+                btnText: 'Chạy Vô Tận'
+            },
+            CHALLENGE: {
+                id: 'challenge',
+                x: 210, y: 405, radius: 75,
+                arriveX: 260, arriveY: 375, faceDir: 'left',
+                themeColor: '#f87171',
+                title: 'Chế Độ Thử Thách', subtitle: 'Đấu Trường Đấu Sĩ Thần',
+                iconBadge: '🛡️',
+                desc: 'Đấu trường đá với thanh kiếm và khiên huyền thoại. Thực hiện các thử thách giải mê cung thần tốc, né tránh quái vật bóng đêm với giới hạn thời gian khắc nghiệt.',
+                btnText: 'Khiêu Chiến'
+            },
+            SHOP: {
+                id: 'shop',
+                x: 810, y: 410, radius: 75,
+                arriveX: 745, arriveY: 385, faceDir: 'right',
+                themeColor: '#c084fc',
+                title: 'Thương Hội & Cổng Không Gian', subtitle: 'Hòm Báu & Vòng Xoáy Hư Không',
+                iconBadge: '🪙',
+                desc: 'Nơi giao dịch các cổ vật quý hiếm, trao đổi đồng xu vàng chữ C để lấy bình máu, chìa khóa thánh và các phù chú cường hóa trước khi vào cổng dịch chuyển.',
+                btnText: 'Mở Cửa Hàng'
+            },
+            // NEW: In-Game Interactive Wardrobe Magic Chest
+            WARDROBE: {
+                id: 'wardrobe',
+                x: 480, y: 200, radius: 48,
+                arriveX: 480, arriveY: 235, faceDir: 'up',
+                themeColor: '#f472b6',
+                title: 'Rương Tủ Đồ Ma Thuật', subtitle: 'Thời Trang Thiên Giới',
+                iconBadge: '🧰',
+                desc: 'Chiếc rương ma thuật lưu trữ vô số y phục, kiểu tóc và cánh thiên thần. Mở ra để thay đổi diện mạo của bạn!',
+                btnText: 'Mở Tủ Đồ'
+            }
+        };
+
+        /* Teleportation Animation Sequencer */
+        const TeleportSystem = {
+            isTeleporting: false,
+            phase: 'idle', // 'dissolve' | 'travel' | 'materialize'
+            timer: 0,
+            startX: 0,
+            startY: 0,
+            targetStation: null,
+            destX: 0,
+            destY: 0,
+            currentX: 0,
+            currentY: 0,
+            sparks: [],
+            start(station) {
+                if (this.isTeleporting) return;
+                this.isTeleporting = true;
+                this.phase = 'dissolve';
+                this.timer = 0;
+                this.targetStation = station;
+                this.startX = hero.x;
+                this.startY = hero.y;
+                this.destX = station.arriveX;
+                this.destY = station.arriveY;
+                this.currentX = hero.x;
+                this.currentY = hero.y;
+                this.sparks = [];
+
+                targetDest = null;
+                hero.isMoving = false;
+                RetroAudio.teleportStart();
+
+                // Spawn lift-off pixel magic runes
+                for (let i = 0; i < 28; i++) {
+                    this.sparks.push({
+                        x: this.startX + (Math.random() - 0.5) * 26,
+                        y: this.startY + (Math.random() - 0.5) * 20,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: -Math.random() * 3.5 - 1,
+                        size: Math.random() * 3.5 + 1.5,
+                        color: station.themeColor,
+                        alpha: 1
+                    });
+                }
+            },
+            update() {
+                if (!this.isTeleporting) return;
+                this.timer++;
+
+                // Update particle sparks
+                for (let i = this.sparks.length - 1; i >= 0; i--) {
+                    const sp = this.sparks[i];
+                    sp.x += sp.vx;
+                    sp.y += sp.vy;
+                    sp.alpha -= 0.035;
+                    if (sp.alpha <= 0) this.sparks.splice(i, 1);
+                }
+
+                if (this.phase === 'dissolve') {
+                    // Phase 1: Dissolve & beam upwards (25 frames)
+                    if (this.timer > 22) {
+                        this.phase = 'travel';
+                        this.timer = 0;
+                    }
+                } else if (this.phase === 'travel') {
+                    // Phase 2: Dash trail between points (16 frames)
+                    const t = Math.min(1, this.timer / 16);
+                    const ease = t * (2 - t);
+                    this.currentX = this.startX + (this.destX - this.startX) * ease;
+                    this.currentY = this.startY + (this.destY - this.startY) * ease;
+
+                    // Trail sparks
+                    for (let k = 0; k < 3; k++) {
+                        this.sparks.push({
+                            x: this.currentX + (Math.random() - 0.5) * 14,
+                            y: this.currentY + (Math.random() - 0.5) * 14,
+                            vx: (Math.random() - 0.5) * 1.5,
+                            vy: (Math.random() - 0.5) * 1.5,
+                            size: Math.random() * 3 + 1,
+                            color: '#ffffff',
+                            alpha: 0.9
+                        });
+                    }
+
+                    if (this.timer >= 16) {
+                        this.phase = 'materialize';
+                        this.timer = 0;
+                        hero.x = this.destX;
+                        hero.y = this.destY;
+                        hero.dir = this.targetStation.faceDir;
+                        RetroAudio.teleportArrival();
+
+                        // Burst sparks at destination
+                        for (let i = 0; i < 35; i++) {
+                            const ang = Math.random() * Math.PI * 2;
+                            const spd = Math.random() * 3.5 + 0.5;
+                            this.sparks.push({
+                                x: this.destX,
+                                y: this.destY,
+                                vx: Math.cos(ang) * spd,
+                                vy: Math.sin(ang) * spd - 1,
+                                size: Math.random() * 3.5 + 1.5,
+                                color: this.targetStation.themeColor,
+                                alpha: 1
+                            });
+                        }
+                    }
+                } else if (this.phase === 'materialize') {
+                    // Phase 3: Beam down and materialize (22 frames)
+                    if (this.timer > 22) {
+                        const finishedStation = this.targetStation;
+                        this.isTeleporting = false;
+                        this.phase = 'idle';
+                        this.targetStation = null;
+
+                        // Automatically open modal upon landing!
+                        if (finishedStation.id === 'wardrobe') {
+                            openWardrobeModal();
+                        } else {
+                            openStationModal(finishedStation);
+                        }
+                    }
+                }
+            },
+            draw() {
+                if (!this.isTeleporting) return;
+
+                // Draw sparks
+                this.sparks.forEach(sp => {
+                    ctx.fillStyle = sp.color;
+                    ctx.globalAlpha = Math.max(0, sp.alpha);
+                    ctx.fillRect(Math.round(sp.x - sp.size / 2), Math.round(sp.y - sp.size / 2), Math.round(sp.size), Math.round(sp.size));
+                });
+                ctx.globalAlpha = 1;
+
+                if (this.phase === 'dissolve') {
+                    // Vertical light beam ascending
+                    const hRatio = Math.min(1, this.timer / 15);
+                    const beamH = hRatio * 180;
+                    const beamW = 20 - (this.timer / 22) * 14;
+
+                    const grad = ctx.createLinearGradient(0, this.startY - beamH, 0, this.startY + 15);
+                    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                    grad.addColorStop(0.3, this.targetStation.themeColor);
+                    grad.addColorStop(1, '#ffffff');
+
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(Math.round(this.startX - beamW / 2), Math.round(this.startY + 10 - beamH), Math.round(beamW), Math.round(beamH));
+
+                    // Expanding ground rune circle
+                    ctx.strokeStyle = this.targetStation.themeColor;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.ellipse(this.startX, this.startY + 12, 18 + this.timer, (18 + this.timer) * 0.45, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                } else if (this.phase === 'travel') {
+                    // Hyper-speed shooting star line
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(this.startX, this.startY);
+                    ctx.lineTo(this.currentX, this.currentY);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = this.targetStation.themeColor;
+                    ctx.lineWidth = 8;
+                    ctx.stroke();
+
+                    // Traveling pixel core
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(Math.round(this.currentX - 5), Math.round(this.currentY - 5), 10, 10);
+
+                } else if (this.phase === 'materialize') {
+                    // Celestial pillar descending down from sky
+                    const fadeOut = Math.max(0, 1 - (this.timer / 22));
+                    const beamW = Math.max(2, 28 * fadeOut);
+
+                    const grad = ctx.createLinearGradient(0, this.destY - 260, 0, this.destY + 15);
+                    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                    grad.addColorStop(0.5, this.targetStation.themeColor);
+                    grad.addColorStop(1, '#ffffff');
+
+                    ctx.fillStyle = grad;
+                    ctx.globalAlpha = fadeOut * 0.9;
+                    ctx.fillRect(Math.round(this.destX - beamW / 2), Math.round(this.destY - 240), Math.round(beamW), 255);
+                    ctx.globalAlpha = 1;
+
+                    // Impact shockwave ring
+                    ctx.strokeStyle = this.targetStation.themeColor;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.ellipse(this.destX, this.destY + 14, this.timer * 2.2, this.timer * 1.1, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        };
+
+        // Hero Character Position & Velocity
+        const hero = {
+            x: 480,
+            y: 285,
+            speed: 2.8,
+            vx: 0,
+            vy: 0,
+            dir: 'down',
+            isMoving: false,
+            walkTimer: 0,
+            stepSoundTimer: 0
+        };
+
+        const keys = {
+            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+            KeyW: false, KeyS: false, KeyA: false, KeyD: false,
+            KeyE: false, Space: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = true;
+            RetroAudio.init();
+            if (e.code === 'KeyE' || e.code === 'Space') {
+                triggerNearbyInteraction();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = false;
+        });
+
+        // Touch / Mobile D-Pad
+        function initPad() {
+            const bind = (id, keyName) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const setVal = (v) => { keys[keyName] = v; if (v) RetroAudio.init(); };
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); setVal(true); });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); setVal(false); });
+                el.addEventListener('mousedown', (e) => { e.preventDefault(); setVal(true); });
+                el.addEventListener('mouseup', (e) => { e.preventDefault(); setVal(false); });
+            };
+            bind('pad-up', 'KeyW');
+            bind('pad-down', 'KeyS');
+            bind('pad-left', 'KeyA');
+            bind('pad-right', 'KeyD');
+
+            const btnAct = document.getElementById('pad-act');
+            btnAct.addEventListener('click', (e) => {
+                e.preventDefault();
+                RetroAudio.init();
+                triggerNearbyInteraction();
+            });
+        }
+        initPad();
+
+        // Global Camera System for Vast Open World
+        const WORLD_W = 2400;
+        const WORLD_H = 1600;
+        const camera = { x: 0, y: 0 };
+
+        // Mouse Cursor Coordinates & Hover Teleport Reticle
+        let mousePos = { x: -100, y: -100 };
+        let hoveredStation = null;
+
+        canvas.addEventListener('pointermove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const screenX = (e.clientX - rect.left) * scaleX;
+            const screenY = (e.clientY - rect.top) * scaleY;
+
+            if (typeof currentScene !== 'undefined' && currentScene === 'open_world') {
+                const worldX = screenX + camera.x;
+                const worldY = screenY + camera.y;
+                mousePos.x = worldX;
+                mousePos.y = worldY;
+                const distReturn = Math.hypot(worldX - 1200, worldY - 1010);
+                canvas.style.cursor = distReturn < 50 ? 'pointer' : 'default';
+                return;
+            }
+
+            mousePos.x = screenX;
+            mousePos.y = screenY;
+
+            hoveredStation = null;
+            for (const k in STATIONS) {
+                const s = STATIONS[k];
+                if (Math.hypot(mousePos.x - s.x, mousePos.y - s.y) < s.radius) {
+                    hoveredStation = s;
+                    canvas.style.cursor = 'pointer';
+                    break;
+                }
+            }
+            if (!hoveredStation) {
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        // Draw Station Teleport Reticle / Hover Indicator
+        function drawStationTeleportIndicators(tick) {
+            for (const k in STATIONS) {
+                const s = STATIONS[k];
+                const isHovered = hoveredStation === s;
+                const pulse = Math.sin(tick * 0.08 + (s.x % 7)) * 2;
+
+                // Ground Teleport Pad Rings
+                ctx.save();
+                ctx.strokeStyle = isHovered ? '#ffffff' : s.themeColor;
+                ctx.lineWidth = isHovered ? 2.5 : 1.5;
+                ctx.beginPath();
+                ctx.ellipse(s.arriveX, s.arriveY + 12, 16 + pulse, 8 + pulse * 0.5, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 4 Pixel Runes around pad
+                const rOffsets = [[-14, 0], [14, 0], [0, -7], [0, 7]];
+                ctx.fillStyle = isHovered ? '#ffd700' : s.themeColor;
+                rOffsets.forEach(([ox, oy]) => {
+                    ctx.fillRect(Math.round(s.arriveX + ox - 1.5), Math.round(s.arriveY + 12 + oy - 1.5), 3, 3);
+                });
+
+                // Hover Tooltip: Click to Teleport
+                if (isHovered && !TeleportSystem.isTeleporting) {
+                    const bannerY = s.y - (s.id === 'wardrobe' ? 38 : 55);
+                    ctx.fillStyle = 'rgba(15, 12, 28, 0.88)';
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 1.5;
+                    ctx.fillRect(Math.round(s.x - 70), Math.round(bannerY - 12), 140, 22);
+                    ctx.strokeRect(Math.round(s.x - 70), Math.round(bannerY - 12), 140, 22);
+
+                    ctx.fillStyle = '#fef08a';
+                    ctx.font = '8px "Press Start 2P", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('⚡ DỊCH CHUYỂN', s.x, bannerY + 2);
+                }
+                ctx.restore();
+            }
+        }
+
+        // Click/Tap on ground: Landmark triggers TELEPORTATION; ground walk otherwise
+        let targetDest = null;
+        canvas.addEventListener('pointerdown', (e) => {
+            RetroAudio.init();
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const screenX = (e.clientX - rect.left) * scaleX;
+            const screenY = (e.clientY - rect.top) * scaleY;
+
+            if (typeof currentScene !== 'undefined' && currentScene === 'open_world') {
+                const worldX = screenX + camera.x;
+                const worldY = screenY + camera.y;
+                if (Math.hypot(worldX - 1200, worldY - 1010) < 45) {
+                    exitOpenWorld();
+                    return;
+                }
+                targetDest = { x: worldX, y: worldY };
+                return;
+            }
+
+            const clickX = screenX;
+            const clickY = screenY;
+
+            // Check if clicked directly on any of the 4 landmarks or the Wardrobe Chest
+            let clickedStation = null;
+            for (const k in STATIONS) {
+                const s = STATIONS[k];
+                if (Math.hypot(clickX - s.x, clickY - s.y) < s.radius + 15 || Math.hypot(clickX - s.arriveX, clickY - s.arriveY) < 25) {
+                    clickedStation = s;
+                    break;
+                }
+            }
+
+            if (clickedStation) {
+                // TRIGGER CELESTIAL TELEPORTATION SEQUENCE!
+                TeleportSystem.start(clickedStation);
+                return;
+            }
+
+            if (!TeleportSystem.isTeleporting) {
+                targetDest = { x: clickX, y: clickY };
+            }
+        });
+
+        // Season Switcher Buttons
+        document.querySelectorAll('.season-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sKey = btn.getAttribute('data-season');
+                if (sKey && SEASONS[sKey]) {
+                    document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('season-btn-active'));
+                    btn.classList.add('season-btn-active');
+                    Transition.start(sKey);
+                }
+            });
+        });
+
+        // Weather particles generator
+        const particles = Array.from({ length: 45 }, () => ({
+            x: Math.random() * V_WIDTH,
+            y: Math.random() * V_HEIGHT,
+            size: Math.random() * 3 + 1,
+            speedX: (Math.random() - 0.5) * 0.8,
+            speedY: Math.random() * 0.8 + 0.3,
+            rot: Math.random() * Math.PI,
+            rotSpeed: (Math.random() - 0.5) * 0.04,
+            alpha: Math.random() * 0.7 + 0.3
+        }));
+
+        // Floating Clouds in Sky
+        const skyClouds = [
+            { x: -80, y: 35, w: 260, h: 90, speed: 0.16 },
+            { x: 320, y: -20, w: 280, h: 100, speed: 0.12 },
+            { x: 720, y: 25, w: 270, h: 95, speed: 0.2 },
+            { x: 140, y: 470, w: 320, h: 80, speed: 0.22 },
+            { x: 620, y: 480, w: 340, h: 90, speed: 0.17 }
+        ];
+
+        function pRect(targetCtx, x, y, w, h, col) {
+            targetCtx.fillStyle = col;
+            targetCtx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+        }
+
+        function pEllipse(targetCtx, cx, cy, rx, ry, col) {
+            targetCtx.fillStyle = col;
+            targetCtx.beginPath();
+            targetCtx.ellipse(Math.round(cx), Math.round(cy), Math.round(rx), Math.round(ry), 0, 0, Math.PI * 2);
+            targetCtx.fill();
+        }
+
+        function drawPixelCloud(x, y, w, h, topCol, shadeCol) {
+            pEllipse(ctx, x + w * 0.5, y + h * 0.6, w * 0.5, h * 0.45, shadeCol);
+            pEllipse(ctx, x + w * 0.25, y + h * 0.4, w * 0.3, h * 0.4, shadeCol);
+            pEllipse(ctx, x + w * 0.75, y + h * 0.4, w * 0.32, h * 0.4, shadeCol);
+
+            pEllipse(ctx, x + w * 0.5, y + h * 0.45, w * 0.46, h * 0.4, topCol);
+            pEllipse(ctx, x + w * 0.28, y + h * 0.3, w * 0.28, h * 0.35, topCol);
+            pEllipse(ctx, x + w * 0.72, y + h * 0.3, w * 0.3, h * 0.35, topCol);
+        }
+
+        // ================================================================
+        // ✨ CHI TIẾT KHUNG CẢNH - SCENE DECORATIONS
+        // ================================================================
+
+        // Cây pixel đa dạng kích thước & loại
+        function drawPixelTree(x, y, trunkColor, leafColor, leafColor2, size = 1) {
+            const s = size;
+            // Thân cây
+            pRect(ctx, x - 4*s, y, 8*s, 18*s, trunkColor);
+            pRect(ctx, x - 3*s, y + 2*s, 6*s, 14*s, trunkColor === '#5c3a1e' ? '#7a4f2e' : trunkColor);
+            // Tán lá (3 tầng)
+            pEllipse(ctx, x, y - 12*s, 20*s, 14*s, leafColor2 || '#2d6a2d');
+            pEllipse(ctx, x, y - 20*s, 17*s, 13*s, leafColor);
+            pEllipse(ctx, x, y - 28*s, 12*s, 10*s, leafColor);
+            // Điểm sáng
+            pEllipse(ctx, x - 5*s, y - 24*s, 5*s, 4*s, '#6fcf6f');
+        }
+
+        // Cây thông pixel
+        function drawPixelPine(x, y, size = 1) {
+            const s = size;
+            pRect(ctx, x - 3*s, y, 6*s, 16*s, '#6b4226');
+            ctx.fillStyle = '#1a5c2a';
+            ctx.beginPath();
+            ctx.moveTo(x, y - 34*s); ctx.lineTo(x + 14*s, y - 6*s); ctx.lineTo(x - 14*s, y - 6*s);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#246b35';
+            ctx.beginPath();
+            ctx.moveTo(x, y - 24*s); ctx.lineTo(x + 18*s, y + 2*s); ctx.lineTo(x - 18*s, y + 2*s);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#2d7c40';
+            ctx.beginPath();
+            ctx.moveTo(x, y - 14*s); ctx.lineTo(x + 22*s, y + 10*s); ctx.lineTo(x - 22*s, y + 10*s);
+            ctx.closePath(); ctx.fill();
+        }
+
+        // Đèn lồng phát sáng
+        function drawLantern(x, y, color, tick) {
+            const glow = Math.sin(tick * 0.07) * 0.15 + 0.85;
+            // Dây treo
+            pRect(ctx, x - 1, y - 14, 2, 14, '#888');
+            // Thân đèn
+            pRect(ctx, x - 7, y - 2, 14, 18, '#111');
+            pRect(ctx, x - 5, y, 10, 14, color);
+            ctx.globalAlpha = 0.5 * glow;
+            pRect(ctx, x - 4, y + 1, 8, 12, '#ffffff');
+            ctx.globalAlpha = 1;
+            // Đế và nắp đèn
+            pRect(ctx, x - 8, y - 3, 16, 4, '#888');
+            pRect(ctx, x - 8, y + 16, 16, 4, '#888');
+            // Hào quang ánh sáng
+            const aura = ctx.createRadialGradient(x, y + 8, 1, x, y + 8, 28);
+            aura.addColorStop(0, `${color}55`);
+            aura.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = aura;
+            ctx.beginPath();
+            ctx.arc(x, y + 8, 28, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Ghế đá pixel
+        function drawStoneBench(x, y) {
+            pRect(ctx, x - 22, y, 44, 8, '#6b7280');
+            pRect(ctx, x - 20, y + 2, 40, 6, '#9ca3af');
+            pRect(ctx, x - 18, y + 8, 6, 10, '#4b5563');
+            pRect(ctx, x + 12, y + 8, 6, 10, '#4b5563');
+            pRect(ctx, x - 18, y - 6, 6, 8, '#6b7280');
+            pRect(ctx, x + 12, y - 6, 6, 8, '#6b7280');
+            pRect(ctx, x - 20, y - 7, 40, 4, '#9ca3af');
+        }
+
+        // Ao nước lấp lánh
+        function drawPond(cx, cy, rx, ry, tick) {
+            // Nước
+            pEllipse(ctx, cx, cy, rx, ry, '#1e5f8a');
+            pEllipse(ctx, cx, cy, rx - 4, ry - 3, '#2980b9');
+            // Phản chiếu ánh sáng gợn sóng
+            for (let i = 0; i < 3; i++) {
+                const wave = Math.sin(tick * 0.08 + i * 1.8) * 4;
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(cx - 8 + i*8, cy + wave - 4, 10 + i*3, 3, 0.1, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            // Viền bờ
+            ctx.strokeStyle = '#4a7c59';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Dãy núi xa mờ ở nền sky
+        function drawDistantMountains(tick) {
+            const mtnCol1 = currentSeason.islandBase + 'aa';
+            const mtnCol2 = currentSeason.islandMid + '88';
+            // Dãy núi phía sau
+            ctx.fillStyle = mtnCol1 || 'rgba(42,28,62,0.55)';
+            const mtnPts = [
+                [0, 310],[80, 200],[160, 260],[240, 160],[340, 230],[430, 140],[520, 210],[620, 130],[720, 200],[820, 150],[900, 210],[960, 190],[960,320]
+            ];
+            ctx.beginPath();
+            ctx.moveTo(mtnPts[0][0], mtnPts[0][1]);
+            mtnPts.forEach(p => ctx.lineTo(p[0], p[1]));
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(50,30,80,0.28)';
+            ctx.fill();
+            // Tuyết đỉnh núi
+            if (activeSeasonKey === 'winter' || activeSeasonKey === 'mystic') {
+                ctx.fillStyle = 'rgba(255,255,255,0.45)';
+                [[240,160],[430,140],[620,130],[820,150]].forEach(([px,py]) => {
+                    ctx.beginPath();
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(px + 18, py + 26);
+                    ctx.lineTo(px - 18, py + 26);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+            }
+        }
+
+        // Chim pixel bay
+        const BIRDS = Array.from({length: 5}, (_, i) => ({
+            x: 100 + i * 170,
+            y: 60 + (i % 3) * 25,
+            speed: 0.3 + i * 0.12,
+            wingPhase: i * 1.4,
+            size: 0.7 + (i % 2) * 0.4
+        }));
+
+        function drawBirds(tick) {
+            BIRDS.forEach(b => {
+                b.x += b.speed;
+                if (b.x > V_WIDTH + 30) b.x = -30;
+                const wing = Math.sin(tick * 0.18 + b.wingPhase) * 5 * b.size;
+                const s = b.size;
+                ctx.strokeStyle = 'rgba(30,20,50,0.75)';
+                ctx.lineWidth = 2 * s;
+                ctx.beginPath();
+                ctx.moveTo(b.x - 8*s, b.y + wing); ctx.lineTo(b.x, b.y);
+                ctx.moveTo(b.x, b.y); ctx.lineTo(b.x + 8*s, b.y + wing);
+                ctx.stroke();
+            });
+        }
+
+        // Nấm pixel màu sắc
+        function drawMushroom(x, y, capColor, size = 1) {
+            const s = size;
+            pRect(ctx, x - 2*s, y, 5*s, 8*s, '#e8c9a0');
+            pEllipse(ctx, x, y, 12*s, 8*s, capColor);
+            pRect(ctx, x - 5*s, y - 2*s, 3*s, 3*s, '#ffffff');
+            pRect(ctx, x + 2*s, y - 4*s, 2*s, 2*s, '#ffffff');
+        }
+
+        // Đèn đường (cột đèn)
+        function drawLampPost(x, y, tick) {
+            pRect(ctx, x - 2, y, 4, 40, '#374151');
+            pRect(ctx, x - 1, y, 2, 38, '#4b5563');
+            pRect(ctx, x - 6, y - 8, 12, 8, '#374151');
+            pRect(ctx, x - 4, y - 12, 8, 6, '#fef08a');
+            const glow = Math.sin(tick * 0.05) * 0.1 + 0.9;
+            const lGrad = ctx.createRadialGradient(x, y - 9, 1, x, y - 9, 22);
+            lGrad.addColorStop(0, `rgba(255,240,100,${0.35*glow})`);
+            lGrad.addColorStop(1, 'rgba(255,240,100,0)');
+            ctx.fillStyle = lGrad;
+            ctx.beginPath(); ctx.arc(x, y - 9, 22, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Đom đóm nhỏ bay
+        const FIREFLIES = Array.from({length: 12}, (_, i) => ({
+            x: 60 + (i * 73) % 840,
+            y: 200 + (i * 47) % 250,
+            phase: i * 0.7,
+            speed: 0.18 + (i % 4) * 0.06
+        }));
+        function drawFireflies(tick) {
+            FIREFLIES.forEach(f => {
+                f.x += Math.sin(tick * f.speed * 0.05 + f.phase) * 0.6;
+                f.y += Math.cos(tick * f.speed * 0.04 + f.phase) * 0.4;
+                if (f.x < 30) f.x = 30; if (f.x > 930) f.x = 930;
+                if (f.y < 180) f.y = 180; if (f.y > 470) f.y = 470;
+                const alpha = Math.sin(tick * 0.12 + f.phase) * 0.5 + 0.5;
+                ctx.fillStyle = `rgba(200,255,120,${alpha * 0.8})`;
+                ctx.beginPath(); ctx.arc(f.x, f.y, 2, 0, Math.PI * 2); ctx.fill();
+                const ff = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, 6);
+                ff.addColorStop(0, `rgba(180,255,80,${alpha*0.4})`);
+                ff.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = ff;
+                ctx.beginPath(); ctx.arc(f.x, f.y, 6, 0, Math.PI * 2); ctx.fill();
+            });
+        }
+
+        // Cầu nối giữa đảo
+        function drawWoodenBridges() {
+            const bridges = [
+                {x1:310, y1:270, x2:390, y2:260},
+                {x1:570, y1:270, x2:650, y2:265}
+            ];
+            bridges.forEach(b => {
+                ctx.strokeStyle = '#854d0e';
+                ctx.lineWidth = 10;
+                ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke();
+                ctx.strokeStyle = '#a16207';
+                ctx.lineWidth = 7;
+                ctx.beginPath(); ctx.moveTo(b.x1, b.y1); ctx.lineTo(b.x2, b.y2); ctx.stroke();
+                // Thanh ngang cầu
+                for (let t = 0; t <= 1; t += 0.2) {
+                    const bx = b.x1 + (b.x2-b.x1)*t;
+                    const by = b.y1 + (b.y2-b.y1)*t;
+                    pRect(ctx, bx-5, by-5, 10, 3, '#6b3d0e');
+                }
+            });
+        }
+
+        // Hàng rào gỗ
+        function drawWoodenFence(x, y, count) {
+            for (let i = 0; i < count; i++) {
+                const fx = x + i * 14;
+                pRect(ctx, fx, y, 6, 18, '#92400e');
+                pRect(ctx, fx+1, y+1, 4, 16, '#a16207');
+                ctx.fillStyle = '#a16207';
+                ctx.beginPath();
+                ctx.moveTo(fx, y); ctx.lineTo(fx+3, y-7); ctx.lineTo(fx+6, y);
+                ctx.closePath(); ctx.fill();
+            }
+            pRect(ctx, x, y+5, count*14, 3, '#78350f');
+            pRect(ctx, x, y+12, count*14, 3, '#78350f');
+        }
+
+        // Cầu vồng (chỉ hiện ở một số mùa)
+        function drawRainbow(tick) {
+            const alpha = (Math.sin(tick * 0.02) * 0.08 + 0.12);
+            const colors = ['#ff0000','#ff7700','#ffff00','#00cc00','#0088ff','#6600ff'];
+            colors.forEach((c, i) => {
+                ctx.strokeStyle = c + Math.round(alpha * 255).toString(16).padStart(2,'0');
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.arc(480, 420, 180 + i * 12, Math.PI, 0);
+                ctx.stroke();
+            });
+        }
+
+        // Đống cỏ / bụi cây nhỏ
+        function drawBushes() {
+            const bushes = [
+                {x:150, y:385, r:16, c:'#2d5a1b'},{x:300, y:460, r:13, c:'#3a6b24'},
+                {x:350, y:300, r:12, c:'#2d5a1b'},{x:620, y:350, r:14, c:'#1d4d2e'},
+                {x:700, y:420, r:11, c:'#265c32'},{x:540, y:430, r:13, c:'#2d5a1b'},
+                {x:100, y:300, r:10, c:'#3a6b24'},{x:850, y:350, r:12, c:'#265c32'}
+            ];
+            bushes.forEach(b => {
+                pEllipse(ctx, b.x, b.y, b.r, b.r * 0.65, b.c);
+                pEllipse(ctx, b.x - b.r*0.4, b.y - 3, b.r*0.7, b.r*0.55, '#3f7a28');
+                pEllipse(ctx, b.x + b.r*0.4, b.y - 2, b.r*0.65, b.r*0.5, '#3f7a28');
+            });
+        }
+
+        function drawSceneDetails(tick) {
+            // Dãy núi mờ ở xa
+            drawDistantMountains(tick);
+
+            // Ao nước ở giữa đảo (trái)
+            drawPond(350, 440, 38, 18, tick);
+            drawPond(680, 460, 28, 14, tick);
+
+            // Cầu gỗ nối các vùng
+            drawWoodenBridges();
+
+            // Hàng rào gỗ trang trí
+            drawWoodenFence(110, 350, 5);
+            drawWoodenFence(740, 440, 4);
+
+            // Bụi cây / cỏ
+            drawBushes();
+
+            // Cây lớn ở các góc đảo
+            drawPixelTree(80, 340, '#5c3a1e', '#2a7a2a', '#1a6b1a', 1.2);
+            drawPixelTree(140, 370, '#5c3a1e', '#3a8a3a', '#2a7a2a', 0.9);
+            drawPixelTree(870, 330, '#5c3a1e', '#2a7a2a', '#1a6b1a', 1.1);
+            drawPixelTree(830, 360, '#6b4226', '#3a8a3a', '#2a7a2a', 0.85);
+            drawPixelTree(550, 430, '#5c3a1e', '#2a7a2a', '#1a6b1a', 0.8);
+            drawPixelTree(390, 460, '#5c3a1e', '#3a8a3a', '#2a7a2a', 0.75);
+
+            // Cây thông ở góc
+            drawPixelPine(60, 320, 0.8);
+            drawPixelPine(900, 310, 0.75);
+            drawPixelPine(910, 355, 0.6);
+
+            // Đèn lồng treo ở con đường
+            drawLantern(350, 260, '#fbbf24', tick);
+            drawLantern(610, 255, '#f472b6', tick);
+            drawLantern(480, 360, '#818cf8', tick);
+            drawLantern(260, 310, '#34d399', tick);
+            drawLantern(700, 305, '#fb923c', tick);
+
+            // Đèn đường ở rìa đảo
+            drawLampPost(175, 390, tick);
+            drawLampPost(785, 385, tick);
+
+            // Ghế đá nghỉ chân
+            drawStoneBench(400, 350);
+            drawStoneBench(620, 380);
+
+            // Nấm màu sắc nhỏ
+            drawMushroom(120, 408, '#ef4444', 0.8);
+            drawMushroom(135, 415, '#f97316', 0.7);
+            drawMushroom(330, 430, '#a855f7', 0.75);
+            drawMushroom(720, 450, '#3b82f6', 0.8);
+            drawMushroom(800, 440, '#ec4899', 0.7);
+
+            // Cầu vồng (mùa xuân và mùa hè)
+            if (activeSeasonKey === 'spring' || activeSeasonKey === 'summer') {
+                drawRainbow(tick);
+            }
+
+            // Chim bay trên bầu trời
+            drawBirds(tick);
+
+            // Đom đóm lung linh (tối hơn hoặc huyền bí)
+            if (activeSeasonKey === 'mystic' || activeSeasonKey === 'autumn' || activeSeasonKey === 'winter') {
+                drawFireflies(tick);
+            }
+        }
+
+        function drawSkyAndCastles(tick) {
+            const sky = ctx.createLinearGradient(0, 0, 0, V_HEIGHT);
+            sky.addColorStop(0, currentSeason.skyTop);
+            sky.addColorStop(0.4, currentSeason.skyMid);
+            sky.addColorStop(1, currentSeason.skyBot);
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+
+            if (activeSeasonKey === 'mystic') {
+                for (let i = 0; i < 60; i++) {
+                    const sx = (i * 97) % V_WIDTH;
+                    const sy = (i * 61) % 240;
+                    const twinkle = Math.sin(tick * 0.08 + i) > 0.3 ? '#ffffff' : '#998be2';
+                    pRect(ctx, sx, sy, 2, 2, twinkle);
+                }
+            }
+
+            // Golden Palace in the background
+            const px = 308;
+            const py = 58 + Math.sin(tick * 0.02) * 2.5;
+
+            const glow = ctx.createRadialGradient(px + 32, py + 30, 4, px + 32, py + 30, 85);
+            glow.addColorStop(0, currentSeason.castleGlow);
+            glow.addColorStop(1, 'rgba(255, 235, 150, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(px + 32, py + 30, 85, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Palace Towers
+            pRect(ctx, px + 26, py - 38, 12, 48, '#ffd24c');
+            pRect(ctx, px + 30, py - 56, 4, 20, '#ffe785');
+            pRect(ctx, px + 10, py - 18, 12, 38, '#e5b32f');
+            pRect(ctx, px + 14, py - 34, 4, 18, '#ffe785');
+            pRect(ctx, px + 42, py - 18, 12, 38, '#e5b32f');
+            pRect(ctx, px + 46, py - 34, 4, 18, '#ffe785');
+
+            pRect(ctx, px - 6, py + 5, 76, 32, '#ffe89c');
+            pRect(ctx, px - 3, py + 8, 70, 26, '#fcd36a');
+            for (let i = 0; i < 4; i++) {
+                pRect(ctx, px + 6 + i * 15, py + 14, 6, 14, '#875d15');
+            }
+
+            drawPixelCloud(px - 65, py + 22, 195, 52, currentSeason.cloudTop, currentSeason.cloudShade);
+            drawPixelCloud(px - 25, py + 36, 230, 62, currentSeason.cloudTop, currentSeason.cloudShade);
+
+            skyClouds.forEach(c => {
+                c.x += c.speed;
+                if (c.x > V_WIDTH + 120) c.x = -c.w - 80;
+                drawPixelCloud(c.x, c.y, c.w, c.h, currentSeason.cloudTop, currentSeason.cloudShade);
+            });
+        }
+
+        function drawIslandTerrain(tick) {
+            // Floating Island Base Core
+            pEllipse(ctx, V_WIDTH * 0.5, 495, 435, 75, currentSeason.islandBase);
+            pEllipse(ctx, V_WIDTH * 0.5, 480, 455, 78, currentSeason.islandMid);
+
+            // Biomes
+            pEllipse(ctx, 225, 360, 245, 165, currentSeason.leftBiome);
+            pEllipse(ctx, 165, 380, 215, 145, currentSeason.leftBiome);
+
+            pEllipse(ctx, 580, 250, 225, 105, currentSeason.rightTopBiome);
+            pEllipse(ctx, 745, 320, 235, 115, currentSeason.rightTopBiome);
+
+            pEllipse(ctx, 830, 450, 195, 125, currentSeason.bottomRightDark);
+            pEllipse(ctx, 835, 430, 175, 98, currentSeason.bottomRightSoil);
+            pEllipse(ctx, 810, 415, 145, 82, currentSeason.bottomRightSoil);
+
+            pEllipse(ctx, 480, 280, 195, 98, currentSeason.centerPlain);
+            pEllipse(ctx, 480, 280, 180, 85, currentSeason.centerPlain);
+
+            // Paths
+            ctx.strokeStyle = currentSeason.pathColor;
+            ctx.lineWidth = 38;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(480, 275); ctx.lineTo(230, 170); // Story
+            ctx.moveTo(480, 275); ctx.lineTo(750, 160); // Endless
+            ctx.moveTo(480, 275); ctx.lineTo(220, 390); // Challenge
+            ctx.moveTo(480, 275); ctx.lineTo(780, 390); // Shop
+            ctx.moveTo(480, 275); ctx.lineTo(480, 205); // Wardrobe Chest Path
+            ctx.stroke();
+
+            pEllipse(ctx, 480, 280, 115, 60, currentSeason.pathColor);
+
+            drawMeadowFlowers(tick);
+            drawMagicCrystals(395, 385, tick);
+            drawMagicCrystals(430, 412, tick + 25);
+
+            // Draw the Magical Wardrobe Chest at island upper center
+            drawWardrobeChest(tick);
+        }
+
+        function drawMeadowFlowers(tick) {
+            const flowerSeeds = [
+                { x: 80, y: 340, c1: currentSeason.leftBiome, c2: currentSeason.leftHighlight },
+                { x: 130, y: 420, c1: currentSeason.leftBiome, c2: currentSeason.leftHighlight },
+                { x: 95, y: 270, c1: currentSeason.leftBiome, c2: currentSeason.leftHighlight },
+                { x: 175, y: 465, c1: currentSeason.leftBiome, c2: currentSeason.leftHighlight },
+                { x: 265, y: 485, c1: currentSeason.leftBiome, c2: currentSeason.leftHighlight },
+                { x: 380, y: 195, c1: '#c996d9', c2: '#ffffff' },
+                { x: 425, y: 220, c1: '#f8b4d9', c2: '#ffffff' },
+                { x: 330, y: 340, c1: currentSeason.rightTopHighlight, c2: '#ffffff' },
+                { x: 405, y: 360, c1: '#c5a7f2', c2: '#ffffff' },
+                { x: 535, y: 380, c1: '#f5c6e8', c2: '#ffffff' },
+                { x: 550, y: 200, c1: currentSeason.rightTopHighlight, c2: '#ffffff' },
+                { x: 625, y: 230, c1: '#c8a2f8', c2: '#ffffff' },
+                { x: 655, y: 310, c1: currentSeason.rightTopBiome, c2: currentSeason.rightTopHighlight },
+                { x: 745, y: 270, c1: currentSeason.rightTopBiome, c2: currentSeason.rightTopHighlight },
+                { x: 805, y: 240, c1: currentSeason.rightTopBiome, c2: currentSeason.rightTopHighlight }
+            ];
+
+            flowerSeeds.forEach((f, idx) => {
+                const sway = Math.sin(tick * 0.05 + idx) * 1.5;
+                pRect(ctx, f.x - 3, f.y - 3 + sway, 7, 7, f.c1);
+                pRect(ctx, f.x - 2, f.y - 2 + sway, 5, 5, f.c2);
+                pRect(ctx, f.x, f.y + sway, 2, 2, '#fff');
+            });
+        }
+
+        function drawMagicCrystals(cx, cy, tick) {
+            const glow = Math.sin(tick * 0.08) * 0.2 + 0.8;
+            ctx.fillStyle = `rgba(180, 230, 255, ${glow})`;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - 26);
+            ctx.lineTo(cx + 8, cy);
+            ctx.lineTo(cx, cy + 8);
+            ctx.lineTo(cx - 8, cy);
+            ctx.closePath();
+            ctx.fill();
+            pRect(ctx, cx - 2, cy - 20, 4, 16, '#ffffff');
+
+            ctx.fillStyle = `rgba(230, 190, 255, ${glow})`;
+            ctx.beginPath();
+            ctx.moveTo(cx + 12, cy - 14);
+            ctx.lineTo(cx + 18, cy);
+            ctx.lineTo(cx + 12, cy + 5);
+            ctx.lineTo(cx + 6, cy);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // DRAW WARDROBE MAGIC CHEST (Interactive Landmark)
+        function drawWardrobeChest(tick) {
+            const s = STATIONS.WARDROBE;
+            const wx = s.x;
+            const wy = s.y;
+
+            // Soft stone pedestal
+            pEllipse(ctx, wx, wy + 16, 28, 12, '#50536c');
+            pEllipse(ctx, wx, wy + 12, 24, 10, '#868aa3');
+
+            // Sparkle glow around chest
+            const pulse = Math.sin(tick * 0.07) * 0.25 + 0.75;
+            const glow = ctx.createRadialGradient(wx, wy, 2, wx, wy, 32);
+            glow.addColorStop(0, `rgba(255, 215, 0, ${pulse * 0.6})`);
+            glow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(wx, wy, 32, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Royal Purple & Gold Chest Body
+            pRect(ctx, wx - 18, wy - 4, 36, 18, '#3b1d5c'); // Deep royal purple wood
+            pRect(ctx, wx - 16, wy - 2, 32, 14, '#562b85');
+            // Gold corner trims
+            pRect(ctx, wx - 18, wy - 4, 4, 18, '#ffd700');
+            pRect(ctx, wx + 14, wy - 4, 4, 18, '#ffd700');
+            pRect(ctx, wx - 18, wy + 11, 36, 3, '#ffd700');
+
+            // Chest Lid (Curved pixel style)
+            const lidBob = Math.sin(tick * 0.05) * 1.5;
+            pRect(ctx, wx - 19, wy - 15 + lidBob, 38, 12, '#482470');
+            pRect(ctx, wx - 17, wy - 14 + lidBob, 34, 10, '#663399');
+            pRect(ctx, wx - 19, wy - 15 + lidBob, 38, 3, '#ffe066');
+            pRect(ctx, wx - 19, wy - 6 + lidBob, 38, 3, '#ffd700');
+
+            // Lock & Magic Mirror Icon
+            pRect(ctx, wx - 3, wy - 2, 6, 8, '#ffe785');
+            pRect(ctx, wx - 1, wy, 2, 4, '#1b1325');
+
+            // Floating clothes/hanger icon above chest
+            const iconY = wy - 30 + Math.sin(tick * 0.08) * 3;
+            pRect(ctx, wx - 6, iconY, 12, 10, '#ffde59');
+            pRect(ctx, wx - 4, iconY + 2, 8, 6, '#e056fd');
+            pRect(ctx, wx - 1, iconY - 3, 2, 3, '#ffd700');
+        }
+
+        // 1. TOP-LEFT: Cosmic Stargate Portal to Open World
+        function drawStationStory(tick) {
+            const s = STATIONS.STORY;
+            const sx = s.x; const sy = s.y;
+
+            // Marble Steps
+            pRect(ctx, sx - 54, sy + 32, 108, 18, '#475569');
+            pRect(ctx, sx - 48, sy + 26, 96, 8, '#64748b');
+            pRect(ctx, sx - 40, sy + 20, 80, 8, '#94a3b8');
+
+            // Left & Right Portal Pillars
+            pRect(ctx, sx - 44, sy - 36, 14, 58, '#cbd5e1');
+            pRect(ctx, sx - 42, sy - 34, 10, 54, '#f1f5f9');
+            pRect(ctx, sx + 30, sy - 36, 14, 58, '#cbd5e1');
+            pRect(ctx, sx + 32, sy - 34, 10, 54, '#f1f5f9');
+
+            // Glowing Rune Inlays on Pillars
+            const runePulse = Math.sin(tick * 0.1) * 0.5 + 0.5;
+            ctx.fillStyle = `rgba(56, 189, 248, ${0.4 + runePulse * 0.5})`;
+            for (let i = 0; i < 3; i++) {
+                pRect(ctx, sx - 40, sy - 24 + i * 16, 6, 8, '#38bdf8');
+                pRect(ctx, sx + 34, sy - 24 + i * 16, 6, 8, '#38bdf8');
+            }
+
+            // Archway Header & Triangle Roof
+            pRect(ctx, sx - 48, sy - 44, 96, 10, '#cbd5e1');
+            pRect(ctx, sx - 46, sy - 42, 92, 6, '#f8fafc');
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.moveTo(sx - 48, sy - 44); ctx.lineTo(sx, sy - 70); ctx.lineTo(sx + 48, sy - 44);
+            ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.moveTo(sx - 42, sy - 46); ctx.lineTo(sx, sy - 66); ctx.lineTo(sx + 42, sy - 46);
+            ctx.closePath(); ctx.fill();
+
+            // Cosmic Stargate Portal Core (Vortex & Nebulae)
+            const px = sx;
+            const py = sy - 4;
+            const portalRadius = 26;
+
+            // Outer Radiant Aura
+            const auraGrad = ctx.createRadialGradient(px, py, 2, px, py, portalRadius + 16);
+            auraGrad.addColorStop(0, 'rgba(56, 189, 248, 0.95)');
+            auraGrad.addColorStop(0.5, 'rgba(147, 51, 234, 0.65)');
+            auraGrad.addColorStop(1, 'rgba(30, 27, 75, 0)');
+            ctx.fillStyle = auraGrad;
+            ctx.beginPath();
+            ctx.arc(px, py, portalRadius + 16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Swirling Inner Vortex
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(tick * 0.05);
+
+            const vGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, portalRadius);
+            vGrad.addColorStop(0, '#ffffff');
+            vGrad.addColorStop(0.35, '#38bdf8');
+            vGrad.addColorStop(0.75, '#6366f1');
+            vGrad.addColorStop(1, '#090d16');
+            ctx.fillStyle = vGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, portalRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Concentric Spinning Rune Rings
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1.5;
+            for (let r = 8; r <= 22; r += 7) {
+                ctx.beginPath();
+                ctx.arc(0, 0, r, 0, Math.PI * 1.5);
+                ctx.stroke();
+            }
+
+            // Orbiting Stardust Particles
+            for (let i = 0; i < 4; i++) {
+                const ang = tick * 0.08 + (i * Math.PI / 2);
+                const starDist = 12 + (i % 2) * 8;
+                const starX = Math.cos(ang) * starDist;
+                const starY = Math.sin(ang) * starDist;
+                pRect(ctx, starX - 1, starY - 1, 3, 3, '#ffffff');
+            }
+            ctx.restore();
+
+            // Holographic Portal Title Banner
+            pRect(ctx, sx - 44, sy + 38, 88, 14, 'rgba(15, 23, 42, 0.9)');
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(sx - 44, sy + 38, 88, 14);
+
+            ctx.font = '6px "Press Start 2P", monospace';
+            ctx.fillStyle = '#38bdf8';
+            ctx.textAlign = 'center';
+            ctx.fillText('THẾ GIỚI MỞ', sx, sy + 48);
+            ctx.textAlign = 'left';
+        }
+
+        // 2. TOP-RIGHT: Colosseum Pavilion with Crescent Moon & Golden Infinity (Endless)
+        function drawStationEndless(tick) {
+            const s = STATIONS.ENDLESS;
+            const ex = s.x; const ey = s.y;
+
+            pEllipse(ctx, ex, ey + 36, 68, 26, '#6b6e85');
+            pEllipse(ctx, ex, ey + 30, 64, 24, '#979bb2');
+            pEllipse(ctx, ex, ey + 24, 60, 22, '#c1c5dc');
+            pEllipse(ctx, ex, ey + 18, 54, 19, '#dedfeb');
+
+            ctx.strokeStyle = '#a4a8c2';
+            ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.arc(ex, ey - 5, 52, Math.PI * 0.95, Math.PI * 2.05);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#e6e8f8';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(ex, ey - 7, 52, Math.PI * 0.95, Math.PI * 2.05);
+            ctx.stroke();
+
+            [-42, -22, 22, 42].forEach(px => {
+                pRect(ctx, ex + px - 4, ey - 22, 8, 36, '#cacde3');
+                pRect(ctx, ex + px - 5, ey - 24, 10, 4, '#ffffff');
+                pRect(ctx, ex + px - 5, ey + 12, 10, 4, '#8f92a8');
+            });
+
+            pRect(ctx, ex - 18, ey - 2, 36, 18, '#8c8fa7');
+            pRect(ctx, ex - 22, ey - 5, 44, 5, '#e0e2f2');
+
+            ctx.strokeStyle = 'rgba(255, 255, 235, 0.9)';
+            ctx.lineWidth = 9;
+            ctx.beginPath();
+            ctx.arc(ex + 25, ey - 18, 36, 1.2 * Math.PI, 1.95 * Math.PI);
+            ctx.stroke();
+
+            const infBob = Math.sin(tick * 0.05) * 4;
+            const ix = ex;
+            const iy = ey - 24 + infBob;
+
+            const glow = ctx.createRadialGradient(ix, iy, 4, ix, iy, 40);
+            glow.addColorStop(0, 'rgba(255, 225, 120, 0.75)');
+            glow.addColorStop(1, 'rgba(255, 225, 120, 0)');
+            ctx.fillStyle = glow;
+            ctx.beginPath(); ctx.arc(ix, iy, 40, 0, Math.PI * 2); ctx.fill();
+
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = '#5a3d00';
+            ctx.beginPath();
+            ctx.arc(ix - 18, iy, 15, 0, Math.PI * 2);
+            ctx.arc(ix + 18, iy, 15, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.arc(ix - 18, iy, 15, 0, Math.PI * 2);
+            ctx.arc(ix + 18, iy, 15, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(ix - 18, iy, 13, 1.2 * Math.PI, 1.8 * Math.PI);
+            ctx.arc(ix + 18, iy, 13, 1.2 * Math.PI, 1.8 * Math.PI);
+            ctx.stroke();
+        }
+
+        // 3. BOTTOM-LEFT: Octagonal Stone Battle Pit, Shield & Crossed Swords (Challenge)
+        function drawStationChallenge(tick) {
+            const s = STATIONS.CHALLENGE;
+            const ax = s.x; const ay = s.y;
+
+            pEllipse(ctx, ax, ay + 15, 78, 38, '#414256');
+            pEllipse(ctx, ax, ay + 12, 74, 34, '#6b6e82');
+            pEllipse(ctx, ax, ay + 8, 70, 30, '#8c8f9f');
+            pEllipse(ctx, ax, ay + 4, 64, 25, '#565868');
+
+            const posts = [
+                { x: -62, y: -4 }, { x: -45, y: -18 }, { x: 45, y: -18 }, { x: 62, y: -4 },
+                { x: -55, y: 16 }, { x: 55, y: 16 }, { x: -28, y: 28 }, { x: 28, y: 28 }
+            ];
+            posts.forEach(p => {
+                pRect(ctx, ax + p.x - 5, ay + p.y - 14, 10, 20, '#53566b');
+                pRect(ctx, ax + p.x - 4, ay + p.y - 16, 8, 4, '#a2a5bb');
+            });
+
+            const gx = ax - 38;
+            const gy = ay + 20;
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(gx - 18, gy - 20); ctx.lineTo(gx + 18, gy + 18); ctx.stroke();
+            pRect(ctx, gx - 20, gy - 22, 5, 5, '#cca352');
+
+            ctx.beginPath(); ctx.moveTo(gx + 18, gy - 20); ctx.lineTo(gx - 18, gy + 18); ctx.stroke();
+            pRect(ctx, gx + 16, gy - 22, 5, 5, '#cca352');
+
+            ctx.fillStyle = '#42280d';
+            ctx.beginPath();
+            ctx.moveTo(gx - 15, gy - 14); ctx.lineTo(gx + 15, gy - 14); ctx.lineTo(gx + 15, gy + 4);
+            ctx.lineTo(gx, gy + 22); ctx.lineTo(gx - 15, gy + 4); ctx.closePath(); ctx.fill();
+
+            ctx.fillStyle = '#df9b42';
+            ctx.beginPath();
+            ctx.moveTo(gx - 12, gy - 12); ctx.lineTo(gx + 12, gy - 12); ctx.lineTo(gx + 12, gy + 3);
+            ctx.lineTo(gx, gy + 18); ctx.lineTo(gx - 12, gy + 3); ctx.closePath(); ctx.fill();
+
+            pRect(ctx, gx - 1, gy - 4, 3, 10, '#ffe596');
+            pRect(ctx, gx - 5, gy - 2, 11, 3, '#ffe596');
+        }
+
+        // 4. BOTTOM-RIGHT: Void Portal, Canopy Bench, Chest, Giant Gold 'C' Coin
+        function drawStationShop(tick) {
+            const s = STATIONS.SHOP;
+            const rx = s.x; const ry = s.y;
+
+            pRect(ctx, rx - 85, ry - 35, 8, 25, '#2f1a3a');
+            pRect(ctx, rx - 80, ry - 42, 6, 30, '#1c1026');
+            pRect(ctx, rx - 90, ry - 25, 12, 18, '#3b2446');
+
+            const px = rx - 55;
+            const py = ry - 20;
+
+            pRect(ctx, px - 14, py - 30, 28, 54, '#393344');
+            pRect(ctx, px - 10, py - 26, 20, 48, '#1e1a26');
+
+            const vortex = ctx.createRadialGradient(px, py, 2, px, py, 22);
+            vortex.addColorStop(0, '#ffffff');
+            vortex.addColorStop(0.3, '#d38bf8');
+            vortex.addColorStop(0.7, '#6b2fb5');
+            vortex.addColorStop(1, '#1b0933');
+            ctx.fillStyle = vortex;
+            ctx.beginPath();
+            ctx.ellipse(px, py - 2, 10, 20, Math.sin(tick * 0.08) * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            const bx = rx - 65;
+            const by = ry + 40;
+            pRect(ctx, bx - 26, by - 12, 42, 8, '#543621');
+            pRect(ctx, bx - 22, by - 4, 6, 22, '#352113');
+            pRect(ctx, bx + 10, by - 4, 6, 22, '#352113');
+            pRect(ctx, bx - 28, by - 24, 46, 6, '#a47854');
+            pRect(ctx, bx - 25, by - 28, 40, 5, '#855938');
+
+            pEllipse(ctx, rx - 15, ry + 12, 14, 11, '#baa375');
+            pRect(ctx, rx - 17, ry + 3, 6, 5, '#866f49');
+            pEllipse(ctx, rx + 65, ry + 50, 15, 12, '#baa375');
+
+            const tx = rx + 25;
+            const ty = ry + 20;
+            pEllipse(ctx, tx + 2, ty + 24, 38, 12, 'rgba(0,0,0,0.3)');
+            pRect(ctx, tx - 34, ty - 6, 68, 28, '#824921');
+            pRect(ctx, tx - 36, ty - 8, 72, 6, '#e0aa38');
+            pRect(ctx, tx - 34, ty + 18, 68, 4, '#e0aa38');
+            pRect(ctx, tx - 4, ty + 2, 8, 10, '#ffd863');
+            pRect(ctx, tx - 36, ty - 22, 72, 16, '#9c5b2b');
+            pRect(ctx, tx - 34, ty - 24, 68, 4, '#ffd863');
+            pRect(ctx, tx - 38, ty - 14, 76, 5, '#ffe596');
+
+            const coinBob = Math.sin(tick * 0.07) * 6;
+            const cx = tx;
+            const cy = ty - 48 + coinBob;
+
+            const cGlow = ctx.createRadialGradient(cx, cy, 5, cx, cy, 34);
+            cGlow.addColorStop(0, 'rgba(255, 230, 100, 0.8)');
+            cGlow.addColorStop(1, 'rgba(255, 230, 100, 0)');
+            ctx.fillStyle = cGlow;
+            ctx.beginPath(); ctx.arc(cx, cy, 34, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#6e4508';
+            ctx.beginPath(); ctx.arc(cx, cy, 24, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#fdb827';
+            ctx.beginPath(); ctx.arc(cx, cy, 21, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = '#e59d17';
+            ctx.beginPath(); ctx.arc(cx, cy, 16, 0, Math.PI * 2); ctx.fill();
+
+            pRect(ctx, cx - 7, cy - 9, 14, 4, '#fff4a3');
+            pRect(ctx, cx - 7, cy - 9, 4, 18, '#fff4a3');
+            pRect(ctx, cx - 7, cy + 5, 14, 4, '#fff4a3');
+
+            if (Math.sin(tick * 0.12) > 0.4) {
+                pRect(ctx, cx + 12, cy - 18, 4, 4, '#ffffff');
+            }
+        }
+
+        /* Modular Custom Pixel Character Renderer (Used by both main game & live wardrobe preview) */
+        function renderCustomPixelHero(targetCtx, x, y, direction, isMoving, tick, cfg, scale = 1) {
+            targetCtx.save();
+            targetCtx.translate(Math.round(x), Math.round(y));
+            targetCtx.scale(scale, scale);
+
+            const hCol = OUTFIT_PALETTES.hair[cfg.hairColor] || OUTFIT_PALETTES.hair.brown;
+            const tCol = OUTFIT_PALETTES.tunic[cfg.outfitColor] || OUTFIT_PALETTES.tunic.blue;
+            const pCol = OUTFIT_PALETTES.pants[cfg.pantsColor] || OUTFIT_PALETTES.pants.dark;
+
+            const bob = isMoving ? Math.sin(tick * 0.35) * 2 : 0;
+            const cy = bob;
+
+            // Drop Shadow
+            pEllipse(targetCtx, 0, 14, 14, 6, 'rgba(15, 15, 30, 0.45)');
+
+            // BACK ACCESSORIES: Wings or Backpack (Rendered behind body when facing down/sides)
+            if (cfg.accessory === 'wings') {
+                const wingFlap = Math.sin(tick * 0.2) * 3;
+                // Left Wing
+                targetCtx.fillStyle = '#ffffff';
+                targetCtx.beginPath();
+                targetCtx.moveTo(-6, cy - 4);
+                targetCtx.lineTo(-20 - wingFlap, cy - 14);
+                targetCtx.lineTo(-14, cy + 2);
+                targetCtx.closePath();
+                targetCtx.fill();
+                pRect(targetCtx, -16 - wingFlap, cy - 10, 4, 4, '#e0f2fe');
+
+                // Right Wing
+                targetCtx.beginPath();
+                targetCtx.moveTo(6, cy - 4);
+                targetCtx.lineTo(20 + wingFlap, cy - 14);
+                targetCtx.lineTo(14, cy + 2);
+                targetCtx.closePath();
+                targetCtx.fill();
+                pRect(targetCtx, 12 + wingFlap, cy - 10, 4, 4, '#e0f2fe');
+            } else if (cfg.accessory === 'backpack' && direction !== 'up') {
+                pRect(targetCtx, -10, cy - 4, 6, 12, '#5e3a20');
+                pRect(targetCtx, -9, cy - 2, 4, 8, '#8c5934');
+            }
+
+            // Torso / Tunic
+            pRect(targetCtx, -7, cy - 6, 14, 14, tCol.shadow);
+            pRect(targetCtx, -5, cy - 4, 10, 11, tCol.main);
+
+            // Belt
+            pRect(targetCtx, -6, cy + 3, 12, 3, '#3a2012');
+            pRect(targetCtx, -1, cy + 3, 3, 3, '#ffd700');
+
+            // Scarf Neck wrap
+            if (cfg.accessory === 'scarf') {
+                pRect(targetCtx, -7, cy - 7, 14, 4, '#b91c1c');
+                if (direction === 'down' || direction === 'right') {
+                    pRect(targetCtx, 3, cy - 4, 4, 8, '#dc2626');
+                }
+            }
+
+            // Legs & Pants / Skirt
+            let legOffsetL = 0;
+            let legOffsetR = 0;
+            if (isMoving) {
+                legOffsetL = Math.sin(tick * 0.35) * 3;
+                legOffsetR = -Math.sin(tick * 0.35) * 3;
+            }
+
+            if (cfg.pantsColor === 'skirt') {
+                pRect(targetCtx, -7, cy + 6, 14, 5, pCol.main);
+                pRect(targetCtx, -8, cy + 10, 16, 2, pCol.shadow);
+                // Bare legs + shoes
+                pRect(targetCtx, -5, cy + 11 + legOffsetL, 3, 4, '#f2bf99');
+                pRect(targetCtx, 2, cy + 11 + legOffsetR, 3, 4, '#f2bf99');
+                pRect(targetCtx, -6, cy + 13 + legOffsetL, 4, 3, '#3a2012');
+                pRect(targetCtx, 2, cy + 13 + legOffsetR, 4, 3, '#3a2012');
+            } else {
+                pRect(targetCtx, -6, cy + 8 + legOffsetL, 5, 6, pCol.main);
+                pRect(targetCtx, 1, cy + 8 + legOffsetR, 5, 6, pCol.main);
+                pRect(targetCtx, -6, cy + 12 + legOffsetL, 5, 2, pCol.shadow);
+                pRect(targetCtx, 1, cy + 12 + legOffsetR, 5, 2, pCol.shadow);
+            }
+
+            // Arms & Hands
+            if (direction === 'left') {
+                pRect(targetCtx, -8, cy - 4, 4, 9, tCol.main);
+                pRect(targetCtx, -8, cy + 5, 4, 3, '#f2bf99');
+            } else if (direction === 'right') {
+                pRect(targetCtx, 4, cy - 4, 4, 9, tCol.main);
+                pRect(targetCtx, 4, cy + 5, 4, 3, '#f2bf99');
+            } else {
+                pRect(targetCtx, -9, cy - 4, 3, 9, tCol.main);
+                pRect(targetCtx, 6, cy - 4, 3, 9, tCol.main);
+                pRect(targetCtx, -9, cy + 5, 3, 3, '#f2bf99');
+                pRect(targetCtx, 6, cy + 5, 3, 3, '#f2bf99');
+            }
+
+            // Head & Face
+            pRect(targetCtx, -8, cy - 20, 16, 14, '#f2bf99');
+
+            // Hair Rendering (Boy Adventurer or Girl Mage Twin Braids)
+            if (cfg.gender === 'girl') {
+                // Girl Hairstyle: bangs + long side ponytails
+                pRect(targetCtx, -9, cy - 23, 18, 7, hCol.main);
+                pRect(targetCtx, -9, cy - 19, 4, 14, hCol.main); // Left twin locks
+                pRect(targetCtx, 5, cy - 19, 4, 14, hCol.main);  // Right twin locks
+                pRect(targetCtx, -9, cy - 7, 3, 4, hCol.shadow);
+                pRect(targetCtx, 6, cy - 7, 3, 4, hCol.shadow);
+                pRect(targetCtx, -5, cy - 18, 10, 3, hCol.light); // Soft bangs
+            } else {
+                // Boy Hairstyle: adventurer bangs & short spikes
+                pRect(targetCtx, -9, cy - 23, 18, 7, hCol.main);
+                pRect(targetCtx, -9, cy - 19, 4, 9, hCol.main);
+                pRect(targetCtx, 5, cy - 19, 4, 9, hCol.main);
+                pRect(targetCtx, -5, cy - 17, 3, 4, hCol.shadow);
+                pRect(targetCtx, 0, cy - 17, 4, 4, hCol.shadow);
+                pRect(targetCtx, -3, cy - 22, 6, 2, hCol.light);
+            }
+
+            // Eyes
+            if (direction === 'down') {
+                pRect(targetCtx, -4, cy - 13, 3, 4, '#1b1b22');
+                pRect(targetCtx, 2, cy - 13, 3, 4, '#1b1b22');
+                pRect(targetCtx, -4, cy - 13, 1, 1, '#ffffff');
+                pRect(targetCtx, 2, cy - 13, 1, 1, '#ffffff');
+                if (cfg.gender === 'girl') {
+                    // Soft pink blush
+                    pRect(targetCtx, -6, cy - 10, 2, 2, '#fda4af');
+                    pRect(targetCtx, 4, cy - 10, 2, 2, '#fda4af');
+                }
+            } else if (direction === 'up') {
+                // Back of head full hair
+                pRect(targetCtx, -8, cy - 22, 16, 14, hCol.main);
+                if (cfg.accessory === 'backpack') {
+                    pRect(targetCtx, -6, cy - 2, 12, 12, '#5e3a20');
+                    pRect(targetCtx, -4, cy, 8, 8, '#8c5934');
+                }
+            } else if (direction === 'left') {
+                pRect(targetCtx, -6, cy - 13, 3, 4, '#1b1b22');
+                pRect(targetCtx, -6, cy - 13, 1, 1, '#ffffff');
+            } else if (direction === 'right') {
+                pRect(targetCtx, 3, cy - 13, 3, 4, '#1b1b22');
+                pRect(targetCtx, 4, cy - 13, 1, 1, '#ffffff');
+            }
+
+            // ACCESSORY: Golden Angel Halo above head
+            if (cfg.accessory === 'halo') {
+                const haloBob = Math.sin(tick * 0.08) * 2;
+                pEllipse(targetCtx, 0, cy - 28 + haloBob, 10, 3, 'rgba(255, 235, 120, 0.4)');
+                targetCtx.strokeStyle = '#ffd700';
+                targetCtx.lineWidth = 2;
+                targetCtx.beginPath();
+                targetCtx.ellipse(0, cy - 28 + haloBob, 8, 2.5, 0, 0, Math.PI * 2);
+                targetCtx.stroke();
+            }
+
+            targetCtx.restore();
+        }
+
+        function drawHero(tick) {
+            if (TeleportSystem.isTeleporting) {
+                if (TeleportSystem.phase === 'dissolve') {
+                    // Character floats up & flickers out
+                    const liftY = hero.y - (TeleportSystem.timer / 22) * 16;
+                    const flickerAlpha = (1 - (TeleportSystem.timer / 22)) * (Math.sin(tick * 0.8) > 0 ? 0.9 : 0.4);
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0.1, flickerAlpha);
+                    renderCustomPixelHero(ctx, hero.x, liftY, hero.dir, true, tick, outfitConfig, 1);
+                    ctx.restore();
+                    return;
+                } else if (TeleportSystem.phase === 'travel') {
+                    // Invisible during travel phase
+                    return;
+                } else if (TeleportSystem.phase === 'materialize') {
+                    // Re-emerges with ascending alpha
+                    const fadeInAlpha = Math.min(1, TeleportSystem.timer / 20);
+                    ctx.save();
+                    ctx.globalAlpha = fadeInAlpha;
+                    renderCustomPixelHero(ctx, hero.x, hero.y, hero.dir, false, tick, outfitConfig, 1);
+                    ctx.restore();
+                    return;
+                }
+            }
+            renderCustomPixelHero(ctx, hero.x, hero.y, hero.dir, hero.isMoving, tick, outfitConfig, 1);
+
+            // Name Tag above Hero in Open World
+            if (typeof currentScene !== 'undefined' && currentScene === 'open_world') {
+                ctx.font = '6px "Press Start 2P", monospace';
+                ctx.textAlign = 'center';
+                const tagY = hero.y - 22;
+                const textW = ctx.measureText(myPlayerName).width;
+                pRect(ctx, hero.x - textW / 2 - 3, tagY - 7, textW + 6, 9, 'rgba(10, 10, 20, 0.75)');
+                ctx.fillStyle = '#fde047';
+                ctx.fillText(myPlayerName, hero.x, tagY);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        function drawWeatherParticles() {
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.rot += p.rotSpeed;
+
+                if (p.y > V_HEIGHT + 10) {
+                    p.y = -10;
+                    p.x = Math.random() * V_WIDTH;
+                }
+                if (p.x < -10) p.x = V_WIDTH + 10;
+                if (p.x > V_WIDTH + 10) p.x = -10;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.fillStyle = currentSeason.particleColor;
+
+                if (currentSeason.particleType === 'sakura_petals' || currentSeason.particleType === 'autumn_leaves') {
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, p.size * 1.5, p.size * 0.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (currentSeason.particleType === 'snowflakes') {
+                    ctx.fillRect(-p.size, 0, p.size * 2, 1);
+                    ctx.fillRect(0, -p.size, 1, p.size * 2);
+                } else if (currentSeason.particleType === 'bubbles') {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.fillRect(-p.size * 0.5, -p.size * 0.5, p.size, p.size);
+                }
+                ctx.restore();
+            });
+        }
+
+        let nearStation = null;
+        const promptBox = document.getElementById('proximity-prompt');
+        const promptTitle = document.getElementById('proximity-text');
+
+        function checkProximity() {
+            if (typeof currentScene !== 'undefined' && currentScene === 'open_world') {
+                const distReturn = Math.hypot(hero.x - 1200, hero.y - 1010);
+                if (distReturn < 60) {
+                    if (nearStation !== 'return_portal') {
+                        nearStation = 'return_portal';
+                        promptTitle.innerText = 'Cổng Trở Về Đảo Chính (Hub)';
+                        promptBox.classList.remove('opacity-0');
+                        promptBox.classList.add('opacity-100');
+                        RetroAudio.beep(520, 0.05, 'sine', 0.04);
+                    }
+                } else if (nearStation === 'return_portal') {
+                    nearStation = null;
+                    promptBox.classList.remove('opacity-100');
+                    promptBox.classList.add('opacity-0');
+                }
+                return;
+            }
+
+            let candidate = null;
+            let minD = Infinity;
+
+            for (const k in STATIONS) {
+                const s = STATIONS[k];
+                const dist = Math.hypot(hero.x - s.x, hero.y - s.y);
+                if (dist < s.radius && dist < minD) {
+                    minD = dist;
+                    candidate = s;
+                }
+            }
+
+            if (candidate !== nearStation) {
+                nearStation = candidate;
+                if (nearStation) {
+                    promptTitle.innerText = `${nearStation.title}`;
+                    promptBox.classList.remove('opacity-0');
+                    promptBox.classList.add('opacity-100');
+                    RetroAudio.beep(520, 0.05, 'sine', 0.04);
+                } else {
+                    promptBox.classList.remove('opacity-100');
+                    promptBox.classList.add('opacity-0');
+                }
+            }
+        }
+
+        function triggerNearbyInteraction() {
+            if (typeof currentScene !== 'undefined' && currentScene === 'open_world') {
+                if (nearStation === 'return_portal') {
+                    exitOpenWorld();
+                }
+                return;
+            }
+            if (nearStation) {
+                if (nearStation.id === 'wardrobe') {
+                    openWardrobeModal();
+                } else {
+                    openStationModal(nearStation);
+                }
+            }
+        }
+
+        // Station Modal
+        let curModalStation = null;
+        const modalBox = document.getElementById('modal-station');
+        const mTitle = document.getElementById('modal-station-title');
+        const mSubtitle = document.getElementById('modal-station-subtitle');
+        const mBadge = document.getElementById('modal-icon-badge');
+        const mBody = document.getElementById('modal-station-body');
+        const mBtnPrimary = document.getElementById('btn-confirm-modal');
+        const mBtnClose = document.getElementById('btn-close-modal');
+        const mBtnCancel = document.getElementById('btn-cancel-modal');
+
+        function openStationModal(station) {
+            curModalStation = station;
+            RetroAudio.fanfare();
+            mTitle.innerText = station.title;
+            mSubtitle.innerText = station.subtitle;
+            mBadge.innerText = station.iconBadge;
+            mBtnPrimary.querySelector('span').innerText = station.btnText;
+
+            let extra = '';
+            if (station.id === 'open_world' || station.id === 'story') {
+                extra = `
+          <div class="mt-3 p-2.5 bg-[#0b1329] border border-cyan-400/50 rounded flex flex-col gap-1.5 text-[10px]">
+            <div class="flex items-center justify-between text-cyan-300">
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Máy chủ: Đông Nam Á (SEA-01)</span>
+              <span class="text-amber-300 font-bold">Ping: 18ms</span>
+            </div>
+            <div class="flex items-center justify-between text-gray-300">
+              <span>Người chơi đang online:</span>
+              <span class="text-emerald-400 font-bold">6 Bạn Đồng Hành</span>
+            </div>
+            <div class="text-[9px] text-gray-400 italic pt-1 border-t border-cyan-900/60">
+              * Khung chat trực tuyến thời gian thực, bong bóng thoại pixel trên đầu và đồng bộ qua nhiều tab!
+            </div>
+          </div>`;
+            } else if (station.id === 'endless') {
+                extra = `
+          <div class="mt-3 p-2 bg-[#1b172e] border border-amber-400/40 rounded text-[10px] space-y-1">
+            <div class="flex justify-between"><span class="text-gray-400">Kỷ lục tầng cao nhất:</span> <span class="text-amber-300">Tầng 68</span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Thời gian trụ vững:</span> <span class="text-cyan-300">24:15</span></div>
+          </div>`;
+            } else if (station.id === 'challenge') {
+                extra = `
+          <div class="mt-3 p-2 bg-[#1b172e] border border-red-400/40 rounded flex items-center justify-between text-[10px]">
+            <span class="text-red-400 font-bold">Khiêu chiến hôm nay: Đấu trường lửa</span>
+            <span class="bg-red-950 text-red-200 px-2 py-0.5 rounded border border-red-700">Cực Khó</span>
+          </div>`;
+            } else if (station.id === 'shop') {
+                extra = `
+          <div class="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+            <div class="p-2 bg-[#1b172e] border border-amber-500/40 rounded flex items-center justify-between">
+              <span>❤️ Bình Máu (+1)</span>
+              <span class="text-yellow-400 font-bold">25 C</span>
+            </div>
+            <div class="p-2 bg-[#1b172e] border border-amber-500/40 rounded flex items-center justify-between">
+              <span>🗝️ Chìa Thánh</span>
+              <span class="text-yellow-400 font-bold">80 C</span>
+            </div>
+          </div>`;
+            }
+
+            mBody.innerHTML = `<p>${station.desc}</p>${extra}`;
+            modalBox.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modalBox.classList.add('hidden');
+            RetroAudio.interact();
+        }
+        mBtnClose.addEventListener('click', closeModal);
+        mBtnCancel.addEventListener('click', closeModal);
+        mBtnPrimary.addEventListener('click', () => {
+            RetroAudio.fanfare();
+            if (curModalStation && (curModalStation.id === 'open_world' || curModalStation.id === 'story')) {
+                closeModal();
+                enterOpenWorld();
+                return;
+            }
+            const coinHud = document.getElementById('hud-coin-count');
+            let coins = parseInt(coinHud.innerText) + 10;
+            coinHud.innerText = coins;
+            closeModal();
+        });
+
+        // WARDROBE CONTROLLERS
+        const modalWardrobe = document.getElementById('modal-wardrobe');
+        const btnOpenWardrobeHud = document.getElementById('btn-open-wardrobe-hud');
+        const btnCloseWardrobe = document.getElementById('btn-close-wardrobe');
+        const btnCancelWardrobe = document.getElementById('btn-cancel-wardrobe');
+        const btnSaveWardrobe = document.getElementById('btn-save-wardrobe');
+        const btnRandomWardrobe = document.getElementById('btn-random-wardrobe');
+
+        const previewCanvas = document.getElementById('previewCanvas');
+        const pCtx = previewCanvas.getContext('2d');
+        pCtx.imageSmoothingEnabled = false;
+
+        function openWardrobeModal() {
+            RetroAudio.wardrobeOpen();
+            previewOutfit = { ...outfitConfig };
+            updateWardrobeUISelections();
+            modalWardrobe.classList.remove('hidden');
+        }
+
+        function closeWardrobeModal() {
+            modalWardrobe.classList.add('hidden');
+            RetroAudio.interact();
+        }
+
+        btnOpenWardrobeHud.addEventListener('click', openWardrobeModal);
+        btnCloseWardrobe.addEventListener('click', closeWardrobeModal);
+        btnCancelWardrobe.addEventListener('click', closeWardrobeModal);
+
+        // Save and Apply outfit to player
+        btnSaveWardrobe.addEventListener('click', () => {
+            Object.assign(outfitConfig, previewOutfit);
+            RetroAudio.wardrobeEquip();
+            closeWardrobeModal();
+        });
+
+        // Randomize outfit button
+        btnRandomWardrobe.addEventListener('click', () => {
+            const genders = ['boy', 'girl'];
+            const hairs = ['brown', 'blonde', 'black', 'pink', 'silver', 'blue'];
+            const outfits = ['blue', 'red', 'green', 'purple', 'gold'];
+            const pants = ['dark', 'blue', 'white', 'skirt'];
+            const accs = ['backpack', 'wings', 'halo', 'scarf'];
+
+            previewOutfit.gender = genders[Math.floor(Math.random() * genders.length)];
+            previewOutfit.hairColor = hairs[Math.floor(Math.random() * hairs.length)];
+            previewOutfit.outfitColor = outfits[Math.floor(Math.random() * outfits.length)];
+            previewOutfit.pantsColor = pants[Math.floor(Math.random() * pants.length)];
+            previewOutfit.accessory = accs[Math.floor(Math.random() * accs.length)];
+
+            RetroAudio.beep(800, 0.08, 'sine');
+            updateWardrobeUISelections();
+        });
+
+        // Update active highlight classes on buttons
+        function updateWardrobeUISelections() {
+            const markActive = (containerId, key) => {
+                const val = previewOutfit[key];
+                document.querySelectorAll(`#${containerId} .wardrobe-opt`).forEach(btn => {
+                    if (btn.getAttribute('data-val') === val) {
+                        btn.classList.add('wardrobe-item-active');
+                    } else {
+                        btn.classList.remove('wardrobe-item-active');
+                    }
+                });
+            };
+            markActive('group-gender', 'gender');
+            markActive('group-hair', 'hairColor');
+            markActive('group-outfit', 'outfitColor');
+            markActive('group-pants', 'pantsColor');
+            markActive('group-accessory', 'accessory');
+        }
+
+        // Attach click listeners to all customization option buttons
+        function setupWardrobeButtonHandlers(containerId, key) {
+            document.querySelectorAll(`#${containerId} .wardrobe-opt`).forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const val = btn.getAttribute('data-val');
+                    previewOutfit[key] = val;
+                    RetroAudio.beep(600, 0.04, 'square', 0.04);
+                    updateWardrobeUISelections();
+                });
+            });
+        }
+
+        setupWardrobeButtonHandlers('group-gender', 'gender');
+        setupWardrobeButtonHandlers('group-hair', 'hairColor');
+        setupWardrobeButtonHandlers('group-outfit', 'outfitColor');
+        setupWardrobeButtonHandlers('group-pants', 'pantsColor');
+        setupWardrobeButtonHandlers('group-accessory', 'accessory');
+
+        // Direction switcher buttons for live preview
+        const dirBtns = {
+            down: document.getElementById('prev-dir-down'),
+            left: document.getElementById('prev-dir-left'),
+            right: document.getElementById('prev-dir-right'),
+            up: document.getElementById('prev-dir-up')
+        };
+
+        Object.keys(dirBtns).forEach(d => {
+            dirBtns[d].addEventListener('click', () => {
+                previewDirection = d;
+                RetroAudio.beep(480, 0.04, 'sine', 0.03);
+                Object.keys(dirBtns).forEach(k => {
+                    dirBtns[k].classList.remove('bg-indigo-800', 'text-amber-300', 'font-bold');
+                    dirBtns[k].classList.add('bg-gray-800', 'text-gray-300');
+                });
+                dirBtns[d].classList.remove('bg-gray-800', 'text-gray-300');
+                dirBtns[d].classList.add('bg-indigo-800', 'text-amber-300', 'font-bold');
+            });
+        });
+
+        // Wardrobe Live Preview Loop
+        function renderPreview(tick) {
+            if (modalWardrobe.classList.contains('hidden')) return;
+            pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // Render character scaled up 3.4x in center of preview
+            renderCustomPixelHero(
+                pCtx,
+                previewCanvas.width / 2,
+                previewCanvas.height / 2 + 18,
+                previewDirection,
+                true, // soft idle breathing/walking
+                tick,
+                previewOutfit,
+                3.4
+            );
+        }
+
+        // ==========================================
+        // VAST OPEN WORLD REALM (5 THEMED BIOMES & CAMERA SYSTEM)
+        // ==========================================
+        let currentScene = 'island_hub'; // 'island_hub' | 'open_world'
+        const myPeerId = 'player_' + Math.floor(Math.random() * 8999 + 1000);
+        let myPlayerName = 'Bạn';
+        let heroSpeech = { text: '', timer: 0 };
+
+        const chatWidget = document.getElementById('open-world-chat-widget');
+        const chatContainer = document.getElementById('chat-messages-container');
+        const chatForm = document.getElementById('open-world-chat-form');
+        const chatInput = document.getElementById('open-world-chat-input');
+        const chatOnlineCount = document.getElementById('chat-online-count');
+        const btnReturnHub = document.getElementById('btn-return-hub');
+        const generalGuide = document.getElementById('general-guide-text');
+
+        // Minimap elements
+        const minimapWidget = document.getElementById('open-world-minimap-widget');
+        const minimapCanvas = document.getElementById('minimap-canvas');
+        const minimapZoneLabel = document.getElementById('minimap-zone-label');
+        const mCtx = minimapCanvas ? minimapCanvas.getContext('2d') : null;
+
+        // Prevent character movement keys while typing inside chat input
+        chatInput.addEventListener('keydown', (e) => { e.stopPropagation(); });
+        chatInput.addEventListener('keyup', (e) => { e.stopPropagation(); });
+
+        // Cross-tab real multiplayer synchronization
+        let mmoChannel = null;
+        try {
+            mmoChannel = new BroadcastChannel('nckh_pixel_mmo');
+        } catch (e) {
+            console.log('BroadcastChannel not supported');
+        }
+
+        const networkPeers = {};
+
+        // 5 Dynamic Companions roaming their favorite biomes across the vast map
+        const companions = [
+            {
+                id: 'comp_1',
+                name: 'Minh (Kiếm Sĩ)',
+                x: 750, y: 820, targetX: 750, targetY: 820,
+                minX: 350, maxX: 1150, minY: 700, maxY: 950,
+                dir: 'down', speed: 1.5, isMoving: false, pauseTimer: 60,
+                walkTimer: 0,
+                outfit: { gender: 'boy', hairColor: 'black', outfitColor: 'blue', pantsColor: 'dark', accessory: 'scarf' },
+                speech: { text: 'Lửa trại rừng phong phía tây đang rất ấm, lại đây nghỉ đi!', timer: 220 },
+                color: '#f97316'
+            },
+            {
+                id: 'comp_2',
+                name: 'Linh (Phù Thủy)',
+                x: 1050, y: 420, targetX: 1050, targetY: 420,
+                minX: 700, maxX: 1350, minY: 200, maxY: 600,
+                dir: 'left', speed: 1.4, isMoving: false, pauseTimer: 90,
+                walkTimer: 0,
+                outfit: { gender: 'girl', hairColor: 'pink', outfitColor: 'purple', pantsColor: 'skirt', accessory: 'wings' },
+                speech: { text: 'Băng tuyết phía bắc chứa nguồn ma thuật cực mạnh ✨', timer: 240 },
+                color: '#a78bfa'
+            },
+            {
+                id: 'comp_3',
+                name: 'Bảo (Thám Hiểm)',
+                x: 1200, y: 1280, targetX: 1200, targetY: 1280,
+                minX: 900, maxX: 1600, minY: 1100, maxY: 1450,
+                dir: 'up', speed: 1.6, isMoving: false, pauseTimer: 45,
+                walkTimer: 0,
+                outfit: { gender: 'boy', hairColor: 'blonde', outfitColor: 'gold', pantsColor: 'blue', accessory: 'backpack' },
+                speech: { text: 'Biển phía nam trong xanh tuyệt vời! Ngắm sóng biển nào!', timer: 0 },
+                color: '#facc15'
+            },
+            {
+                id: 'comp_4',
+                name: 'Hà (Tiên Nữ)',
+                x: 1750, y: 790, targetX: 1750, targetY: 790,
+                minX: 1550, maxX: 2150, minY: 550, maxY: 950,
+                dir: 'right', speed: 1.3, isMoving: false, pauseTimer: 120,
+                walkTimer: 0,
+                outfit: { gender: 'girl', hairColor: 'silver', outfitColor: 'red', pantsColor: 'white', accessory: 'halo' },
+                speech: { text: 'Hoa anh đào phía đông đang nở rộ, thơ mộng quá 🌸', timer: 0 },
+                color: '#f472b6'
+            },
+            {
+                id: 'comp_5',
+                name: 'Phong (Kỹ Sư)',
+                x: 1200, y: 860, targetX: 1200, targetY: 860,
+                minX: 1050, maxX: 1350, minY: 700, maxY: 950,
+                dir: 'down', speed: 1.5, isMoving: false, pauseTimer: 75,
+                walkTimer: 0,
+                outfit: { gender: 'boy', hairColor: 'brown', outfitColor: 'green', pantsColor: 'dark', accessory: 'backpack' },
+                speech: { text: 'Đài phun nước pha lê ở trung tâm là kỳ quan kết nối toàn thế giới!', timer: 0 },
+                color: '#38bdf8'
+            }
+        ];
+
+        function updateCamera() {
+            if (currentScene !== 'open_world') {
+                camera.x = 0;
+                camera.y = 0;
+                return;
+            }
+            const targetCamX = hero.x - V_WIDTH / 2;
+            const targetCamY = hero.y - V_HEIGHT / 2;
+            camera.x += (targetCamX - camera.x) * 0.15;
+            camera.y += (targetCamY - camera.y) * 0.15;
+            camera.x = Math.max(0, Math.min(WORLD_W - V_WIDTH, camera.x));
+            camera.y = Math.max(0, Math.min(WORLD_H - V_HEIGHT, camera.y));
+        }
+
+        function enterOpenWorld() {
+            RetroAudio.fanfare();
+            Transition.start('mystic');
+            currentScene = 'open_world';
+            nearStation = null;
+            promptBox.classList.remove('opacity-100');
+            promptBox.classList.add('opacity-0');
+
+            // Spawn player in Central Starlight Plaza facing north towards fountain
+            hero.x = 1200;
+            hero.y = 960;
+            hero.dir = 'up';
+            hero.vx = 0;
+            hero.vy = 0;
+            targetDest = null;
+
+            // Camera immediately centers on hero
+            camera.x = Math.max(0, Math.min(WORLD_W - V_WIDTH, hero.x - V_WIDTH / 2));
+            camera.y = Math.max(0, Math.min(WORLD_H - V_HEIGHT, hero.y - V_HEIGHT / 2));
+
+            // Display HUD components
+            chatWidget.classList.remove('hidden');
+            btnReturnHub.classList.remove('hidden');
+            if (minimapWidget) minimapWidget.classList.remove('hidden');
+
+            if (generalGuide) {
+                generalGuide.querySelector('p').innerHTML =
+                    'Thế Giới Mở (5 Phân Khu): <span class="font-bold text-sky-800">[W,A,S,D / Click]</span> di chuyển | <span class="font-bold text-sky-800">[Enter]</span> chat | Cổng Hub ở trung tâm!';
+            }
+
+            // Welcome chat notification
+            addChatMessage('Hệ Thống', '🌟 Tiến vào Đại Thế Giới Mở (2400x1600)! Đi về 4 hướng để khám phá Tuyết Trắng, Hoa Anh Đào, Bãi Biển và Rừng Phong.', '#38bdf8');
+            broadcastMyState(true);
+        }
+
+        function exitOpenWorld() {
+            RetroAudio.teleportArrival();
+            Transition.start('heavenly');
+            currentScene = 'island_hub';
+            nearStation = null;
+            promptBox.classList.remove('opacity-100');
+            promptBox.classList.add('opacity-0');
+
+            // Return hero back to island story station coordinates
+            hero.x = STATIONS.STORY.arriveX;
+            hero.y = STATIONS.STORY.arriveY;
+            hero.dir = 'down';
+            hero.vx = 0;
+            hero.vy = 0;
+            targetDest = null;
+
+            camera.x = 0;
+            camera.y = 0;
+
+            chatWidget.classList.add('hidden');
+            btnReturnHub.classList.add('hidden');
+            if (minimapWidget) minimapWidget.classList.add('hidden');
+
+            if (generalGuide) {
+                generalGuide.querySelector('p').innerHTML =
+                    'Di chuyển: <span class="font-bold text-amber-900">[W, A, S, D / Mũi tên]</span> | Tương tác & Mở Rương: <span class="font-bold text-amber-900">[E / Space]</span> | Chạm mặt đất để đi!';
+            }
+            broadcastMyState(false);
+        }
+
+        btnReturnHub.addEventListener('click', () => {
+            exitOpenWorld();
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+
+        function addChatMessage(sender, text, color = '#38bdf8') {
+            const row = document.createElement('div');
+            row.className = 'leading-tight break-words';
+            row.innerHTML = `<span class="font-bold" style="color: ${color}">[${sender}]:</span> <span>${escapeHtml(text)}</span>`;
+            chatContainer.appendChild(row);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const msg = chatInput.value.trim();
+            if (!msg) return;
+
+            RetroAudio.beep(750, 0.06, 'sine', 0.05);
+            addChatMessage(myPlayerName, msg, '#fde047');
+            heroSpeech = { text: msg, timer: 240 };
+            chatInput.value = '';
+
+            // Send via BroadcastChannel for real-time sync with other open tabs
+            if (mmoChannel) {
+                mmoChannel.postMessage({
+                    type: 'chat',
+                    peerId: myPeerId,
+                    name: myPlayerName,
+                    text: msg,
+                    x: hero.x,
+                    y: hero.y,
+                    outfit: outfitConfig
+                });
+            }
+
+            // Companions respond smartly
+            scheduleCompanionReply(msg);
+        });
+
+        // Companion ambient talk & auto-reply system
+        let ambientChatTimer = 0;
+        const ambientQuotes = [
+            { compIdx: 0, text: 'Lửa trại rừng phong phía tây đỏ rực, cùng tới nướng cá nào!' },
+            { compIdx: 1, text: 'Hồ băng tuyết phía bắc trong vắt như gương, trượt băng mê ly luôn!' },
+            { compIdx: 2, text: 'Bãi cát vàng và cầu cảng biển phía nam đón gió mát rượi 🌊' },
+            { compIdx: 3, text: 'Khu đền hoa anh đào phía đông rực rỡ sắc hồng, yên bình thật.' },
+            { compIdx: 4, text: 'Đài phun nước trung tâm đang phát sáng rực rỡ, năng lượng dồi dào!' }
+        ];
+
+        function updateAmbientChats() {
+            if (currentScene !== 'open_world') return;
+            ambientChatTimer++;
+            if (ambientChatTimer % 680 === 0) { // every ~11s
+                const q = ambientQuotes[Math.floor(Math.random() * ambientQuotes.length)];
+                const comp = companions[q.compIdx];
+                if (comp) {
+                    comp.speech = { text: q.text, timer: 220 };
+                    addChatMessage(comp.name, q.text, comp.color);
+                    RetroAudio.beep(420, 0.05, 'triangle', 0.02);
+                }
+            }
+        }
+
+        function scheduleCompanionReply(userMsg) {
+            const delay = 1000 + Math.random() * 1400;
+            setTimeout(() => {
+                if (currentScene !== 'open_world') return;
+                const lower = userMsg.toLowerCase();
+                let chosenIdx = 0;
+                let reply = '';
+
+                if (lower.includes('tuyết') || lower.includes('đông') || lower.includes('lạnh') || lower.includes('băng')) {
+                    chosenIdx = 1; // Linh
+                    reply = 'Đi về phía Bắc sẽ thấy Hồ Băng Tuyết và Người Tuyết khổng lồ đấy!';
+                } else if (lower.includes('hoa') || lower.includes('anh đào') || lower.includes('xuân') || lower.includes('cầu')) {
+                    chosenIdx = 3; // Hà
+                    reply = 'Đi về hướng Đông qua Cổng Torii là tới Rừng Hoa Anh Đào và Hồ Cá Koi!';
+                } else if (lower.includes('biển') || lower.includes('nước') || lower.includes('hè') || lower.includes('cát')) {
+                    chosenIdx = 2; // Bảo
+                    reply = 'Hướng Nam thẳng tiến! Bãi biển nhiệt đới với cầu gỗ dài ra biển đẹp mê ly!';
+                } else if (lower.includes('thu') || lower.includes('phong') || lower.includes('lửa') || lower.includes('lá')) {
+                    chosenIdx = 0; // Minh
+                    reply = 'Qua hướng Tây có Rừng Phong Lá Đỏ và Đống Lửa Trại ấm áp lắm!';
+                } else if (lower.includes('về') || lower.includes('hub') || lower.includes('đảo')) {
+                    chosenIdx = 4; // Phong
+                    reply = 'Cổng Stargate trở về Đảo Hub nằm ngay dưới chân Đài Phun Nước ở trung tâm (1200, 1010)!';
+                } else if (lower.includes('chào') || lower.includes('hi') || lower.includes('hello')) {
+                    chosenIdx = Math.floor(Math.random() * companions.length);
+                    reply = `Chào ${myPlayerName}! Bạn muốn cùng tớ đi tham quan phân khu nào hôm nay?`;
+                } else {
+                    const genericReplies = [
+                        `Thế giới mở rộng lớn quá đúng không ${myPlayerName}?`,
+                        'Bạn có thể nhìn Minimap ở góc trên bên phải để biết vị trí của mình!',
+                        'Hãy thử đổi các mùa ở thanh trên để ngắm hiệu ứng thời tiết khắp thế giới!',
+                        'Cùng dạo quanh quảng trường nào!'
+                    ];
+                    chosenIdx = Math.floor(Math.random() * companions.length);
+                    reply = genericReplies[Math.floor(Math.random() * genericReplies.length)];
+                }
+
+                const comp = companions[chosenIdx];
+                comp.speech = { text: reply, timer: 240 };
+                addChatMessage(comp.name, reply, comp.color);
+                RetroAudio.beep(580, 0.06, 'sine', 0.03);
+            }, delay);
+        }
+
+        // Multiplayer Sync via BroadcastChannel
+        function broadcastMyState(isOnline = true) {
+            if (!mmoChannel) return;
+            mmoChannel.postMessage({
+                type: 'heartbeat',
+                peerId: myPeerId,
+                name: myPlayerName,
+                isOnline: isOnline && currentScene === 'open_world',
+                x: hero.x,
+                y: hero.y,
+                dir: hero.dir,
+                isMoving: hero.isMoving,
+                outfit: outfitConfig,
+                speech: heroSpeech.timer > 0 ? heroSpeech.text : null
+            });
+        }
+
+        if (mmoChannel) {
+            mmoChannel.onmessage = (e) => {
+                const data = e.data;
+                if (!data || data.peerId === myPeerId) return;
+
+                if (data.type === 'chat') {
+                    addChatMessage(data.name || 'Người Chơi', data.text, '#38bdf8');
+                    if (networkPeers[data.peerId]) {
+                        networkPeers[data.peerId].speech = { text: data.text, timer: 240 };
+                    }
+                    RetroAudio.beep(650, 0.05, 'sine', 0.04);
+                } else if (data.type === 'heartbeat') {
+                    if (!data.isOnline) {
+                        delete networkPeers[data.peerId];
+                    } else {
+                        networkPeers[data.peerId] = {
+                            x: data.x,
+                            y: data.y,
+                            dir: data.dir || 'down',
+                            isMoving: data.isMoving || false,
+                            outfit: data.outfit || outfitConfig,
+                            name: data.name || 'Người Chơi',
+                            speech: data.speech ? { text: data.speech, timer: 180 } : (networkPeers[data.peerId]?.speech || { text: '', timer: 0 }),
+                            lastSeen: Date.now()
+                        };
+                    }
+                    const count = 6 + Object.keys(networkPeers).length;
+                    if (chatOnlineCount) chatOnlineCount.innerText = `${count} Online`;
+                }
+            };
+        }
+
+        // Minimap Radar Rendering
+        function updateAndDrawMinimap(tick) {
+            if (currentScene !== 'open_world' || !minimapCanvas || !mCtx) return;
+
+            mCtx.clearRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+            const mw = minimapCanvas.width;
+            const mh = minimapCanvas.height;
+            const sx = mw / WORLD_W;
+            const sy = mh / WORLD_H;
+
+            // 1. Biome zones color blocks
+            // North: Winter Frost
+            mCtx.fillStyle = '#cbd5e1';
+            mCtx.fillRect(0, 0, mw, mh * 0.35);
+            // Frozen Lake
+            mCtx.fillStyle = '#93c5fd';
+            mCtx.fillRect(650 * sx, 200 * sy, 350 * sx, 220 * sy);
+
+            // South: Summer Beach
+            mCtx.fillStyle = '#fde047';
+            mCtx.fillRect(0, mh * 0.65, mw, mh * 0.35);
+            // Ocean
+            mCtx.fillStyle = '#0284c7';
+            mCtx.fillRect(0, mh * 0.78, mw, mh * 0.22);
+            // Pier
+            mCtx.fillStyle = '#78350f';
+            mCtx.fillRect(1180 * sx, 1150 * sy, 40 * sx, 350 * sy);
+
+            // West: Autumn Forest
+            mCtx.fillStyle = '#d97706';
+            mCtx.fillRect(0, mh * 0.35, mw * 0.38, mh * 0.32);
+
+            // East: Spring Sakura
+            mCtx.fillStyle = '#4ade80';
+            mCtx.fillRect(mw * 0.62, mh * 0.35, mw * 0.38, mh * 0.32);
+            // Koi pond
+            mCtx.fillStyle = '#38bdf8';
+            mCtx.fillRect(1880 * sx, 680 * sy, 300 * sx, 220 * sy);
+
+            // Center: Mystic Plaza
+            mCtx.fillStyle = '#1e1b4b';
+            mCtx.fillRect(mw * 0.38, mh * 0.35, mw * 0.24, mh * 0.32);
+            mCtx.fillStyle = '#e2e8f0';
+            mCtx.fillRect(940 * sx, 640 * sy, 520 * sx, 320 * sy);
+
+            // Fountain & Portal dots
+            mCtx.fillStyle = '#38bdf8';
+            mCtx.beginPath();
+            mCtx.arc(1200 * sx, 780 * sy, 3, 0, Math.PI * 2);
+            mCtx.fill();
+
+            mCtx.fillStyle = '#f59e0b';
+            mCtx.beginPath();
+            mCtx.arc(1200 * sx, 1010 * sy, 3, 0, Math.PI * 2);
+            mCtx.fill();
+
+            // 2. Camera Viewport Box
+            mCtx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+            mCtx.lineWidth = 1;
+            mCtx.strokeRect(camera.x * sx, camera.y * sy, V_WIDTH * sx, V_HEIGHT * sy);
+
+            // 3. Companions dots
+            companions.forEach(c => {
+                mCtx.fillStyle = c.color;
+                mCtx.beginPath();
+                mCtx.arc(c.x * sx, c.y * sy, 2, 0, Math.PI * 2);
+                mCtx.fill();
+            });
+
+            // 4. Other players dots
+            for (const pid in networkPeers) {
+                const p = networkPeers[pid];
+                mCtx.fillStyle = '#38bdf8';
+                mCtx.beginPath();
+                mCtx.arc(p.x * sx, p.y * sy, 2, 0, Math.PI * 2);
+                mCtx.fill();
+            }
+
+            // 5. Hero Player Dot [BẠN] (Blinking yellow)
+            const blink = Math.sin(tick * 0.15) > 0;
+            mCtx.fillStyle = blink ? '#facc15' : '#ffffff';
+            mCtx.beginPath();
+            mCtx.arc(hero.x * sx, hero.y * sy, 3.5, 0, Math.PI * 2);
+            mCtx.fill();
+            mCtx.strokeStyle = '#000000';
+            mCtx.lineWidth = 1;
+            mCtx.stroke();
+
+            // 6. Current Biome Label
+            let zoneName = '🌌 QUẢNG TRƯỜNG';
+            if (hero.y < 520) {
+                zoneName = '❄️ VÙNG BĂNG TUYẾT';
+            } else if (hero.y > 1060) {
+                zoneName = '🏖️ BÃI BIỂN NHIỆT ĐỚI';
+            } else if (hero.x < 880) {
+                zoneName = '🍁 RỪNG PHONG LÁ ĐỎ';
+            } else if (hero.x > 1520) {
+                zoneName = '🌸 RỪNG ANH ĐÀO';
+            }
+            if (minimapZoneLabel && minimapZoneLabel.innerText !== zoneName) {
+                minimapZoneLabel.innerText = zoneName;
+            }
+        }
+
+        // ==========================================
+        // DRAW THE VAST 5-BIOME OPEN WORLD (2400 x 1600)
+        // ==========================================
+        function drawOpenWorldVastRealm(tick) {
+            // Viewport culling boundaries
+            const viewL = camera.x - 80;
+            const viewR = camera.x + V_WIDTH + 80;
+            const viewT = camera.y - 80;
+            const viewB = camera.y + V_HEIGHT + 80;
+
+            // 1. Cosmic Starlight Sky Base (Infinite backdrop)
+            ctx.fillStyle = '#070514';
+            ctx.fillRect(viewL, viewT, V_WIDTH + 160, V_HEIGHT + 160);
+
+            // Shimmering stars in background
+            for (let i = 0; i < 90; i++) {
+                const sx = (i * 79 + 31) % WORLD_W;
+                const sy = (i * 97 + 17) % WORLD_H;
+                if (sx >= viewL && sx <= viewR && sy >= viewT && sy <= viewB) {
+                    const starBlink = (Math.sin(tick * 0.05 + i) + 1) * 0.5;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.25 + starBlink * 0.75})`;
+                    ctx.fillRect(sx, sy, (i % 4 === 0) ? 2 : 1, (i % 4 === 0) ? 2 : 1);
+                }
+            }
+
+            // 2. Base Ground Tiles by Biome (5 Distinct Zones)
+            const tileSize = 60;
+            const startTX = Math.max(0, Math.floor(viewL / tileSize) * tileSize);
+            const endTX = Math.min(WORLD_W, Math.ceil(viewR / tileSize) * tileSize);
+            const startTY = Math.max(0, Math.floor(viewT / tileSize) * tileSize);
+            const endTY = Math.min(WORLD_H, Math.ceil(viewB / tileSize) * tileSize);
+
+            for (let ty = startTY; ty < endTY; ty += tileSize) {
+                for (let tx = startTX; tx < endTX; tx += tileSize) {
+                    // Determine Biome Color
+                    let groundColor = '#1e1b4b'; // default
+                    let patternColor = '#312e81';
+
+                    if (ty < 520) {
+                        // NORTH: Winter Frost
+                        groundColor = (Math.floor(tx / tileSize) + Math.floor(ty / tileSize)) % 2 === 0 ? '#e2e8f0' : '#f1f5f9';
+                        patternColor = '#cbd5e1';
+                    } else if (ty > 1080) {
+                        // SOUTH: Summer Beach & Ocean
+                        if (ty > 1240) {
+                            groundColor = '#0284c7';
+                            patternColor = '#0369a1';
+                        } else {
+                            groundColor = (Math.floor(tx / tileSize) + Math.floor(ty / tileSize)) % 2 === 0 ? '#fef08a' : '#fde047';
+                            patternColor = '#facc15';
+                        }
+                    } else if (tx < 860) {
+                        // WEST: Autumn Golden Forest
+                        groundColor = (Math.floor(tx / tileSize) + Math.floor(ty / tileSize)) % 2 === 0 ? '#d97706' : '#b45309';
+                        patternColor = '#92400e';
+                    } else if (tx > 1540) {
+                        // EAST: Spring Sakura Meadows
+                        groundColor = (Math.floor(tx / tileSize) + Math.floor(ty / tileSize)) % 2 === 0 ? '#86efac' : '#4ade80';
+                        patternColor = '#22c55e';
+                    } else {
+                        // CENTER: Mystic Celestial Plaza
+                        groundColor = (Math.floor(tx / tileSize) + Math.floor(ty / tileSize)) % 2 === 0 ? '#1e1b4b' : '#312e81';
+                        patternColor = '#4338ca';
+                    }
+
+                    ctx.fillStyle = groundColor;
+                    ctx.fillRect(tx, ty, tileSize, tileSize);
+
+                    // Decorative ground pixels
+                    if ((tx + ty) % 180 === 0) {
+                        ctx.fillStyle = patternColor;
+                        ctx.fillRect(tx + 12, ty + 12, 6, 6);
+                        ctx.fillRect(tx + 38, ty + 42, 4, 4);
+                    }
+                }
+            }
+
+            // 3. Paved Connecting Roads (Cobblestone highways connecting center to all 4 biomes)
+            ctx.fillStyle = '#64748b';
+            // North Highway (To Winter)
+            ctx.fillRect(1165, 200, 70, 440);
+            // South Highway (To Beach)
+            ctx.fillRect(1165, 1040, 70, 200);
+            // East Highway (To Spring Sakura)
+            ctx.fillRect(1440, 765, 420, 70);
+            // West Highway (To Autumn Forest)
+            ctx.fillRect(540, 765, 420, 70);
+
+            // Inner cobblestone pattern
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(1170, 205, 60, 430);
+            ctx.fillRect(1170, 1045, 60, 190);
+            ctx.fillRect(1445, 770, 410, 60);
+            ctx.fillRect(545, 770, 410, 60);
+
+            // ==========================================
+            // BIOME 1: CENTRAL MYSTIC PLAZA (1200, 800)
+            // ==========================================
+            // Grand Marble Plaza Base
+            pRect(ctx, 920, 620, 560, 380, '#475569');
+            pRect(ctx, 930, 630, 540, 360, '#cbd5e1');
+
+            // Checkerboard Marble Tiles
+            for (let my = 640; my < 980; my += 30) {
+                for (let mx = 940; mx < 1460; mx += 30) {
+                    const isEven = (Math.floor(mx / 30) + Math.floor(my / 30)) % 2 === 0;
+                    ctx.fillStyle = isEven ? '#f8fafc' : '#e2e8f0';
+                    ctx.fillRect(mx, my, 29, 29);
+                    if ((mx + my) % 90 === 0) {
+                        ctx.fillStyle = 'rgba(56, 189, 248, 0.3)';
+                        ctx.fillRect(mx + 2, my + 2, 25, 25);
+                    }
+                }
+            }
+
+            // 4 Corner Celestial Obelisks
+            const obelisks = [
+                { x: 960, y: 660 }, { x: 1440, y: 660 },
+                { x: 960, y: 940 }, { x: 1440, y: 940 }
+            ];
+            obelisks.forEach((ob, idx) => {
+                pRect(ctx, ob.x - 14, ob.y - 2, 28, 14, '#475569');
+                pRect(ctx, ob.x - 10, ob.y - 20, 20, 20, '#64748b');
+                pRect(ctx, ob.x - 6, ob.y - 38, 12, 20, '#cbd5e1');
+                const cBob = Math.sin(tick * 0.08 + idx * 1.5) * 3;
+                const cy = ob.y - 52 + cBob;
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.moveTo(ob.x, cy - 10);
+                ctx.lineTo(ob.x + 6, cy);
+                ctx.lineTo(ob.x, cy + 10);
+                ctx.lineTo(ob.x - 6, cy);
+                ctx.closePath();
+                ctx.fill();
+                pRect(ctx, ob.x - 2, cy - 4, 4, 8, '#ffffff');
+            });
+
+            // Grand Central Aether Fountain (1200, 780)
+            const fx = 1200; const fy = 780;
+            pEllipse(ctx, fx, fy + 24, 75, 34, 'rgba(15, 23, 42, 0.6)');
+            pEllipse(ctx, fx, fy + 16, 70, 30, '#334155');
+            pEllipse(ctx, fx, fy + 10, 64, 25, '#64748b');
+            pEllipse(ctx, fx, fy + 6, 56, 20, '#0284c7');
+
+            const rippleR = 22 + (tick % 45) * 0.7;
+            ctx.strokeStyle = 'rgba(186, 230, 253, 0.7)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(fx, fy + 6, rippleR, rippleR * 0.35, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            pRect(ctx, fx - 12, fy - 18, 24, 26, '#94a3b8');
+            pRect(ctx, fx - 20, fy - 22, 40, 8, '#cbd5e1');
+
+            for (let i = 0; i < 10; i++) {
+                const pOff = (tick * 2 + i * 14) % 45;
+                const pX = fx + Math.sin(i * 1.2) * (pOff * 0.55);
+                const pY = fy - 20 - pOff * 0.75 + (pOff * pOff) * 0.026;
+                pRect(ctx, pX - 1, pY - 1, 3, 3, '#bae6fd');
+            }
+
+            const gemBob = Math.sin(tick * 0.07) * 4;
+            const gy = fy - 48 + gemBob;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.65)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(fx, gy, 24, 8, tick * 0.05, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.moveTo(fx, gy - 18);
+            ctx.lineTo(fx + 14, gy);
+            ctx.lineTo(fx, gy + 18);
+            ctx.lineTo(fx - 14, gy);
+            ctx.closePath();
+            ctx.fill();
+            pRect(ctx, fx - 4, gy - 9, 8, 18, '#e0f2fe');
+
+            // Return Portal to Island Hub (1200, 1010)
+            const rx = 1200; const ry = 1010;
+            pEllipse(ctx, rx, ry + 12, 44, 18, '#1e293b');
+            pEllipse(ctx, rx, ry + 8, 38, 15, '#38bdf8');
+
+            const rot = tick * 0.08;
+            for (let i = 0; i < 4; i++) {
+                const ang = rot + i * (Math.PI / 2);
+                const px = rx + Math.cos(ang) * 22;
+                const py = ry + 8 + Math.sin(ang) * 9;
+                pRect(ctx, px - 2, py - 2, 5, 5, '#fde047');
+            }
+
+            pRect(ctx, rx - 36, ry - 34, 10, 44, '#cbd5e1');
+            pRect(ctx, rx + 26, ry - 34, 10, 44, '#cbd5e1');
+            pRect(ctx, rx - 38, ry - 40, 76, 8, '#f1f5f9');
+
+            const signY = ry - 52 + Math.sin(tick * 0.07) * 2;
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(rx - 80, signY - 8, 160, 18);
+            ctx.strokeRect(rx - 80, signY - 8, 160, 18);
+
+            ctx.font = '6px "Press Start 2P", monospace';
+            ctx.fillStyle = '#38bdf8';
+            ctx.textAlign = 'center';
+            ctx.fillText('🏛️ VỀ ĐẢO CHÍNH (HUB)', rx, signY + 4);
+            ctx.textAlign = 'left';
+
+            // ==========================================
+            // BIOME 2: NORTH WINTER FROST & LAKE (y < 520)
+            // ==========================================
+            // Large Frozen Lake (x: 650 - 1000, y: 200 - 420)
+            pEllipse(ctx, 825, 310, 180, 105, '#93c5fd');
+            pEllipse(ctx, 825, 310, 165, 95, '#bfdbfe');
+            // Frost reflection cracks
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(750, 280); ctx.lineTo(800, 310); ctx.lineTo(840, 290);
+            ctx.moveTo(850, 340); ctx.lineTo(890, 320); ctx.lineTo(930, 350);
+            ctx.stroke();
+
+            // Snow-dusted Pine Trees across Winter Zone
+            const winterTrees = [
+                { x: 500, y: 180 }, { x: 620, y: 140 }, { x: 740, y: 120 },
+                { x: 980, y: 130 }, { x: 1100, y: 170 }, { x: 1350, y: 150 },
+                { x: 1550, y: 190 }, { x: 1750, y: 160 }, { x: 880, y: 460 }
+            ];
+            winterTrees.forEach(t => {
+                pRect(ctx, t.x - 4, t.y - 10, 8, 18, '#5c3a21');
+                pRect(ctx, t.x - 22, t.y - 20, 44, 14, '#1e3a5f');
+                pRect(ctx, t.x - 20, t.y - 22, 40, 6, '#f1f5f9');
+                pRect(ctx, t.x - 16, t.y - 32, 32, 14, '#1e3a5f');
+                pRect(ctx, t.x - 14, t.y - 34, 28, 5, '#f1f5f9');
+                pRect(ctx, t.x - 10, t.y - 44, 20, 14, '#1e3a5f');
+                pRect(ctx, t.x - 8, t.y - 46, 16, 5, '#ffffff');
+            });
+
+            // Giant Snowman (x: 1080, y: 310)
+            pEllipse(ctx, 1080, 325, 20, 14, '#ffffff');
+            pEllipse(ctx, 1080, 305, 14, 11, '#ffffff');
+            pEllipse(ctx, 1080, 290, 10, 8, '#ffffff');
+            pRect(ctx, 1076, 288, 8, 3, '#f97316'); // carrot nose
+            pRect(ctx, 1074, 298, 12, 4, '#ef4444'); // red scarf
+            pRect(ctx, 1075, 278, 10, 7, '#1e293b'); // black top hat
+
+            // Cozy Igloo (x: 1420, y: 280)
+            pEllipse(ctx, 1420, 290, 36, 24, '#cbd5e1');
+            pEllipse(ctx, 1420, 286, 32, 22, '#f8fafc');
+            pRect(ctx, 1408, 288, 24, 18, '#f59e0b'); // glowing doorway
+            pRect(ctx, 1412, 290, 16, 16, '#fbbf24');
+
+            // ==========================================
+            // BIOME 3: EAST SPRING SAKURA GARDEN (x > 1540)
+            // ==========================================
+            // Japanese Red Torii Shrine Gate (1720, 790)
+            pRect(ctx, 1700, 740, 12, 55, '#dc2626');
+            pRect(ctx, 1738, 740, 12, 55, '#dc2626');
+            pRect(ctx, 1690, 745, 70, 8, '#b91c1c');
+            pRect(ctx, 1686, 735, 78, 10, '#991b1b');
+            pRect(ctx, 1720, 737, 10, 6, '#ffd700');
+
+            // Clear Koi Pond with Arched Bridge (x: 1900 - 2220, y: 680 - 920)
+            pEllipse(ctx, 2060, 800, 150, 95, '#0284c7');
+            pEllipse(ctx, 2060, 800, 138, 85, '#38bdf8');
+            // Lily pads
+            pEllipse(ctx, 1960, 770, 10, 6, '#15803d');
+            pEllipse(ctx, 2150, 820, 12, 7, '#15803d');
+            pEllipse(ctx, 2040, 850, 11, 6, '#15803d');
+
+            // Swimming Koi Fish (animated)
+            const fishX = 2020 + Math.cos(tick * 0.04) * 45;
+            const fishY = 800 + Math.sin(tick * 0.04) * 25;
+            pRect(ctx, fishX - 4, fishY - 2, 8, 4, '#f97316');
+            pRect(ctx, fishX + 2, fishY - 1, 3, 2, '#ffffff');
+
+            // Wooden Arched Bridge crossing the pond (2040 - 2080)
+            pRect(ctx, 2045, 725, 30, 150, '#92400e');
+            pRect(ctx, 2048, 725, 24, 150, '#b45309');
+            for (let b = 730; b < 870; b += 14) {
+                pRect(ctx, 2045, b, 30, 2, '#78350f');
+            }
+
+            // Sakura Trees in Spring Zone
+            const sakuraTrees = [
+                { x: 1600, y: 620 }, { x: 1780, y: 580 }, { x: 1950, y: 600 },
+                { x: 2150, y: 630 }, { x: 1620, y: 920 }, { x: 1800, y: 960 },
+                { x: 1980, y: 960 }, { x: 2200, y: 880 }, { x: 2250, y: 740 }
+            ];
+            sakuraTrees.forEach(t => {
+                pRect(ctx, t.x - 5, t.y - 18, 10, 22, '#5c3a21');
+                pRect(ctx, t.x - 3, t.y - 26, 6, 12, '#784c28');
+                const sway = Math.sin(tick * 0.04 + (t.x % 9)) * 2;
+                pEllipse(ctx, t.x + sway, t.y - 40, 32, 20, '#f472b6');
+                pEllipse(ctx, t.x - 12 + sway, t.y - 34, 20, 15, '#fbcfe8');
+                pEllipse(ctx, t.x + 12 + sway, t.y - 34, 20, 15, '#f472b6');
+                pEllipse(ctx, t.x + sway, t.y - 48, 22, 16, '#ffffff');
+            });
+
+            // ==========================================
+            // BIOME 4: SOUTH SUMMER BEACH & OCEAN (y > 1080)
+            // ==========================================
+            // Ocean Shoreline Waves (animated wave foam)
+            const waveOff = Math.sin(tick * 0.06) * 6;
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(viewL, 1234 + waveOff, V_WIDTH + 160, 6);
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(viewL, 1240 + waveOff, V_WIDTH + 160, 360);
+
+            // Long Wooden Pier / Boardwalk (1180 - 1220, y: 1140 - 1480)
+            pRect(ctx, 1180, 1140, 40, 340, '#78350f');
+            pRect(ctx, 1184, 1140, 32, 340, '#92400e');
+            for (let py = 1145; py < 1470; py += 16) {
+                pRect(ctx, 1180, py, 40, 2, '#451a03');
+            }
+            // Pier Lantern at end
+            pRect(ctx, 1195, 1465, 10, 12, '#fde047');
+
+            // Palm Trees with Coconuts
+            const palmTrees = [
+                { x: 750, y: 1140 }, { x: 920, y: 1180 }, { x: 1060, y: 1130 },
+                { x: 1340, y: 1130 }, { x: 1520, y: 1170 }, { x: 1720, y: 1140 },
+                { x: 1920, y: 1180 }
+            ];
+            palmTrees.forEach(p => {
+                // Curved trunk
+                pRect(ctx, p.x - 5, p.y - 15, 10, 20, '#78350f');
+                pRect(ctx, p.x - 3, p.y - 30, 8, 18, '#92400e');
+                pRect(ctx, p.x, p.y - 45, 8, 18, '#78350f');
+                // Fronds
+                const fSway = Math.sin(tick * 0.05 + p.x) * 2;
+                pEllipse(ctx, p.x - 18 + fSway, p.y - 50, 24, 8, '#15803d');
+                pEllipse(ctx, p.x + 18 + fSway, p.y - 50, 24, 8, '#15803d');
+                pEllipse(ctx, p.x + fSway, p.y - 56, 10, 22, '#16a34a');
+                // Coconuts
+                pRect(ctx, p.x - 2, p.y - 46, 5, 5, '#451a03');
+                pRect(ctx, p.x + 3, p.y - 45, 5, 5, '#451a03');
+            });
+
+            // Beach Umbrellas & Loungers
+            const beachSets = [
+                { x: 840, y: 1190, c1: '#38bdf8', c2: '#ffffff' },
+                { x: 1420, y: 1190, c1: '#ef4444', c2: '#fde047' },
+                { x: 1640, y: 1200, c1: '#10b981', c2: '#ffffff' }
+            ];
+            beachSets.forEach(b => {
+                // Umbrella pole
+                pRect(ctx, b.x - 2, b.y - 25, 4, 30, '#94a3b8');
+                // Umbrella canopy
+                pEllipse(ctx, b.x, b.y - 25, 24, 12, b.c1);
+                pEllipse(ctx, b.x, b.y - 27, 16, 8, b.c2);
+                // Lounger
+                pRect(ctx, b.x + 12, b.y - 5, 22, 10, '#ffffff');
+                pRect(ctx, b.x + 10, b.y - 8, 8, 8, '#3b82f6');
+            });
+
+            // ==========================================
+            // BIOME 5: WEST AUTUMN FOREST & RUINS (x < 860)
+            // ==========================================
+            // Adventurer's Campfire (480, 800)
+            pEllipse(ctx, 480, 808, 22, 10, '#1c1917');
+            pRect(ctx, 474, 804, 12, 4, '#78350f');
+            // Fire flames
+            const fBob = Math.sin(tick * 0.2) * 2;
+            pEllipse(ctx, 480, 798 + fBob, 8, 12, '#ea580c');
+            pEllipse(ctx, 480, 796 + fBob, 5, 8, '#facc15');
+            // Smoke particles
+            for (let s = 0; s < 3; s++) {
+                const sOff = (tick * 1.5 + s * 16) % 36;
+                pRect(ctx, 480 + Math.sin(s + tick * 0.05) * 5, 790 - sOff, 3, 3, 'rgba(156, 163, 175, 0.6)');
+            }
+            // Log benches around fire
+            pRect(ctx, 440, 800, 20, 8, '#78350f');
+            pRect(ctx, 500, 800, 20, 8, '#78350f');
+
+            // Ancient Stone Arch Ruins (x: 280, y: 780)
+            pRect(ctx, 260, 740, 14, 50, '#78716c');
+            pRect(ctx, 290, 740, 14, 50, '#78716c');
+            pRect(ctx, 255, 734, 54, 10, '#a8a29e');
+            // Moss inlays
+            pRect(ctx, 262, 755, 6, 8, '#65a30d');
+            pRect(ctx, 292, 762, 6, 8, '#65a30d');
+
+            // Golden Maple Trees across Autumn Zone
+            const autumnTrees = [
+                { x: 180, y: 640 }, { x: 340, y: 600 }, { x: 500, y: 620 },
+                { x: 680, y: 650 }, { x: 180, y: 940 }, { x: 340, y: 980 },
+                { x: 640, y: 960 }, { x: 220, y: 820 }, { x: 740, y: 880 }
+            ];
+            autumnTrees.forEach(t => {
+                pRect(ctx, t.x - 5, t.y - 18, 10, 22, '#5c3a21');
+                pRect(ctx, t.x - 3, t.y - 26, 6, 12, '#784c28');
+                const sway = Math.sin(tick * 0.04 + (t.x % 7)) * 2;
+                pEllipse(ctx, t.x + sway, t.y - 40, 30, 20, '#d97706');
+                pEllipse(ctx, t.x - 10 + sway, t.y - 34, 18, 15, '#b45309');
+                pEllipse(ctx, t.x + 10 + sway, t.y - 34, 18, 15, '#ea580c');
+                pEllipse(ctx, t.x + sway, t.y - 48, 20, 15, '#fde047');
+            });
+        }
+
+        // Companions & Network Players Update and Render
+        function updateAndDrawCompanions(tick) {
+            companions.forEach(comp => {
+                if (comp.pauseTimer > 0) {
+                    comp.pauseTimer--;
+                    comp.isMoving = false;
+                    if (comp.pauseTimer <= 0) {
+                        // Pick destination inside preferred biome boundaries
+                        comp.targetX = comp.minX + Math.random() * (comp.maxX - comp.minX);
+                        comp.targetY = comp.minY + Math.random() * (comp.maxY - comp.minY);
+                        // Avoid fountain
+                        if (Math.hypot(comp.targetX - 1200, comp.targetY - 780) < 65) {
+                            comp.targetX += comp.targetX > 1200 ? 70 : -70;
+                        }
+                    }
+                } else {
+                    const dx = comp.targetX - comp.x;
+                    const dy = comp.targetY - comp.y;
+                    const dist = Math.hypot(dx, dy);
+
+                    if (dist > 5) {
+                        comp.isMoving = true;
+                        comp.walkTimer++;
+                        const vx = (dx / dist) * comp.speed;
+                        const vy = (dy / dist) * comp.speed;
+                        comp.x += vx;
+                        comp.y += vy;
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            comp.dir = dx > 0 ? 'right' : 'left';
+                        } else {
+                            comp.dir = dy > 0 ? 'down' : 'up';
+                        }
+                    } else {
+                        comp.isMoving = false;
+                        comp.pauseTimer = 90 + Math.floor(Math.random() * 160);
+                    }
+                }
+
+                // Render Companion Character
+                renderCustomPixelHero(ctx, comp.x, comp.y, comp.dir, comp.isMoving, tick, comp.outfit);
+
+                // Render Name Tag
+                ctx.font = '6px "Press Start 2P", monospace';
+                ctx.textAlign = 'center';
+                const tagW = ctx.measureText(comp.name).width;
+                pRect(ctx, comp.x - tagW / 2 - 3, comp.y - 28, tagW + 6, 9, 'rgba(10, 10, 25, 0.75)');
+                ctx.fillStyle = comp.color;
+                ctx.fillText(comp.name, comp.x, comp.y - 21);
+                ctx.textAlign = 'left';
+            });
+
+            // Draw Real Network Peers (if other tabs opened)
+            const now = Date.now();
+            for (const pid in networkPeers) {
+                const peer = networkPeers[pid];
+                if (now - peer.lastSeen > 8000) {
+                    delete networkPeers[pid];
+                    continue;
+                }
+                renderCustomPixelHero(ctx, peer.x, peer.y, peer.dir, peer.isMoving, tick, peer.outfit);
+                ctx.font = '6px "Press Start 2P", monospace';
+                ctx.textAlign = 'center';
+                const tagW = ctx.measureText(peer.name).width;
+                pRect(ctx, peer.x - tagW / 2 - 3, peer.y - 28, tagW + 6, 9, 'rgba(10, 10, 25, 0.75)');
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillText(peer.name, peer.x, peer.y - 21);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        function renderSpeechBubble(targetCtx, x, y, text, accentColor = '#38bdf8') {
+            if (!text) return;
+            targetCtx.save();
+            targetCtx.font = '7px "Press Start 2P", monospace';
+            const words = text.split(' ');
+            const lines = [];
+            let curLine = '';
+            words.forEach(w => {
+                if ((curLine + ' ' + w).trim().length <= 18) {
+                    curLine = (curLine + ' ' + w).trim();
+                } else {
+                    if (curLine) lines.push(curLine);
+                    curLine = w;
+                }
+            });
+            if (curLine) lines.push(curLine);
+            if (lines.length > 3) lines.length = 3;
+
+            let maxW = 0;
+            lines.forEach(l => {
+                const w = targetCtx.measureText(l).width;
+                if (w > maxW) maxW = w;
+            });
+            const bWidth = Math.max(50, maxW + 12);
+            const bHeight = lines.length * 10 + 8;
+            const bX = Math.round(x - bWidth / 2);
+            const bY = Math.round(y - 34 - bHeight);
+
+            // Bubble body background
+            targetCtx.fillStyle = 'rgba(15, 12, 30, 0.94)';
+            targetCtx.fillRect(bX, bY, bWidth, bHeight);
+            targetCtx.strokeStyle = accentColor;
+            targetCtx.lineWidth = 1.5;
+            targetCtx.strokeRect(bX, bY, bWidth, bHeight);
+
+            // Downward tail
+            targetCtx.fillStyle = 'rgba(15, 12, 30, 0.94)';
+            targetCtx.beginPath();
+            targetCtx.moveTo(x - 4, bY + bHeight);
+            targetCtx.lineTo(x + 4, bY + bHeight);
+            targetCtx.lineTo(x, bY + bHeight + 5);
+            targetCtx.closePath();
+            targetCtx.fill();
+            targetCtx.strokeStyle = accentColor;
+            targetCtx.beginPath();
+            targetCtx.moveTo(x - 4, bY + bHeight);
+            targetCtx.lineTo(x, bY + bHeight + 5);
+            targetCtx.lineTo(x + 4, bY + bHeight);
+            targetCtx.stroke();
+
+            // Text
+            targetCtx.fillStyle = '#ffffff';
+            targetCtx.textAlign = 'center';
+            lines.forEach((l, idx) => {
+                targetCtx.fillText(l, x, bY + 11 + idx * 10);
+            });
+            targetCtx.restore();
+        }
+
+        function drawSpeechBubbles(tick) {
+            // Hero bubble
+            if (heroSpeech.timer > 0) {
+                heroSpeech.timer--;
+                renderSpeechBubble(ctx, hero.x, hero.y, heroSpeech.text, '#fde047');
+            }
+
+            // Companions bubbles
+            companions.forEach(comp => {
+                if (comp.speech && comp.speech.timer > 0) {
+                    comp.speech.timer--;
+                    renderSpeechBubble(ctx, comp.x, comp.y, comp.speech.text, comp.color);
+                }
+            });
+
+            // Network peers bubbles
+            for (const pid in networkPeers) {
+                const peer = networkPeers[pid];
+                if (peer.speech && peer.speech.timer > 0) {
+                    peer.speech.timer--;
+                    renderSpeechBubble(ctx, peer.x, peer.y, peer.speech.text, '#38bdf8');
+                }
+            }
+        }
+
+        let lastTimestamp = 0;
+        let tickCounter = 0;
+
+        function gameLoop(time) {
+            const dt = (time - lastTimestamp) / 1000 || 0;
+            lastTimestamp = time;
+            tickCounter++;
+
+            // Velocity Processing
+            hero.vx = 0;
+            hero.vy = 0;
+
+            if (keys.ArrowUp || keys.KeyW) { hero.vy -= hero.speed; hero.dir = 'up'; }
+            if (keys.ArrowDown || keys.KeyS) { hero.vy += hero.speed; hero.dir = 'down'; }
+            if (keys.ArrowLeft || keys.KeyA) { hero.vx -= hero.speed; hero.dir = 'left'; }
+            if (keys.ArrowRight || keys.KeyD) { hero.vx += hero.speed; hero.dir = 'right'; }
+
+            // Mouse click / touch walk interpolation
+            if (targetDest) {
+                const dx = targetDest.x - hero.x;
+                const dy = targetDest.y - hero.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist > 4) {
+                    hero.vx = (dx / dist) * hero.speed;
+                    hero.vy = (dy / dist) * hero.speed;
+                    if (Math.abs(dx) > Math.abs(dy)) {
+                        hero.dir = dx > 0 ? 'right' : 'left';
+                    } else {
+                        hero.dir = dy > 0 ? 'down' : 'up';
+                    }
+                } else {
+                    targetDest = null;
+                }
+            }
+
+            // Diagonal Speed Normalization
+            if (hero.vx !== 0 && hero.vy !== 0) {
+                hero.vx *= 0.7071;
+                hero.vy *= 0.7071;
+            }
+
+            // Position update with scene-specific boundary constraints
+            const nextX = hero.x + hero.vx;
+            const nextY = hero.y + hero.vy;
+
+            if (currentScene === 'open_world') {
+                let canMove = true;
+                // Collision with Central Fountain (center: 1200, 780, radius: 55)
+                if (Math.hypot(nextX - 1200, nextY - 780) < 55) {
+                    canMove = false;
+                }
+                // Vast World Boundaries [50, 2350] on X, [50, 1550] on Y
+                if (nextX < 50 || nextX > WORLD_W - 50 || nextY < 50 || nextY > WORLD_H - 50) {
+                    canMove = false;
+                }
+                if (canMove) {
+                    hero.x = nextX;
+                    hero.y = nextY;
+                }
+                // Check walking into return portal at 1200, 1010
+                if (Math.hypot(hero.x - 1200, hero.y - 1010) < 36) {
+                    exitOpenWorld();
+                }
+            } else {
+                // Elliptical floating island boundary constraints
+                const normX = (nextX - 480) / 430;
+                const normY = (nextY - 290) / 190;
+                if (normX * normX + normY * normY <= 1) {
+                    hero.x = nextX;
+                    hero.y = nextY;
+                }
+                // Check walking directly into Open World portal in top-left
+                if (Math.hypot(hero.x - STATIONS.STORY.x, hero.y - STATIONS.STORY.y) < 36) {
+                    enterOpenWorld();
+                }
+            }
+
+            hero.isMoving = Math.abs(hero.vx) > 0.1 || Math.abs(hero.vy) > 0.1;
+
+            // Footstep sound synthesis
+            if (hero.isMoving) {
+                hero.stepSoundTimer++;
+                if (hero.stepSoundTimer % 18 === 0) {
+                    RetroAudio.footstep();
+                }
+            }
+
+            Transition.update();
+            checkProximity();
+
+            // Clear & Redraw Canvas
+            ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
+
+            if (currentScene === 'open_world') {
+                updateCamera();
+
+                // Render in Camera World Space
+                ctx.save();
+                ctx.translate(-Math.round(camera.x), -Math.round(camera.y));
+
+                drawOpenWorldVastRealm(tickCounter);
+                updateAndDrawCompanions(tickCounter);
+                drawHero(tickCounter);
+                drawSpeechBubbles(tickCounter);
+
+                ctx.restore();
+
+                // Weather and season particles in screen space
+                drawWeatherParticles();
+
+                // Update & Draw Minimap Radar
+                updateAndDrawMinimap(tickCounter);
+            } else {
+                drawSkyAndCastles(tickCounter);
+                drawIslandTerrain(tickCounter);
+
+                // ✨ Chi tiết khung cảnh: cây, đèn, ao nước, chim, nấm...
+                drawSceneDetails(tickCounter);
+
+                // Draw 4 Corner Sanctums
+                drawStationStory(tickCounter);
+                drawStationEndless(tickCounter);
+                drawStationChallenge(tickCounter);
+                drawStationShop(tickCounter);
+
+                // Draw Station Teleportation Pads & Hover Reticles
+                drawStationTeleportIndicators(tickCounter);
+
+                // Weather Particles Layer
+                drawWeatherParticles();
+
+                // Update & Draw Teleportation Beam & Trail FX
+                TeleportSystem.update();
+                TeleportSystem.draw();
+
+                // Draw Hero Character with real-time customized wardrobe
+                drawHero(tickCounter);
+                drawSpeechBubbles(tickCounter);
+            }
+
+            // Draw Screen Wipe / Transition Flash
+            Transition.draw();
+
+            // Render wardrobe preview if open
+            renderPreview(tickCounter);
+
+            // Periodic sync & ambient chats
+            if (tickCounter % 30 === 0) {
+                broadcastMyState(true);
+            }
+            updateAmbientChats();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the animation loop
+        window.addEventListener('load', () => {
+            requestAnimationFrame(gameLoop);
+        });
+
+        // Fallback if window already loaded
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            requestAnimationFrame(gameLoop);
+        }
+
+        /* ====================================================
+           🎵 NHẠC NỀN GIAO DIỆN - MUSIC CONTROLLER
+           ==================================================== */
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('music-toggle-btn');
+        const musicVolBar = document.getElementById('music-vol-bar');
+        const musicVolumeSlider = document.getElementById('music-volume');
+
+        let bgMusicPlaying = false;
+        let bgMusicMuted = localStorage.getItem('bgMusicMuted') === 'true';
+
+        // Thiết lập âm lượng mặc định
+        bgMusic.volume = parseFloat(localStorage.getItem('bgMusicVol') || '0.35');
+        if (musicVolumeSlider) musicVolumeSlider.value = bgMusic.volume;
+
+        function updateMusicBtn() {
+            if (musicBtn) {
+                musicBtn.textContent = bgMusicPlaying && !bgMusicMuted ? '🎵' : '🔇';
+                musicBtn.style.borderColor = bgMusicPlaying && !bgMusicMuted ? '#7c5fc4' : '#555';
+                musicBtn.style.boxShadow = bgMusicPlaying && !bgMusicMuted
+                    ? '0 0 16px rgba(124,95,196,0.7), 0 2px 0 #101018'
+                    : '0 2px 0 #101018';
+            }
+        }
+
+        function startBgMusic() {
+            if (bgMusicMuted) return;
+            bgMusic.play().then(() => {
+                bgMusicPlaying = true;
+                updateMusicBtn();
+            }).catch(() => {});
+        }
+
+        function toggleBgMusic() {
+            if (bgMusicPlaying && !bgMusicMuted) {
+                bgMusic.pause();
+                bgMusicPlaying = false;
+                bgMusicMuted = true;
+            } else {
+                bgMusicMuted = false;
+                bgMusic.play().then(() => {
+                    bgMusicPlaying = true;
+                }).catch(() => {});
+            }
+            localStorage.setItem('bgMusicMuted', bgMusicMuted);
+            updateMusicBtn();
+        }
+
+        // Lưu âm lượng khi thay đổi
+        if (musicVolumeSlider) {
+            musicVolumeSlider.addEventListener('input', () => {
+                bgMusic.volume = parseFloat(musicVolumeSlider.value);
+                localStorage.setItem('bgMusicVol', musicVolumeSlider.value);
+            });
+        }
+
+        // Hover nút nhạc -> hiện thanh âm lượng
+        if (musicBtn) {
+            musicBtn.addEventListener('mouseenter', () => {
+                if (musicVolBar) { musicVolBar.style.display = 'flex'; }
+            });
+            musicBtn.addEventListener('mouseleave', () => {
+                setTimeout(() => {
+                    if (musicVolBar && !musicVolBar.matches(':hover')) {
+                        musicVolBar.style.display = 'none';
+                    }
+                }, 600);
+            });
+        }
+        if (musicVolBar) {
+            musicVolBar.addEventListener('mouseleave', () => {
+                musicVolBar.style.display = 'none';
+            });
+        }
+
+        // Tự phát nhạc khi người dùng tương tác lần đầu (browser autoplay policy)
+        const _startMusicOnce = () => {
+            startBgMusic();
+            document.removeEventListener('pointerdown', _startMusicOnce);
+            document.removeEventListener('keydown', _startMusicOnce);
+        };
+        document.addEventListener('pointerdown', _startMusicOnce);
+        document.addEventListener('keydown', _startMusicOnce);
+
+        updateMusicBtn();
+    </script>
+
+</body>
+
+</html>

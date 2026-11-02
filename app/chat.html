@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gia sư AI Loci — Đồng hành Lịch sử 12</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        // Nhận diện ngay lập tức khi chạy nhúng trong iframe (Portal v2) để tránh giật lag layout
+        if (window.self !== window.top || location.search.includes('embed=1')) {
+            document.documentElement.classList.add('is-embedded');
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --accent: #06b6d4;
+            --bg: #f8fafc;
+            --surface: rgba(255, 255, 255, 0.75);
+            --surface-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --line: rgba(226, 232, 240, 0.8);
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 50%, #fdf4ff 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar Glassmorphism */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(226, 232, 240, 0.85);
+            display: flex;
+            flex-direction: column;
+            padding: 32px 24px;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.02);
+            z-index: 10;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 36px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 6px 16px rgba(9, 22, 56, 0.22);
+            flex-shrink: 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-item:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.12);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .btn-new-chat {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            border: none;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s;
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .btn-new-chat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(79, 70, 229, 0.35);
+        }
+
+        .history-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            margin-bottom: 16px;
+        }
+
+        .history-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0 4px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-clear-history {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+
+        .btn-clear-history:hover {
+            color: var(--danger);
+            background: #fee2e2;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 4px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #475569;
+            background: transparent;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            position: relative;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(226, 232, 240, 0.8);
+            transform: translateX(2px);
+        }
+
+        .history-item.active {
+            background: #ffffff;
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+            font-weight: 600;
+        }
+
+        .history-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .history-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item.active .history-title {
+            color: #4338ca;
+        }
+
+        .history-meta {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .history-item.active .history-meta {
+            color: #6366f1;
+        }
+
+        .history-del {
+            opacity: 0;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-left: 6px;
+            cursor: pointer;
+            transition: all .15s ease;
+            background: transparent;
+            border: none;
+        }
+
+        .history-item:hover .history-del {
+            opacity: 1;
+        }
+
+        .history-del:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 28px 12px;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .user-status-pill {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid rgba(226, 232, 240, 0.9);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .user-status-icon {
+            font-size: 15px;
+        }
+
+        .user-status-name {
+            font-weight: 600;
+            color: #1e293b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 115px;
+        }
+
+        .user-status-badge {
+            margin-left: auto;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 99px;
+            background: #ecfdf5;
+            color: #059669;
+            font-weight: 600;
+        }
+
+        /* Chat area */
+        .chat {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .chat-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            border-bottom: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+        }
+
+        .chat-head h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-head-tools {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .engine-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            transition: all 0.2s;
+        }
+
+        .engine-badge.offline-mode {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .engine-badge i {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .engine-badge.offline-mode i {
+            background: #f59e0b;
+        }
+
+        .btn-api-settings {
+            padding: 6px 14px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .btn-api-settings:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .status {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .status i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status.busy i {
+            background: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            50% { opacity: .3; }
+        }
+
+        /* Modal Settings Glassmorphism */
+        .api-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .api-modal-backdrop.open {
+            display: flex;
+            animation: fadeIn .2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .api-modal-card {
+            width: 92%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 28px;
+            position: relative;
+            animation: scaleIn .25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-head h3 {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-close-modal {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #64748b;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: .2s;
+            border: none;
+        }
+
+        .btn-close-modal:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .modal-form-group {
+            margin-bottom: 16px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+            font-family: Consolas, monospace;
+        }
+
+        .modal-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        .modal-select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1.5px solid #cbd5e1;
+            font-size: 13px;
+            outline: none;
+            background: #fff;
+            color: #1e293b;
+        }
+
+        .modal-helper {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        .test-status-box {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .test-status-box.success {
+            display: block;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .test-status-box.error {
+            display: block;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .test-status-box.testing {
+            display: block;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .modal-btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .modal-btn.pri {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .modal-btn.pri:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        }
+
+        .modal-btn.sec {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-btn.sec:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .modal-btn.danger {
+            background: #fff;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .modal-btn.danger:hover {
+            background: #fef2f2;
+        }
+
+        .scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 40px 16px;
+            scroll-behavior: smooth;
+        }
+
+        .thread {
+            max-width: 780px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .welcome {
+            text-align: center;
+            padding: 48px 0 8px;
+        }
+
+        .welcome .orb {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: grid;
+            place-items: center;
+            font-size: 34px;
+            box-shadow: 0 20px 40px rgba(79, 70, 229, .25);
+        }
+
+        .welcome h2 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .welcome p {
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-size: 16px;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 28px;
+        }
+
+        .chip {
+            padding: 10px 18px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .8);
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #334155;
+            transition: .2s;
+            cursor: pointer;
+        }
+
+        .chip:hover {
+            background: #fff;
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .msg {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            animation: rise .3s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(8px); }
+        }
+
+        .msg.user {
+            flex-direction: row-reverse;
+        }
+
+        .av {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        .msg.user .av {
+            background: linear-gradient(135deg, #475569, #94a3b8);
+            font-size: 14px;
+        }
+
+        .bubble {
+            max-width: min(640px, 85%);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .msg.user .bubble {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 20px 4px 20px 20px;
+            white-space: pre-wrap;
+        }
+
+        .msg.ai .bubble {
+            background: rgba(255, 255, 255, .88);
+            border: 1px solid rgba(255, 255, 255, .95);
+            padding: 16px 22px;
+            border-radius: 4px 20px 20px 20px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .04);
+        }
+
+        .bubble p {
+            margin-bottom: 12px;
+        }
+
+        .bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bubble h3,
+        .bubble h4 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 16px 0 8px;
+            font-size: 17px;
+            color: #1e1b4b;
+        }
+
+        .bubble ul,
+        .bubble ol {
+            margin: 6px 0 12px 22px;
+        }
+
+        .bubble li {
+            margin-bottom: 6px;
+        }
+
+        .bubble code {
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: .92em;
+            font-family: Consolas, monospace;
+        }
+
+        .bubble pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .bubble pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .act {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .2s;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .act:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(79, 70, 229, .25);
+        }
+
+        .act.act-relax {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .act.act-relax:hover {
+            box-shadow: 0 8px 16px rgba(16, 185, 129, .35);
+        }
+
+        .tools {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .tool {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 8px;
+            transition: .2s;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tool:hover {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .typing {
+            display: inline-flex;
+            gap: 5px;
+            padding: 6px 0;
+        }
+
+        .typing i {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: .35;
+            animation: dot 1.2s infinite;
+        }
+
+        .typing i:nth-child(2) {
+            animation-delay: .2s;
+        }
+
+        .typing i:nth-child(3) {
+            animation-delay: .4s;
+        }
+
+        @keyframes dot {
+            30% { opacity: 1; transform: translateY(-3px); }
+        }
+
+        /* Thanh chọn độ sâu phân tích (Depth Selector) */
+        .depth-bar {
+            max-width: 780px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .depth-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            margin-right: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .depth-pill {
+            padding: 5px 13px;
+            border-radius: 99px;
+            font-size: 12.5px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .depth-pill:hover {
+            background: #ffffff;
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .depth-pill.active {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            font-weight: 700;
+        }
+
+        .depth-pill .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .depth-pill.active .badge-dot {
+            background: #a5f3fc;
+        }
+
+        /* Composer */
+        .composer-wrap {
+            padding: 8px 40px 24px;
+        }
+
+        .composer {
+            max-width: 780px;
+            margin: 0 auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            background: rgba(255, 255, 255, .9);
+            border: 1px solid #e2e8f0;
+            border-radius: 22px;
+            padding: 10px 10px 10px 20px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, .06);
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .composer:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, .12);
+        }
+
+        textarea {
+            flex: 1;
+            border: 0;
+            outline: 0;
+            resize: none;
+            background: transparent;
+            font-size: 16px;
+            line-height: 1.5;
+            max-height: 160px;
+            padding: 8px 0;
+            color: var(--text-main);
+        }
+
+        .send,
+        .mic {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            transition: .2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .send {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            box-shadow: 0 8px 16px rgba(79, 70, 229, .25);
+        }
+
+        .send:disabled {
+            opacity: .4;
+            box-shadow: none;
+            cursor: default;
+        }
+
+        .mic {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .mic:hover {
+            background: #e2e8f0;
+        }
+
+        .mic.on {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .hint {
+            max-width: 780px;
+            margin: 8px auto 0;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .banner {
+            display: none;
+            margin: 0 40px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            font-size: 14px;
+        }
+
+        .banner code {
+            background: #fff7d6;
+            padding: 1px 6px;
+            border-radius: 6px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* --- CHẾ ĐỘ NHÚNG TRONG PORTAL (EMBEDDED MODE) ---
+           Loại bỏ triệt để lỗi "web trong web": Ẩn toàn bộ sidebar trùng lặp và mở rộng giao diện chat full 100% */
+        html.is-embedded,
+        body.is-embedded {
+            background: #ffffff !important;
+            height: 100% !important;
+            overflow: hidden !important;
+        }
+
+        html.is-embedded .sidebar,
+        body.is-embedded .sidebar {
+            display: none !important;
+        }
+
+        html.is-embedded .chat,
+        body.is-embedded .chat {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+        }
+
+        html.is-embedded .chat-head,
+        body.is-embedded .chat-head {
+            padding: 14px 28px;
+        }
+
+        html.is-embedded .composer-wrap,
+        body.is-embedded .composer-wrap {
+            padding: 8px 28px 20px;
+        }
+
+        html.is-embedded .scroll,
+        body.is-embedded .scroll {
+            padding: 24px 28px 16px;
+        }
+
+        
+        /* --- GIAO DIỆN TỐI GIẢN CHO CHẾ ĐỘ NHÚNG TRONG KHÔNG GIAN 3D (THEO YÊU CẦU NGƯỜI DÙNG) --- */
+        html.is-embedded .chat-head,
+        body.is-embedded .chat-head {
+            display: none !important;
+        }
+
+        html.is-embedded .hint,
+        body.is-embedded .hint {
+            display: none !important;
+        }
+
+        html.is-embedded #mic,
+        body.is-embedded #mic,
+        html.is-embedded .mic,
+        body.is-embedded .mic {
+            display: none !important;
+        }
+
+        html.is-embedded .composer-wrap,
+        body.is-embedded .composer-wrap {
+            padding: 8px 16px 14px !important;
+            background: #ffffff !important;
+            border-top: 1px solid #e2e8f0 !important;
+        }
+
+        html.is-embedded .scroll,
+        body.is-embedded .scroll {
+            padding: 16px 16px 12px !important;
+        }
+
+        html.is-embedded .welcome {
+            margin: 12px auto !important;
+            padding: 14px 18px !important;
+            max-width: 95% !important;
+        }
+
+        html.is-embedded .welcome-bot-badge {
+            width: 38px !important;
+            height: 38px !important;
+            font-size: 20px !important;
+            margin-bottom: 8px !important;
+        }
+
+        html.is-embedded .welcome h2 {
+            font-size: 15px !important;
+            margin-bottom: 4px !important;
+        }
+
+        html.is-embedded .welcome p {
+            font-size: 12.5px !important;
+            line-height: 1.4 !important;
+            margin-bottom: 10px !important;
+        }
+
+        html.is-embedded .welcome .chips {
+            gap: 6px !important;
+        }
+
+        html.is-embedded .welcome .chip {
+            padding: 5px 11px !important;
+            font-size: 11.5px !important;
+            border-radius: 99px !important;
+        }
+
+        /* Nút công cụ trên header */
+        .btn-head-tool {
+            padding: 6px 13px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            font-family: inherit;
+        }
+
+        .btn-head-tool:hover {
+            background: #f8fafc;
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-head-tool.pri {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-head-tool.pri:hover {
+            box-shadow: 0 6px 14px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Drawer lịch sử cuộc trò chuyện khi ở chế độ nhúng */
+        .history-drawer-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+        }
+
+        .history-drawer-backdrop.open {
+            display: block;
+            animation: fadeIn .2s ease;
+        }
+
+        .history-drawer-card {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 330px;
+            max-width: 85vw;
+            background: #ffffff;
+            box-shadow: 10px 0 35px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 20px;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .history-drawer-backdrop.open .history-drawer-card {
+            transform: translateX(0);
+        }
+      #mic, .mic { display: none !important; }
+      @keyframes cursorBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.sentinel-guard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 11px;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            border-radius: 99px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #0284c7;
+            white-space: nowrap;
+            user-select: none;
+            transition: all 0.25s ease;
+        }
+        .sentinel-guard-badge.intercepting {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border-color: rgba(239, 68, 68, 0.6) !important;
+            color: #dc2626 !important;
+            animation: sentinelPulse 0.9s ease infinite;
+        }
+        .sentinel-radar-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #0284c7;
+            box-shadow: 0 0 8px #38bdf8;
+            animation: sentinelBlink 1.8s infinite;
+        }
+        .sentinel-guard-badge.intercepting .sentinel-radar-dot {
+            background: #dc2626 !important;
+            box-shadow: 0 0 8px #ef4444 !important;
+        }
+        @keyframes sentinelBlink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.8); }
+        }
+        @keyframes sentinelPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+</style>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <a class="logo" href="portal_v2.html"><img class="logo-mark" src="assets/images/logo_loci_edu.png"
+                alt="LOCI EDU"> LOCI EDU</a>
+        <ul class="nav-menu">
+            <li><a class="nav-item" href="portal_v2.html">📊 Tổng quan</a></li>
+            <li><a class="nav-item" href="app/index.html">🏛️ Cung điện kí ức</a></li>
+            <li><a class="nav-item active" href="chat.html"><img src="assets/images/loci_avatar.jpg" alt="AI"
+                        style="width:20px;height:20px;border-radius:50%;margin-right:2px;border:1px solid #cbd5e1;"> Gia
+                    sư AI</a></li>
+            <li><a class="nav-item" href="review.html">🧠 Thẻ ôn tập</a></li>
+            <li><a class="nav-item" href="de_thi.html">📝 Đề thi THPT</a></li>
+        </ul>
+
+        <button class="btn-new-chat" id="new-chat">
+            <span>＋</span> Cuộc trò chuyện mới
+        </button>
+
+        <div class="history-wrap">
+            <div class="history-header">
+                <span>Lịch sử trò chuyện</span>
+                <button id="clear-all-history" class="btn-clear-history" title="Xóa toàn bộ lịch sử">Xóa hết</button>
+            </div>
+            <div class="history-list" id="history-list">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <div class="user-status-pill" id="user-status-pill">
+            <span class="user-status-icon">👤</span>
+            <span class="user-status-name" id="user-display-name">Học sinh</span>
+            <span class="user-status-badge">Tự động lưu</span>
+        </div>
+    </aside>
+
+    <section class="chat">
+        <header class="chat-head">
+            <h1>
+                <img src="assets/images/loci_avatar.jpg" alt="Loci"
+                    style="width:36px;height:36px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.1);vertical-align:middle;margin-right:8px;">
+                Gia sư AI Loci
+            </h1>
+            <div class="chat-head-tools">
+                <button type="button" class="btn-head-tool pri" id="btn-head-new-chat" title="Tạo cuộc trò chuyện mới">
+                    ＋ Đoạn chat mới
+                </button>
+                <button type="button" class="btn-head-tool" id="btn-head-history" title="Xem danh sách lịch sử trò chuyện">
+                    💬 Lịch sử
+                </button>
+                <div class="engine-badge" id="engine-badge" style="display:none;">
+                    <i></i><span id="badge-text"></span>
+                </div>
+                <button type="button" class="btn-api-settings" id="btn-open-settings" style="display:none;" aria-hidden="true"></button>
+                                <div class="sentinel-guard-badge" id="sentinel-guard-badge" title="Bot Quét Kết Nối & Kiểm Duyệt Lịch Sử Loci đang hoạt động 24/7">
+                    <span class="sentinel-radar-dot"></span>
+                    <span class="sentinel-badge-text">🛡️ Sentinel Guard</span>
+                </div>
+                <div class="status" id="status"><i></i><span>Sẵn sàng</span></div>
+            </div>
+        </header>
+
+        <!-- Drawer Lịch sử trò chuyện khi ở chế độ nhúng -->
+        <div class="history-drawer-backdrop" id="history-drawer">
+            <div class="history-drawer-card">
+                <div class="modal-head" style="margin-bottom:14px;">
+                    <h3>💬 Lịch sử trò chuyện</h3>
+                    <button type="button" class="btn-close-modal" id="btn-close-history" title="Đóng">✕</button>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:14px;">
+                    <button type="button" class="btn-head-tool pri" id="btn-drawer-new-chat" style="flex:1;justify-content:center;">
+                        ＋ Trò chuyện mới
+                    </button>
+                    <button type="button" class="btn-clear-history" id="btn-drawer-clear-history" title="Xóa toàn bộ">
+                        🗑️ Xóa hết
+                    </button>
+                </div>
+                <div class="history-list" id="drawer-history-list" style="flex:1;overflow-y:auto;">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Cài đặt API Key -->
+        <div class="api-modal-backdrop" id="api-modal">
+            <div class="api-modal-card">
+                <div class="modal-head">
+                    <h3>⚙️ Cài đặt Gia sư Loci</h3>
+                    <button type="button" class="btn-close-modal" id="btn-close-settings" title="Đóng">✕</button>
+                </div>
+                <div class="modal-form-group">
+                    <label for="input-api-key">Mã Khóa API (Google Gemini hoặc OpenRouter):</label>
+                    <input type="text" id="input-api-key" class="modal-input" placeholder="Dán mã API của bạn vào đây...">
+                    <p class="modal-helper">
+                        Khóa được lưu trực tiếp trên trình duyệt của bạn (Local Storage) để bảo mật.
+                    </p>
+                </div>
+                <div class="modal-form-group">
+                    <label for="select-api-model">Mô hình AI:</label>
+                    <select id="select-api-model" class="modal-select">
+                        <option value="gemini-2.5-flash">Google Gemini 2.5 Flash (Khuyên dùng - Nhanh & Mới nhất)</option>
+                        <option value="gemini-1.5-flash">Google Gemini 1.5 Flash</option>
+                        <option value="google/gemini-2.5-flash">OpenRouter - Gemini 2.5 Flash</option>
+                    </select>
+                </div>
+                <div class="test-status-box" id="test-status-box"></div>
+                <div class="modal-actions">
+                    <button type="button" class="modal-btn sec" id="btn-test-key">
+                        ⚡ Kiểm tra kết nối
+                    </button>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" class="modal-btn danger" id="btn-reset-key" title="Dùng khóa mặc định">
+                            Khôi phục
+                        </button>
+                        <button type="button" class="modal-btn pri" id="btn-save-key">
+                            💾 Lưu & Kích hoạt
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="banner" id="banner"></div>
+
+        <div class="scroll" id="scroll" aria-live="polite">
+            <div class="thread" id="thread">
+                <!-- Messages or Welcome Screen injected dynamically -->
+            </div>
+        </div>
+
+        <div class="composer-wrap">
+            <form class="composer" id="form">
+                <textarea id="input" rows="1" placeholder="Nhập câu hỏi cho Loci…" aria-label="Tin nhắn"></textarea>
+                <button type="button" class="mic" id="mic" title="Nói bằng giọng" aria-label="Nói bằng giọng">🎤</button>
+                <button type="submit" class="send" id="send" aria-label="Gửi" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </form>
+            <p class="hint">Enter để gửi · Shift+Enter xuống dòng · Loci theo sát sách giáo khoa Lịch sử 12.</p>
+        </div>
+    </section>
+
+    <script src="loci_anchors_data.js"></script>
+    <script src="history_knowledge_base.js"></script>
+    <script src="history_sentinel_bot.js"></script>
+    <script type="module">
+        import { LociFirebase } from './firebase_service.js';
+
+        if (window.self !== window.top || location.search.includes('embed=1')) {
+            document.body.classList.add('is-embedded');
+        }
+
+        const $ = id => document.getElementById(id);
+        const thread = $('thread'), scroll = $('scroll'), input = $('input'), send = $('send'), statusEl = $('status');
+        const SESSIONS_STORE = 'loci_ai_chat_sessions_v1';
+        
+        let ai = null, busy = false;
+        let sessions = [];
+        let activeSessionId = null;
+
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+        function formatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            const now = new Date();
+            const isToday = d.toDateString() === now.toDateString();
+            const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            if (isToday) return timeStr;
+            return `${d.getDate()}/${d.getMonth() + 1} ${timeStr}`;
+        }
+
+        function autosize() {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+            send.disabled = busy || !input.value.trim();
+        }
+        input.addEventListener('input', autosize);
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!send.disabled) ask(input.value);
+            }
+        });
+        $('form').addEventListener('submit', e => {
+            e.preventDefault();
+            if (!send.disabled) ask(input.value);
+        });
+
+        // Safe Markdown -> HTML
+        function md(src) {
+            const blocks = [];
+            let t = esc(src).replace(/```[a-z]*\n?([\s\S]*?)```/g, (_, c) => { blocks.push(`<pre><code>${c.replace(/\n$/, '')}</code></pre>`); return `\u0000${blocks.length - 1}\u0000`; });
+            const inline = s => s.replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+            const out = []; let list = null;
+            const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+            t.split('\n').forEach(line => {
+                let m;
+                if ((m = line.match(/^\s*[-*•]\s+(.*)/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push(`<li>${inline(m[1])}</li>`); }
+                else if ((m = line.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push(`<li>${inline(m[1])}</li>`); }
+                else if ((m = line.match(/^#{1,4}\s+(.*)/))) { close(); out.push(`<h3>${inline(m[1])}</h3>`); }
+                else if (!line.trim()) { close(); }
+                else { close(); out.push(`<p>${inline(line)}</p>`); }
+            });
+            close();
+            return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[i]);
+        }
+
+        // Extract [ACTION:...] tags -> buttons
+        function parseActions(text) {
+            const acts = [];
+            const clean = text.replace(/\[ACTION:([A-Z_]+)(?::([^\]]*))?\]/g, (_, type, arg) => {
+                if (type === 'TELEPORT') {
+                    const target = (arg || '').trim();
+                    if (target === 'center' || !target) {
+                        acts.push({ label: '🌿 Dạo ngắm Cung điện 3D', href: 'app/index.html' });
+                    } else {
+                        acts.push({ label: '🏛️ Đến mốc này trong Cung điện', href: `app/index.html#${encodeURIComponent(target)}` });
+                    }
+                }
+                else if (type === 'QUIZ_START') acts.push({ label: '🃏 Thẻ ôn tập', href: 'review.html' }, { label: '📝 Đề thi THPT (28 câu)', href: 'de_thi.html' });
+                else if (type === 'EXAM_START') acts.push({ label: '📝 Vào Phòng thi THPT', href: 'de_thi.html' });
+                else if (type === 'PROGRESS_OPEN') acts.push({ label: '📈 Xem tiến độ', href: 'portal_v2.html' });
+                else if (type === 'RELAX_STORY') acts.push({ label: '🎧 Nghe chuyện Lịch sử', query: 'Kể cho mình nghe một mẩu chuyện lịch sử ngắn và nhẹ nhàng nhé' });
+                else if (type === 'RELAX_FLASHCARD') acts.push({ label: '🃏 Thử 1 Flashcard vui 1 phút', query: 'Cho mình xem 1 flashcard vui nhộn siêu ngắn 1 phút thôi nhé' });
+                return '';
+            }).replace(/\n{3,}/g, '\n\n').trim();
+            return { clean, acts };
+        }
+
+        function renderWelcome() {
+            thread.innerHTML = `
+                <div class="welcome" id="welcome">
+                    <div class="orb" style="background: url('assets/images/loci_avatar.jpg') center/cover; border: 4px solid #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-size: 0;"></div>
+                    <h2>Chào bạn, mình là Gia sư Loci</h2>
+                    <p>Mình ở đây để đồng hành, giải đáp kiến thức Lịch sử 12 và tư vấn mẹo ghi nhớ Cung điện Ký ức riêng cho bạn.</p>
+                    <div class="chips">
+                        <button class="chip">Hôm nay mình hơi mệt và nản, cho mình lời khuyên nhé 🌿</button>
+                        <button class="chip">Đánh giá tiến độ học tập của mình hôm nay</button>
+                        <button class="chip">Mình hay quên Bài 6, hãy gợi ý mẹo Loci</button>
+                        <button class="chip">Phân tích Chiến dịch Điện Biên Phủ 1954</button>
+                        <button class="chip">Lên lộ trình ôn tập tuần tới cho mình</button>
+                    </div>
+                </div>
+            `;
+            thread.querySelectorAll('.chip').forEach(c => c.onclick = () => ask(c.textContent));
+        }
+
+                function addMsg(role, text, isStream = false) {
+            $('welcome')?.remove();
+            const el = document.createElement('div');
+            el.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
+            const av = `<div class="av" aria-hidden="true">${role === 'user' ? 'B' : '<img src="assets/images/loci_avatar.jpg" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'}</div>`;
+            if (role === 'user') {
+                el.innerHTML = `${av}<div class="bubble">${esc(text)}</div>`;
+                thread.appendChild(el);
+                scroll.scrollTop = scroll.scrollHeight;
+            } else {
+                const { clean, acts } = parseActions(text);
+                const actsHtml = acts.length ? `<div class="actions">${acts.map((a, i) => a.query ? `<button class="act act-relax" data-act-idx="${i}">${a.label}</button>` : `<a class="act" href="${a.href}">${a.label}</a>`).join('')}</div>` : '';
+                
+                if (!isStream) {
+                    el.innerHTML = `${av}<div class="bubble">${md(clean)}${actsHtml}<div class="tools"><button class="tool" data-copy>Sao chép</button></div></div>`;
+                    bindAiBubbleEvents(el, clean, acts);
+                    thread.appendChild(el);
+                    scroll.scrollTop = scroll.scrollHeight;
+                    return;
+                }
+
+                // HIỆU ỨNG STREAMING / TYPEWRITER MƯỢT MÀ CHO AI
+                el.innerHTML = `${av}<div class="bubble"><span class="stream-text"></span><span class="stream-cursor" style="display:inline-block; width:4px; height:14px; background:#38bdf8; vertical-align:middle; margin-left:3px; animation:cursorBlink 0.7s infinite; border-radius:2px;"></span><div class="stream-actions" style="display:none; margin-top:6px;">${actsHtml}<div class="tools"><button class="tool" data-copy>Sao chép</button></div></div></div>`;
+                thread.appendChild(el);
+                
+                const textSpan = el.querySelector('.stream-text');
+                const cursor = el.querySelector('.stream-cursor');
+                const actionsBox = el.querySelector('.stream-actions');
+                
+                const words = clean.split(/(\s+)/);
+                let currentIdx = 0;
+                let currentStr = '';
+                let isFinished = false;
+
+                function finishStreaming() {
+                    if (isFinished) return;
+                    isFinished = true;
+                    if (cursor) cursor.remove();
+                    if (textSpan) textSpan.innerHTML = md(clean);
+                    if (actionsBox) actionsBox.style.display = 'block';
+                    bindAiBubbleEvents(el, clean, acts);
+                    scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'smooth' });
+                }
+
+                el.querySelector('.bubble').onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                        finishStreaming();
+                    }
+                };
+
+                const interval = setInterval(() => {
+                    if (isFinished) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    if (currentIdx >= words.length) {
+                        clearInterval(interval);
+                        finishStreaming();
+                        return;
+                    }
+                    for (let step = 0; step < 2 && currentIdx < words.length; step++) {
+                        currentStr += words[currentIdx];
+                        currentIdx++;
+                    }
+                    textSpan.innerHTML = md(currentStr);
+                    scroll.scrollTop = scroll.scrollHeight;
+                }, 20);
+            }
+        }
+
+        function bindAiBubbleEvents(el, clean, acts) {
+            acts.forEach((a, i) => {
+                if (a.query) {
+                    const btn = el.querySelector(`[data-act-idx="${i}"]`);
+                    if (btn) btn.onclick = () => ask(a.query);
+                }
+            });
+            const copyBtn = el.querySelector('[data-copy]');
+            if (copyBtn) {
+                copyBtn.onclick = e => { 
+                    navigator.clipboard?.writeText(clean); 
+                    e.target.textContent = 'Đã chép'; 
+                    setTimeout(() => e.target.textContent = 'Sao chép', 1500); 
+                };
+            }
+        }
+
+        let typingEl = null;
+        function setBusy(b) {
+            busy = b; send.disabled = b || !input.value.trim();
+            statusEl.classList.toggle('busy', b); statusEl.querySelector('span').textContent = b ? 'Đang suy nghĩ…' : 'Sẵn sàng';
+            if (b && !typingEl) {
+                $('welcome')?.remove();
+                typingEl = document.createElement('div'); typingEl.className = 'msg ai';
+                typingEl.innerHTML = '<div class="av"><img src="assets/images/loci_avatar.jpg" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"></div><div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>';
+                thread.appendChild(typingEl); scroll.scrollTop = scroll.scrollHeight;
+            } else if (!b && typingEl) { typingEl.remove(); typingEl = null; }
+        }
+
+        function buildContext() {
+            const prof = ai?.progressManager?.profile?.lociStats || {};
+            const lociList = [];
+            try {
+                const anchors = (typeof LOCI_ANCHORS !== 'undefined' ? LOCI_ANCHORS : null) || (window.LOCI_ANCHORS || {});
+                Object.values(anchors).forEach(lesson => (lesson.anchors || []).forEach(a => lociList.push({
+                    id: a.id, name: a.title, year: lesson.chuDe || '', locName: lesson.title,
+                    mnemonic: (a.mnemonic || '').replace(/^💡\s*Gợi nhớ Loci:\s*/, ''), status: prof[a.id]?.status || 'unlearned'
+                })));
+            } catch (e) { console.warn('Không đọc được LOCI_ANCHORS', e); }
+            return { lociList };
+        }
+
+        // --- QUẢN LÝ LƯU TRỮ VÀ LỊCH SỬ HỘI THOẠI ---
+        function saveSessions() {
+            try {
+                localStorage.setItem(SESSIONS_STORE, JSON.stringify(sessions));
+            } catch (e) {
+                console.warn('[Storage] Lỗi lưu cuộc trò chuyện vào máy:', e);
+            }
+            if (LociFirebase?.saveChatSessions) {
+                LociFirebase.saveChatSessions(sessions).catch(() => {});
+            }
+        }
+
+        function renderHistory() {
+            const list = $('history-list');
+            const drawerList = $('drawer-history-list');
+            const targets = [list, drawerList].filter(Boolean);
+            if (targets.length === 0) return;
+
+            if (!sessions || sessions.length === 0) {
+                const emptyHtml = `<div class="history-empty">Chưa có cuộc trò chuyện nào.<br>Hãy đặt câu hỏi để bắt đầu!</div>`;
+                targets.forEach(t => t.innerHTML = emptyHtml);
+                return;
+            }
+
+            const html = sessions.map(s => {
+                const isActive = s.id === activeSessionId;
+                const timeStr = formatTime(s.updatedAt);
+                const count = (s.messages || []).length;
+                return `
+                    <div class="history-item ${isActive ? 'active' : ''}" data-id="${s.id}">
+                        <div class="history-main">
+                            <span class="history-title" title="${esc(s.title || 'Cuộc trò chuyện')}">${esc(s.title || 'Cuộc trò chuyện')}</span>
+                            <span class="history-meta">💬 ${count} tin nhắn · ${timeStr}</span>
+                        </div>
+                        <button class="history-del" data-del="${s.id}" title="Xóa cuộc trò chuyện này">🗑️</button>
+                    </div>
+                `;
+            }).join('');
+
+            targets.forEach(t => {
+                t.innerHTML = html;
+                t.querySelectorAll('.history-item').forEach(el => {
+                    el.onclick = (e) => {
+                        if (e.target.closest('[data-del]')) return;
+                        selectSession(el.dataset.id);
+                        $('history-drawer')?.classList.remove('open');
+                    };
+                });
+                t.querySelectorAll('[data-del]').forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteSession(btn.dataset.del);
+                    };
+                });
+            });
+        }
+
+        function selectSession(id) {
+            const sess = sessions.find(s => s.id === id);
+            if (!sess) return;
+
+            activeSessionId = id;
+            thread.innerHTML = '';
+
+            if (!sess.messages || sess.messages.length === 0) {
+                renderWelcome();
+            } else {
+                sess.messages.forEach(m => addMsg(m.role, m.text));
+                if (ai) {
+                    ai.chatHistory = sess.messages.slice(-8).map(m => ({
+                        role: m.role === 'user' ? 'user' : 'model',
+                        parts: [{ text: m.text }]
+                    }));
+                }
+            }
+
+            renderHistory();
+        }
+
+        function createNewChat() {
+            activeSessionId = null;
+            thread.innerHTML = '';
+            renderWelcome();
+            if (ai) ai.chatHistory = [];
+            renderHistory();
+            input.value = '';
+            autosize();
+            input.focus();
+        }
+
+        function deleteSession(id) {
+            sessions = sessions.filter(s => s.id !== id);
+            saveSessions();
+            if (activeSessionId === id) {
+                if (sessions.length > 0) {
+                    selectSession(sessions[0].id);
+                } else {
+                    createNewChat();
+                }
+            } else {
+                renderHistory();
+            }
+        }
+
+        function flashSentinelStatus(category) {
+            const badge = $('sentinel-guard-badge');
+            if (badge) {
+                badge.classList.add('intercepting');
+                const textEl = badge.querySelector('.sentinel-badge-text');
+                if (textEl) textEl.textContent = `🛡️ Chặn: ${category}`;
+                setTimeout(() => {
+                    badge.classList.remove('intercepting');
+                    if (textEl) textEl.textContent = '🛡️ Sentinel Guard';
+                }, 3500);
+            }
+        }
+
+        async function ask(text) {
+            text = text.trim(); if (!text || busy || !ai) return;
+
+            // --- BOT QUÉT KẾT NỐI & KIỂM DUYỆT NỘI DUNG LỊCH SỬ (LOCI HISTORY SENTINEL) ---
+            const sentinel = (typeof LociHistorySentinel !== 'undefined') ? LociHistorySentinel : (window.LociHistorySentinel || null);
+            if (sentinel) {
+                const inspection = sentinel.inspect(text, buildContext());
+                if (!inspection.isAllowed) {
+                    console.warn('[LociHistorySentinel] Chặn kết nối tin nhắn ngoài lề:', inspection.category, text);
+                    flashSentinelStatus(inspection.category);
+
+                    let sess = sessions.find(s => s.id === activeSessionId);
+                    if (!sess) {
+                        const title = text.length > 34 ? text.slice(0, 34) + '…' : text;
+                        sess = { id: 'sess_' + Date.now(), title, updatedAt: Date.now(), messages: [] };
+                        sessions.unshift(sess);
+                        activeSessionId = sess.id;
+                    }
+                    addMsg('user', text);
+                    sess.messages.push({ role: 'user', text });
+
+                    const interceptReply = sentinel.formatInterceptResponse(inspection, text);
+                    setTimeout(() => {
+                        addMsg('assistant', interceptReply);
+                        sess.messages.push({ role: 'assistant', text: interceptReply });
+                        saveSessions();
+                        renderHistory();
+                        setBusy(false);
+                    }, 280);
+                    input.value = ''; autosize(); setBusy(true);
+                    return;
+                }
+            }
+
+            let sess = sessions.find(s => s.id === activeSessionId);
+            if (!sess) {
+                const title = text.length > 34 ? text.slice(0, 34) + '…' : text;
+                sess = {
+                    id: 'sess_' + Date.now(),
+                    title: title,
+                    updatedAt: Date.now(),
+                    messages: []
+                };
+                sessions.unshift(sess);
+                activeSessionId = sess.id;
+            } else {
+                const idx = sessions.indexOf(sess);
+                if (idx > 0) {
+                    sessions.splice(idx, 1);
+                    sessions.unshift(sess);
+                }
+                sess.updatedAt = Date.now();
+            }
+
+            addMsg('user', text);
+            sess.messages.push({ role: 'user', text });
+            saveSessions();
+            renderHistory();
+
+            input.value = ''; autosize(); setBusy(true);
+            try { 
+                await ai.processUserInput(text, buildContext()); 
+            }
+            catch (e) { 
+                console.error(e); 
+                const errText = 'Mình gặp lỗi khi kết nối AI. Bạn thử lại sau ít phút nhé.';
+                addMsg('assistant', errText);
+                sess.messages.push({ role: 'assistant', text: errText });
+                saveSessions();
+            }
+            finally { 
+                setBusy(false); 
+                input.focus(); 
+            }
+        }
+
+        // --- 2. BỘ NÃO HYBRID AI (GOOGLE GEMINI DIRECT + OFFLINE RAG LỊCH SỬ 12) ---
+        const DEFAULT_API_KEY = 'AQ.Ab8RN6KLMu7QuN7LcaGiQuwbl63Q0GqVelMLAIPeFQZWqmZo1Q';
+        const DEFAULT_MODEL = 'gemini-2.5-flash';
+
+        let activeKey = localStorage.getItem('loci_gemini_api_key');
+        const knownExpired = [
+            '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',
+            'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA'
+        ];
+        if (!activeKey || knownExpired.includes(activeKey)) {
+            activeKey = DEFAULT_API_KEY;
+            localStorage.setItem('loci_gemini_api_key', activeKey);
+        }
+        let activeModel = localStorage.getItem('loci_gemini_model') || DEFAULT_MODEL;
+
+        function updateEngineBadge(isOnline, modelName) {
+            const badge = $('engine-badge');
+            const txt = $('badge-text');
+            if (!badge || !txt) return;
+            badge.style.display = 'none';
+            txt.textContent = '';
+        }
+        updateEngineBadge(true, activeModel);
+
+        // --- BỘ NÓI DỰ PHÒNG CHUẨN RAG SGK LỊCH SỬ 12 ---
+        function generateOfflineHistoryResponse(text, context) {
+            const q = (text || '').toLowerCase().trim();
+
+            if (q.includes('mệt') || q.includes('nản') || q.includes('áp lực') || q.includes('lo lắng') || q.includes('nghỉ')) {
+                return `🌿 **Lời khuyên từ Gia sư Loci:**
+Mình hiểu việc ôn thi Lịch sử với hàng chục mốc niên biểu có thể khiến bạn cảm thấy quá tải. Hãy dành ra 5 phút để hít thở sâu, uống một ngụm nước ấm và vươn vai nhé!
+
+🧠 **Bí quyết Loci:** Đừng cố nhồi nhét chữ viết. Hãy nhắm mắt lại và tưởng tượng căn phòng của bạn như một bức tranh triển lãm. Khi não bộ được thư giãn, các liên kết thần kinh ở Hồi hải mã (Hippocampus) sẽ tự động củng cố mốc trí nhớ bền vững gấp 3 lần đấy!
+[ACTION:RELAX_STORY] [ACTION:RELAX_FLASHCARD]`;
+            }
+
+            if (q.includes('tiến độ') || q.includes('đánh giá') || q.includes('kết quả') || q.includes('hôm nay')) {
+                const lociList = context?.lociList || [];
+                const mastered = lociList.filter(l => l.status === 'mastered').length;
+                const reviewing = lociList.filter(l => l.status === 'reviewing').length;
+                return `📊 **ĐÁNH GIÁ TIẾN ĐỘ HỌC TẬP TỪ GIA SƯ LOCI:**
+• **Mốc đã thuộc sâu (Mastered):** ${mastered} trạm ký ức.
+• **Mốc đang rèn luyện (Reviewing):** ${reviewing} trạm.
+• **Lời khuyên sư phạm:** Hãy duy trì chu kỳ ôn tập ngắt quãng 1 - 3 - 7 ngày. Hãy mở Cung điện 3D hoặc Phòng 360° và đi dạo 1 vòng quanh căn phòng theo chiều kim đồng hồ để kiểm tra lại toàn bộ mốc nhé!
+[ACTION:PROGRESS_OPEN] [ACTION:QUIZ_START]`;
+            }
+
+            if (q.includes('bài 6') || q.includes('cách mạng tháng tám') || q.includes('cmt8') || q.includes('tổng khởi nghĩa') || q.includes('1945') || q.includes('nhật đầu hàng') || q.includes('tân trào') || q.includes('ba đình') || q.includes('tuyên ngôn độc lập')) {
+                return `### 🌟 BÀI 6: CÁCH MẠNG THÁNG TÁM NĂM 1945 (TRỌNG TÂM SGK 12)
+• **Thời cơ ngàn năm có một:** 15/8/1945 Nhật đầu hàng Đồng minh không điều kiện. Đảng phát động Tổng khởi nghĩa (Quân lệnh số 1, Hội nghị Tân Trào, Đại hội Quốc dân).
+• **Diễn biến mốc son:**
+  - **16/8:** Giải phóng quân do đ/c Võ Nguyên Giáp chỉ huy tiến về giải phóng Thái Nguyên.
+  - **18/8:** 4 tỉnh giành chính quyền sớm nhất cả nước: **Bắc Giang, Hải Dương, Hà Tĩnh, Quảng Nam**.
+  - **19/8:** Hà Nội khởi nghĩa toàn thắng tại Nhà hát Lớn và Bắc Bộ phủ.
+  - **23/8:** Khởi nghĩa thắng lợi ở Huế.
+  - **25/8:** Khởi nghĩa thắng lợi ở Sài Gòn.
+  - **30/8:** Vua Bảo Đại tuyên bố thoái vị ("Thà làm dân một nước độc lập hơn làm vua một nước nô lệ").
+  - **02/9/1945:** Bác Hồ đọc Tuyên ngôn Độc lập tại Quảng trường Ba Đình, khai sinh nước VNDCCH.
+• **Mẹo Loci:** Neo hình ảnh cờ đỏ sao vàng rực rỡ và tiếng reo hò ngày 19/8 ngay tại **Cửa Chính Ra Vào** của Cung điện!
+[ACTION:TELEPORT:cmt8] [ACTION:QUIZ_START]`;
+            }
+
+            if (q.includes('bài 7') || q.includes('chống pháp') || q.includes('điện biên phủ') || q.includes('việt bắc') || q.includes('biên giới') || q.includes('1954') || q.includes('giơ-ne-vơ') || q.includes('na-va')) {
+                return `### 🎖️ BÀI 7: KHÁNG CHIẾN CHỐNG THỰC DÂN PHÁP (1945 – 1954)
+• **19/12/1946:** Lời kêu gọi Toàn quốc kháng chiến của Chủ tịch Hồ Chí Minh: *"Chúng ta thà hy sinh tất cả, chứ nhất định không chịu mất nước, nhất định không chịu làm nô lệ!"*
+• **3 Chiến dịch bản lề:**
+  1. **Việt Bắc thu - đông 1947:** Phản công lớn đầu tiên, phá sản chiến lược "Đánh nhanh thắng nhanh" của Pháp.
+  2. **Biên giới thu - đông 1950:** Tiến công lớn đầu tiên, mở thông biên giới Việt - Trung, phá sản kế hoạch Rơ-ve, giành thế chủ động chiến lược trên chiến trường chính Bắc Bộ.
+  3. **Điện Biên Phủ lịch sử (13/3 - 07/5/1954):** Trải qua 3 đợt tiến công tiêu diệt pháo đài bất khả xâm phạm. 17h30 ngày 07/5/1954, tướng Đờ Ca-xtơ-ri cùng toàn bộ bộ tham mưu đầu hàng.
+• **Ý nghĩa:** Đưa đến Hiệp định Giơ-ne-vơ (21/7/1954), giải phóng hoàn toàn miền Bắc.
+• **Mẹo Loci:** Neo hình ảnh đồi Him Lam rực lửa và xe tăng Pháp bị bắt sống lên **Bàn Trà Trung Tâm**!
+[ACTION:TELEPORT:dien_bien_phu] [ACTION:TELEPORT:gio_ne_vo]`;
+            }
+
+            if (q.includes('bài 8') || q.includes('chống mĩ') || q.includes('đồng khởi') || q.includes('1975') || q.includes('hồ chí minh') || q.includes('xuân 1975') || q.includes('chiến tranh đặc biệt') || q.includes('chiến tranh cục bộ') || q.includes('việt nam hóa') || q.includes('pari')) {
+                return `### 🚀 BÀI 8: KHÁNG CHIẾN CHỐNG MĨ, CỨU NƯỚC (1954 – 1975)
+• **Đồng Khởi (1959 - 1960):** Bùng nổ sau NQ 15 của Đảng, tiêu biểu tại Mỏ Cày (Bến Tre), chuyển cách mạng miền Nam từ thế giữ gìn lực lượng sang thế tiến công.
+• **Đánh bại 4 chiến lược của Mĩ:**
+  1. *Chiến tranh đặc biệt (1961 - 1965):* Thắng lớn Ấp Bắc, Bình Giã, Đồng Xoài.
+  2. *Chiến tranh cục bộ (1965 - 1968):* Thắng Vạn Tường, bẻ gãy 2 cuộc phản công mùa khô, Tổng tiến công Xuân Mậu Thân 1968 buộc Mĩ "phi Mĩ hóa" và ngồi vào bàn đàm phán Pa-ri.
+  3. *Việt Nam hóa chiến tranh (1969 - 1973):* Trận "Điện Biên Phủ trên không" (12/1972) buộc Mĩ ký Hiệp định Pa-ri (27/1/1973), rút quân về nước.
+• **Đại thắng mùa Xuân 1975:**
+  - 3 chiến dịch: Tây Nguyên ➔ Huế - Đà Nẵng ➔ Chiến dịch Hồ Chí Minh lịch sử.
+  - **11 giờ 30 phút ngày 30/4/1975:** Cờ giải phóng tung bay trên nóc Dinh Độc Lập, non sông thu về một mối!
+• **Mẹo Loci:** Neo hình ảnh xe tăng 390 húc đổ cổng Dinh lên chiếc **Màn Hình Tivi**!
+[ACTION:TELEPORT:ho_chi_minh] [ACTION:TELEPORT:dong_khoi]`;
+            }
+
+            if (q.includes('bài 9') || q.includes('tây nam') || q.includes('phía bắc') || q.includes('1979') || q.includes('vị xuyên') || q.includes('biển đảo') || q.includes('bảo vệ tổ quốc')) {
+                return `### 🛡️ BÀI 9: ĐẤU TRANH BẢO VỆ TỔ QUỐC TỪ SAU THÁNG 4/1975 ĐẾN NAY
+• **Chiến đấu bảo vệ biên giới Tây Nam (1975 - 1979):** Đập tan hành động xâm lược của tập đoàn Pôn Pốt - Iêng Xari, cứu nhân dân Campuchia khỏi nạn diệt chủng (07/01/1979).
+• **Chiến đấu bảo vệ biên giới phía Bắc (1979 - 1989):** Kiên cường bảo vệ toàn tuyến biên giới từ 17/2/1979; Mặt trận Vị Xuyên (Hà Giang) khắc ghi lời thề: *"Sống bám đá đánh giặc, chết hóa đá bất tử"*.
+• **Bảo vệ chủ quyền Biển Đông:** Quản lý thực thi chủ quyền đối với quần đảo Hoàng Sa và Trường Sa theo Luật Biển Việt Nam 2012 và UNCLOS 1982.
+• **Bài học lịch sử:** Giữ vững sự lãnh đạo của Đảng, củng cố khối đại đoàn kết toàn dân tộc, kết hợp sức mạnh dân tộc với sức mạnh thời đại.`;
+            }
+
+            if (q.includes('lộ trình') || q.includes('ôn tập') || q.includes('kế hoạch') || q.includes('ebbinghaus') || q.includes('tuần tới')) {
+                return `📅 **LỘ TRÌNH ÔN TẬP 7 NGÀY CHUẨN KHOA HỌC NÃO BỘ (EBBINGHAUS 1-3-7):**
+• **Ngày 1 (Mã hóa Loci):** Học Bài 6 (CMT8 1945), gắn 6 mốc vào Cửa chính và Tủ giày. Làm bài khảo bài 5 câu trắc nghiệm.
+• **Ngày 2 (Ôn ngắt quãng lần 1):** Dạo bộ trong Cung điện 3D nhẩm lại Bài 6 (5 phút), tiếp tục gắn Bài 7 (Kháng chiến chống Pháp) vào Bàn trà và Giá sách.
+• **Ngày 3:** Làm 1 bộ Flashcard ôn tập phối hợp Bài 6 + Bài 7.
+• **Ngày 4 (Ôn ngắt quãng lần 2 cho Bài 6):** Truy xuất ngược niên biểu từ 1954 về 1945. Gắn mốc Bài 8 (Kháng chiến chống Mĩ).
+• **Ngày 7 (Khắc sâu trí nhớ dài hạn):** Làm bài kiểm tra tổng hợp Chủ đề 3 (Bài 6, 7, 8, 9) để đánh bại hoàn toàn đường cong quên lãng!
+[ACTION:QUIZ_START]`;
+            }
+
+            return `Chào bạn! Mình là Gia sư Loci. Mình đang đồng hành cùng bạn ôn luyện **Chủ đề 3 Lịch sử 12** bằng phương pháp **Cung điện Ký ức (Method of Loci)**.
+
+Bạn có thể hỏi mình:
+• 📖 **Kiến thức trọng tâm:** Diễn biến, ý nghĩa, bài học của Bài 6 (CMT8 1945), Bài 7 (K/c Pháp), Bài 8 (K/c Mĩ) hoặc Bài 9 (Bảo vệ Tổ quốc).
+• 🏛️ **Mẹo Cung điện Loci:** Cách gắn xe tăng 390 lên Tivi, cờ đỏ Ba Đình lên Cửa chính...
+• 📝 **Khảo bài:** Gõ *"Khảo bài tôi đi"* để mình đố bạn vài câu trắc nghiệm thú vị!`;
+        }
+
+        // --- KHỞI TẠO BỘ NÃO AI LINH HOẠT (HYBRID ENGINE) ---
+        class DirectGeminiTutor {
+            constructor(opts = {}) {
+                this.getContext = opts.getContext || (() => ({}));
+                this.onMessage = opts.onMessage || (() => {});
+                this.onAction = opts.onAction || (() => {});
+                this.chatHistory = [];
+                this.apiKey = localStorage.getItem('loci_gemini_api_key') || DEFAULT_API_KEY;
+                this.modelName = localStorage.getItem('loci_gemini_model') || DEFAULT_MODEL;
+                this.answerDepth = localStorage.getItem('loci_gemini_depth') || 'detailed';
+            }
+
+            setAnswerDepth(depth) {
+                this.answerDepth = depth || 'detailed';
+                try { localStorage.setItem('loci_gemini_depth', this.answerDepth); } catch (_) {}
+            }
+
+            buildSystemPrompt(depth = 'detailed', query = '') {
+                let depthInstruction = '';
+                if (depth === 'concise' || depth === 'short') {
+                    depthInstruction = `
+=== QUY ĐỊNH ĐỘ DÀI: TÓM TẮT NHANH (100 - 150 TỪ) ===
+- Trả lời súc tích, trực diện vào vấn đề ngay câu đầu tiên.
+- Trình bày 3-5 gạch đầu dòng then chốt hoặc bảng niên biểu ngắn gọn.
+- Gợi ý 1 mẹo liên tưởng Cung điện Ký ức Loci.`;
+                } else if (depth === 'standard') {
+                    depthInstruction = `
+=== QUY ĐỊNH ĐỘ DÀI: TIÊU CHUẨN (400 - 500 TỪ) ===
+- Trả lời đầy đủ, mạch lạc, đúng trọng tâm câu hỏi.
+- Nêu rõ bối cảnh, các mốc diễn biến chính, kết quả, ý nghĩa lịch sử.
+- Đưa ra mẹo gắn vào không gian Cung điện Loci và tag hành động phù hợp.`;
+                } else {
+                    // 'detailed' (mặc định - chuyên sâu toàn diện)
+                    depthInstruction = `
+=== QUY ĐỊNH ĐỘ SÂU & ĐỘ DÀI: PHÂN TÍCH CHUYÊN SÂU & TOÀN DIỆN (CHẾ ĐỘ MẶC ĐỊNH - CHUẨN ÔN THI THPT QUỐC GIA 12) ===
+🚨 BẮT BUỘC KHÔNG ĐƯỢC TRẢ LỜI NGẮN GỌN, HỜI HỢT HOẶC CỤT LỦN!
+Học sinh cần nắm vững kiến thức chi tiết, đa chiều và có hệ thống logic để đạt điểm cao môn Lịch sử 12.
+Đối với các câu hỏi về sự kiện, chiến dịch, giai đoạn lịch sử (như Chiến dịch Điện Biên Phủ, CMT8 1945, Hiệp định Giơ-ne-vơ, Phong trào Đồng Khởi, Đại thắng mùa Xuân 1975, Kháng chiến bảo vệ Tổ quốc...):
+BẮT BUỘC phân tích cặn kẽ theo đúng cấu trúc 5 tầng nhận thức chuẩn sư phạm:
+
+1. 🏛️ BỐI CẢNH LỊCH SỬ & THỜI CƠ:
+   - Hoàn cảnh quốc tế và khu vực tác động; tình hình thực tế trong nước.
+   - Âm mưu, kế hoạch và thủ đoạn của đối phương (ví dụ: Kế hoạch Na-va, các chiến lược của Mĩ...).
+   - Chủ trương, quyết định chiến lược và sự lãnh đạo sáng suốt của Đảng / Trung ương / Chủ tịch Hồ Chí Minh.
+
+2. ⚔️ DIỄN BIẾN THEN CHỐT & CÁC MỐC SON LỊCH SỬ:
+   - Trình bày chi tiết từng giai đoạn / đợt tiến công theo thứ tự thời gian.
+   - Ghi rõ ngày, tháng, năm chính xác tuyệt đối theo SGK Lịch sử 12 Bộ GD&ĐT.
+   - Nêu cụ thể địa danh chiến trường, hướng tiến công then chốt, những tấm gương chiến đấu anh dũng tiêu biểu.
+
+3. 🏆 KẾT QUẢ & Ý NGHĨA LỊCH SỬ SÂU SẮC:
+   - Phân tích 2 bình diện độc lập:
+     + Đối với cách mạng và nhân dân Việt Nam (chấm dứt ách thống trị, giải phóng dân tộc, bước ngoặt vĩ đại...).
+     + Đối với phong trào cách mạng thế giới (cổ vũ phong trào giải phóng dân tộc, làm lung lay hệ thống thuộc địa...).
+
+4. 💡 BÀI HỌC KINH NGHIỆM & NGHỆ THUẬT QUÂN SỰ:
+   - Đúc kết nghệ thuật chớp thời cơ "ngàn năm có một", sức mạnh khối đại đoàn kết toàn dân tộc, kết hợp sức mạnh dân tộc với sức mạnh thời đại, nghệ thuật thay đổi phương châm tác chiến (từ "đánh nhanh thắng nhanh" sang "đánh chắc tiến chắc"), kết hợp đấu tranh quân sự với chính trị và ngoại giao...
+
+5. 🧠 PHƯƠNG PHÁP CUNG ĐIỆN KÝ ỨC (METHOD OF LOCI 3D):
+   - Hướng dẫn học sinh mã hóa sự kiện thành hình ảnh trực quan giàu cảm xúc và neo giữ vào 5 đồ vật cố định trong Cung điện Ký ức:
+     * Cửa chính ra vào: Cách mạng tháng Tám (1945) [ACTION:TELEPORT:cmt8]
+     * Bàn trà trung tâm (lòng chảo Mường Thanh): Chiến dịch Điện Biên Phủ (1954) [ACTION:TELEPORT:dien_bien_phu]
+     * Kệ sách lớn: Hiệp định Giơ-ne-vơ (1954) [ACTION:TELEPORT:gio_ne_vo]
+     * Cửa sổ kính lớn: Phong trào Đồng Khởi (1960) [ACTION:TELEPORT:dong_khoi]
+     * Màn hình Tivi: Chiến dịch Hồ Chí Minh (1975) [ACTION:TELEPORT:ho_chi_minh]
+
+ĐỊNH DẠNG: Trình bày Markdown sinh động với tiêu đề H3 (###) rõ ràng, danh sách gạch đầu dòng mạch lạc và **IN ĐẬM TẤT CẢ TỪ KHÓA, NIÊN ĐẠI, SỐ LIỆU VÀ ĐỊA DANH QUAN TRỌNG**.`;
+                }
+
+                let docxKnowledge = '';
+                if (typeof window !== 'undefined' && window.getRelevantHistoricalKnowledge) {
+                    try { docxKnowledge = window.getRelevantHistoricalKnowledge(query) || ''; } catch (_) {}
+                }
+
+                const sentinel = (typeof LociHistorySentinel !== 'undefined') ? LociHistorySentinel : (window.LociHistorySentinel || null);
+                const sentinelInstruction = sentinel ? sentinel.getSystemGuardInstruction() : '';
+
+                return `Bạn là "Gia sư Loci", một người thầy kiêm trợ lý ân cần, tinh ý và am hiểu sâu sắc, đồng hành cùng học sinh lớp 12 học Lịch sử bằng phương pháp Cung điện Ký ức (Method of Loci).
+${sentinelInstruction}
+Xưng "mình", gọi học sinh là "bạn". Giọng văn ấm áp, truyền cảm hứng, phân tích chuẩn xác theo sách giáo khoa Lịch sử 12 của Bộ GD&ĐT (Chương trình mới 2018).
+
+${depthInstruction}
+
+${docxKnowledge ? `=== TRI THỨC TRÍCH XUẤT TỪ SGK LỊCH SỬ 12 ===\n${docxKnowledge}\n` : ''}
+
+Nếu học sinh than mệt mỏi hay áp lực thi cử, hãy ân cần lắng nghe, chia sẻ chân thành, khuyên bạn hít thở sâu và thư giãn với không gian Cung điện.
+Chèn các tag hành động điều khiển nếu phù hợp: [ACTION:TELEPORT:tên_mốc], [ACTION:QUIZ_START], [ACTION:PROGRESS_OPEN].`;
+            }
+
+            async processUserInput(text, context = {}) {
+                const key = localStorage.getItem('loci_gemini_api_key') || DEFAULT_API_KEY;
+                const model = localStorage.getItem('loci_gemini_model') || DEFAULT_MODEL;
+                const depth = this.answerDepth || localStorage.getItem('loci_gemini_depth') || 'detailed';
+
+                if (key) {
+                    try {
+                        const systemPrompt = this.buildSystemPrompt(depth, text);
+
+                        let endpoint, headers, body;
+                        if (key.startsWith('sk-')) {
+                            endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${key}`,
+                                'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://localhost'
+                            };
+                            body = JSON.stringify({
+                                model: model.includes('/') ? model : 'google/gemini-2.5-flash',
+                                max_tokens: 4000,
+                                messages: [
+                                    { role: 'system', content: systemPrompt },
+                                    ...this.chatHistory.slice(-4).map(h => ({ role: h.role === 'assistant' ? 'assistant' : 'user', content: h.text })),
+                                    { role: 'user', content: text }
+                                ]
+                            });
+                        } else {
+                            endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model.replace('google/', '')}:generateContent?key=${key}`;
+                            headers = { 'Content-Type': 'application/json' };
+                            body = JSON.stringify({
+                                contents: [
+                                    ...this.chatHistory.slice(-4).map(h => ({
+                                        role: h.role === 'assistant' ? 'model' : 'user',
+                                        parts: [{ text: h.text }]
+                                    })),
+                                    { role: 'user', parts: [{ text: text }] }
+                                ],
+                                systemInstruction: { parts: [{ text: systemPrompt }] },
+                                generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
+                            });
+                        }
+
+                        const res = await fetch(endpoint, { method: 'POST', headers, body });
+                        if (res.ok) {
+                            const data = await res.json();
+                            let reply = '';
+                            if (key.startsWith('sk-')) {
+                                reply = data.choices?.[0]?.message?.content || '';
+                            } else {
+                                reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                            }
+                            if (reply && reply.trim()) {
+                                reply = reply.trim();
+                                this.chatHistory.push({ role: 'user', text });
+                                this.chatHistory.push({ role: 'assistant', text: reply });
+                                this.onMessage({ role: 'assistant', text: reply });
+                                updateEngineBadge(true, model);
+                                return;
+                            }
+                        } else {
+                            console.warn('[DirectGeminiTutor] Endpoint trả về lỗi HTTP:', res.status);
+                        }
+                    } catch (netErr) {
+                        console.warn('[DirectGeminiTutor] Lỗi mạng khi gọi Gemini API:', netErr);
+                    }
+                }
+
+                // Chế độ ngoại tuyến Offline RAG
+                updateEngineBadge(false);
+                const offlineReply = generateOfflineHistoryResponse(text, context);
+                this.chatHistory.push({ role: 'user', text });
+                this.chatHistory.push({ role: 'assistant', text: offlineReply });
+                this.onMessage({ role: 'assistant', text: offlineReply });
+            }
+        }
+
+        // Khởi tạo instance của AI (Ưu tiên module app/ai_assistant.js, tự động fallback DirectGeminiTutor khi chạy file://)
+        try {
+            const mod = await import('./app/ai_assistant.js');
+            ai = new mod.LociAIAssistant({
+                getContext: buildContext,
+                onMessage: m => { 
+                    if (m.role === 'assistant') {
+                        addMsg('assistant', m.text, true);
+                        const sess = sessions.find(s => s.id === activeSessionId);
+                        if (sess) {
+                            sess.messages.push({ role: 'assistant', text: m.text });
+                            sess.updatedAt = Date.now();
+                            saveSessions();
+                            renderHistory();
+                        }
+                    }
+                },
+                onAction: () => {}
+            });
+            ai.speak = () => {};
+            ai.stopWakeWordListening?.();
+            console.log('✅ Khởi tạo thành công LociAIAssistant từ module app/ai_assistant.js');
+            updateEngineBadge(true);
+        } catch (e) {
+            console.warn('⚠️ Không thể import ES module (thường do mở trực tiếp bằng file://). Tự động kích hoạt DirectGeminiTutor:', e);
+            ai = new DirectGeminiTutor({
+                getContext: buildContext,
+                onMessage: m => { 
+                    if (m.role === 'assistant') {
+                        addMsg('assistant', m.text, true);
+                        const sess = sessions.find(s => s.id === activeSessionId);
+                        if (sess) {
+                            sess.messages.push({ role: 'assistant', text: m.text });
+                            sess.updatedAt = Date.now();
+                            saveSessions();
+                            renderHistory();
+                        }
+                    }
+                },
+                onAction: () => {}
+            });
+            updateEngineBadge(true);
+        }
+
+        // Đảm bảo ô nhập luôn sẵn sàng, không bao giờ bị khóa
+        input.disabled = false;
+        send.disabled = !input.value.trim();
+
+        // --- BỘ QUẢN LÝ THANH CHỌN ĐỘ SÂU PHÂN TÍCH (DEPTH SELECTOR) ---
+        const depthPills = document.querySelectorAll('.depth-pill');
+        let currentDepth = localStorage.getItem('loci_gemini_depth') || 'detailed';
+
+        function updateDepthUI(depth) {
+            currentDepth = depth || 'detailed';
+            try { localStorage.setItem('loci_gemini_depth', currentDepth); } catch (_) {}
+            depthPills.forEach(pill => {
+                if (pill.dataset.depth === currentDepth) {
+                    pill.classList.add('active');
+                } else {
+                    pill.classList.remove('active');
+                }
+            });
+            if (ai && typeof ai.setAnswerDepth === 'function') {
+                ai.setAnswerDepth(currentDepth);
+            }
+        }
+
+        depthPills.forEach(pill => {
+            pill.onclick = () => {
+                updateDepthUI(pill.dataset.depth);
+            };
+        });
+        updateDepthUI(currentDepth);
+
+        // --- BỘ ĐIỀU KHIỂN MODAL CÀI ĐẶT API KEY ---
+        const modalEl = $('api-modal');
+        const openSettingsBtn = $('btn-open-settings');
+        const closeSettingsBtn = $('btn-close-settings');
+        const testKeyBtn = $('btn-test-key');
+        const saveKeyBtn = $('btn-save-key');
+        const resetKeyBtn = $('btn-reset-key');
+        const inputApiKey = $('input-api-key');
+        const selectApiModel = $('select-api-model');
+        const testStatusBox = $('test-status-box');
+
+        if (openSettingsBtn && modalEl) {
+            openSettingsBtn.onclick = () => {
+                inputApiKey.value = localStorage.getItem('loci_gemini_api_key') || DEFAULT_API_KEY;
+                selectApiModel.value = localStorage.getItem('loci_gemini_model') || DEFAULT_MODEL;
+                testStatusBox.style.display = 'none';
+                modalEl.classList.add('open');
+            };
+        }
+
+        if (closeSettingsBtn && modalEl) {
+            closeSettingsBtn.onclick = () => modalEl.classList.remove('open');
+            modalEl.onclick = e => { if (e.target === modalEl) modalEl.classList.remove('open'); };
+        }
+
+        if (testKeyBtn) {
+            testKeyBtn.onclick = async () => {
+                const k = inputApiKey.value.trim();
+                const m = selectApiModel.value.trim();
+                if (!k) {
+                    testStatusBox.className = 'test-status-box error';
+                    testStatusBox.textContent = 'Vui lòng nhập API Key trước khi kiểm tra!';
+                    return;
+                }
+                testStatusBox.className = 'test-status-box testing';
+                testStatusBox.textContent = '⏳ Đang gửi thử một yêu cầu kiểm tra đến máy chủ AI...';
+
+                try {
+                    let ep, hd, bd;
+                    if (k.startsWith('sk-')) {
+                        ep = 'https://openrouter.ai/api/v1/chat/completions';
+                        hd = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${k}` };
+                        bd = JSON.stringify({ model: m, max_tokens: 5, messages: [{ role: 'user', content: 'Ping' }] });
+                    } else {
+                        ep = `https://generativelanguage.googleapis.com/v1beta/models/${m.replace('google/', '')}:generateContent?key=${k}`;
+                        hd = { 'Content-Type': 'application/json' };
+                        bd = JSON.stringify({ contents: [{ parts: [{ text: 'Ping test' }] }], generationConfig: { maxOutputTokens: 5 } });
+                    }
+
+                    const res = await fetch(ep, { method: 'POST', headers: hd, body: bd });
+                    if (res.ok) {
+                        testStatusBox.className = 'test-status-box success';
+                        testStatusBox.textContent = '✅ Kết nối thành công! Khóa API và mô hình hoạt động hoàn hảo.';
+                    } else {
+                        const err = await res.json().catch(() => ({}));
+                        testStatusBox.className = 'test-status-box error';
+                        testStatusBox.textContent = `❌ Máy chủ từ chối (Mã lỗi ${res.status}): ${err.error?.message || 'Khóa không hợp lệ hoặc đã hết hạn ngạch.'}`;
+                    }
+                } catch (err) {
+                    testStatusBox.className = 'test-status-box error';
+                    testStatusBox.textContent = `❌ Lỗi mạng: ${err.message || 'Không thể kết nối đến máy chủ AI.'}`;
+                }
+            };
+        }
+
+        if (saveKeyBtn) {
+            saveKeyBtn.onclick = () => {
+                const k = inputApiKey.value.trim() || DEFAULT_API_KEY;
+                const m = selectApiModel.value.trim() || DEFAULT_MODEL;
+                localStorage.setItem('loci_gemini_api_key', k);
+                localStorage.setItem('loci_gemini_model', m);
+                if (ai) {
+                    if (typeof ai.setApiKey === 'function') ai.setApiKey(k);
+                    if (typeof ai.setModel === 'function') ai.setModel(m);
+                    ai.apiKey = k;
+                    ai.modelName = m;
+                }
+                updateEngineBadge(true, m);
+                modalEl.classList.remove('open');
+                addMsg('assistant', `✅ Đã lưu cấu hình API mới thành công! Mô hình hiện tại: **${m}**.`);
+            };
+        }
+
+        if (resetKeyBtn) {
+            resetKeyBtn.onclick = () => {
+                inputApiKey.value = DEFAULT_API_KEY;
+                selectApiModel.value = DEFAULT_MODEL;
+                localStorage.setItem('loci_gemini_api_key', DEFAULT_API_KEY);
+                localStorage.setItem('loci_gemini_model', DEFAULT_MODEL);
+                if (ai) {
+                    if (typeof ai.setApiKey === 'function') ai.setApiKey(DEFAULT_API_KEY);
+                    if (typeof ai.setModel === 'function') ai.setModel(DEFAULT_MODEL);
+                    ai.apiKey = DEFAULT_API_KEY;
+                    ai.modelName = DEFAULT_MODEL;
+                }
+                updateEngineBadge(true, DEFAULT_MODEL);
+                testStatusBox.className = 'test-status-box success';
+                testStatusBox.textContent = '🔄 Đã khôi phục về khóa API mặc định của dự án NCKH!';
+            };
+        }
+
+        // Điều khiển nút sidebar
+        $('new-chat').onclick = createNewChat;
+
+        $('clear-all-history').onclick = () => {
+            if (sessions.length === 0) return;
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử các cuộc trò chuyện này không?')) {
+                sessions = [];
+                activeSessionId = null;
+                saveSessions();
+                createNewChat();
+            }
+        };
+
+        // Nút Lịch sử & Đoạn chat mới trên header & drawer
+        const historyDrawer = $('history-drawer');
+        const btnHeadHistory = $('btn-head-history');
+        const btnCloseHistory = $('btn-close-history');
+        const btnHeadNewChat = $('btn-head-new-chat');
+        const btnDrawerNewChat = $('btn-drawer-new-chat');
+        const btnDrawerClearHistory = $('btn-drawer-clear-history');
+
+        if (btnHeadHistory && historyDrawer) {
+            btnHeadHistory.onclick = () => {
+                renderHistory();
+                historyDrawer.classList.add('open');
+            };
+        }
+        if (btnCloseHistory && historyDrawer) {
+            btnCloseHistory.onclick = () => historyDrawer.classList.remove('open');
+            historyDrawer.onclick = (e) => {
+                if (e.target === historyDrawer) historyDrawer.classList.remove('open');
+            };
+        }
+        if (btnHeadNewChat) {
+            btnHeadNewChat.onclick = () => {
+                createNewChat();
+            };
+        }
+        if (btnDrawerNewChat) {
+            btnDrawerNewChat.onclick = () => {
+                createNewChat();
+                historyDrawer?.classList.remove('open');
+            };
+        }
+        if (btnDrawerClearHistory) {
+            btnDrawerClearHistory.onclick = () => {
+                if (sessions.length === 0) return;
+                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử các cuộc trò chuyện này không?')) {
+                    sessions = [];
+                    activeSessionId = null;
+                    saveSessions();
+                    createNewChat();
+                    historyDrawer?.classList.remove('open');
+                }
+            };
+        }
+
+        // Tải các phiên từ localStorage
+        try {
+            const raw = localStorage.getItem(SESSIONS_STORE);
+            if (raw) sessions = JSON.parse(raw);
+        } catch (_) { sessions = []; }
+
+        const legacy = localStorage.getItem('loci_chat_transcript_v1');
+        if (legacy && (!sessions || sessions.length === 0)) {
+            try {
+                const oldMsgs = JSON.parse(legacy);
+                if (Array.isArray(oldMsgs) && oldMsgs.length > 0) {
+                    const firstUser = oldMsgs.find(m => m.role === 'user');
+                    const title = firstUser ? (firstUser.text.slice(0, 32) + (firstUser.text.length > 32 ? '…' : '')) : 'Cuộc trò chuyện đã lưu';
+                    sessions.unshift({
+                        id: 'sess_migrated',
+                        title: title,
+                        updatedAt: Date.now(),
+                        messages: oldMsgs
+                    });
+                    localStorage.setItem(SESSIONS_STORE, JSON.stringify(sessions));
+                    localStorage.removeItem('loci_chat_transcript_v1');
+                }
+            } catch (_) { }
+        }
+
+        if (sessions.length > 0) {
+            selectSession(sessions[0].id);
+        } else {
+            renderWelcome();
+            renderHistory();
+        }
+
+        LociFirebase.onAuth(async user => {
+            const nameEl = $('user-display-name');
+            if (user) {
+                nameEl.textContent = user.displayName || user.username || 'Học sinh';
+                if (sessions.length === 0) {
+                    try {
+                        const cloudSessions = await LociFirebase.loadChatSessions();
+                        if (cloudSessions && cloudSessions.length > 0) {
+                            sessions = cloudSessions;
+                            saveSessions();
+                            selectSession(sessions[0].id);
+                        }
+                    } catch (_) { }
+                }
+            } else {
+                nameEl.textContent = 'Khách';
+            }
+        });
+
+        // Speech Recognition
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) $('mic').style.display = 'none';
+        else {
+            let rec = null;
+            $('mic').onclick = () => {
+                if (rec) { rec.stop(); return; }
+                rec = new SR(); rec.lang = 'vi-VN'; rec.interimResults = true;
+                $('mic').classList.add('on');
+                rec.onresult = e => { input.value = Array.from(e.results).map(r => r[0].transcript).join(''); autosize(); };
+                rec.onend = () => { rec = null; $('mic').classList.remove('on'); input.focus(); };
+                rec.onerror = () => { };
+                rec.start();
+            };
+        }
+    </script>
+</body>
+
+</html>

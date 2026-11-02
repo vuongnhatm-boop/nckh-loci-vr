@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+
+# Bỏ qua model 3D nặng (không cần push lên GitHub/Netlify)
+model không gian 3d/
+*.blend
+*.blend1
+scratch/
+
+# Secrets kiểm duyệt — không bao giờ commit
+secrets/
+worker/.dev.vars
+worker/.wrangler/
+worker/node_modules/

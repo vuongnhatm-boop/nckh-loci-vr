@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cung Điện Ký Ức — Cổng Vòm Tri Thức Lịch Sử 12</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07070b;
+      --gold-primary: #e6c887;
+      --gold-glow: rgba(230, 200, 135, 0.4);
+      --cyan-accent: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.35);
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.65);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ════════════════════════════════
+       MAIN VIEWPORT
+    ════════════════════════════════ */
+    .viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      perspective: 1200px;
+    }
+
+    /* Ambient Background Canvas */
+    #ambient-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .bg-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 65% 50%, rgba(32, 24, 56, 0.6) 0%, rgba(7, 7, 11, 0.95) 70%, #07070b 100%);
+      z-index: 0;
+    }
+
+    /* ════════════════════════════════
+       TOP NAVBAR
+    ════════════════════════════════ */
+    .navbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 30px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+      letter-spacing: 0.26em;
+    }
+
+    .nav-star {
+      color: var(--gold-primary);
+      font-size: 16px;
+      cursor: pointer;
+      filter: drop-shadow(0 0 10px var(--gold-glow));
+      transition: transform 0.4s ease;
+    }
+
+    .nav-star:hover {
+      transform: scale(1.3) rotate(72deg);
+    }
+
+    /* ════════════════════════════════
+       STAGE: SPLIT-SCREEN HERO
+    ════════════════════════════════ */
+    .stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6% 0 7%;
+      z-index: 10;
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Left Info Block */
+    .hero-info {
+      max-width: 480px;
+      z-index: 20;
+      transition: transform 0.6s ease, opacity 0.6s ease;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      margin-bottom: 20px;
+    }
+
+    .eyebrow-line {
+      width: 24px;
+      height: 1.5px;
+      background: var(--gold-primary);
+      box-shadow: 0 0 8px var(--gold-glow);
+    }
+
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(38px, 5vw, 64px);
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #ffffff 20%, var(--gold-primary) 70%, #d4a359 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 34px;
+      max-width: 420px;
+    }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-zoom {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 28px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(230, 200, 135, 0.25), rgba(230, 200, 135, 0.08));
+      border: 1px solid var(--gold-primary);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(230, 200, 135, 0.25);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-zoom:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 12px 32px rgba(230, 200, 135, 0.45);
+      background: linear-gradient(135deg, var(--gold-primary), #c2954a);
+      color: #07070b;
+    }
+
+    .btn-outline {
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ════════════════════════════════
+       RIGHT: THE ARCH PORTAL (VÒM TRÒN TRI THỨC)
+    ════════════════════════════════ */
+    .portal-scene {
+      position: relative;
+      width: 48vw;
+      height: 76vh;
+      max-width: 580px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+    }
+
+    /* Outer glowing ornate rings */
+    .arch-ornament-ring {
+      position: absolute;
+      inset: -14px;
+      border-radius: 280px 280px 40px 40px;
+      border: 1px dashed rgba(230, 200, 135, 0.35);
+      pointer-events: none;
+      animation: pulseBorder 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseBorder {
+      0% { opacity: 0.3; transform: scale(0.99); }
+      100% { opacity: 0.7; transform: scale(1.01); }
+    }
+
+    /* THE ARCH CONTAINER - THIS ELEMENT ZOOMS MASSIVELY */
+    .arch-portal-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 260px 260px 32px 32px;
+      overflow: hidden;
+      border: 2px solid rgba(230, 200, 135, 0.6);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px var(--gold-glow);
+      cursor: pointer;
+      transform-origin: 50% 50%;
+      transition: transform 0.08s ease-out; /* JS Lerp controlled */
+      will-change: transform, border-radius;
+      background: #000;
+    }
+
+    /* Media inside the arch (Video + 3D Learning Space) */
+    .arch-media {
+      position: absolute;
+      inset: -5%;
+      width: 110%;
+      height: 110%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+      will-change: transform;
+    }
+
+    /* Overlay inside the arch with historical knowledge highlights */
+    .arch-inner-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(7, 7, 11, 0.85) 0%, rgba(7, 7, 11, 0.1) 40%, transparent 100%);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 32px 28px;
+      transition: opacity 0.4s ease;
+    }
+
+    .arch-tag {
+      align-self: flex-start;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--gold-primary);
+      color: var(--gold-primary);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    }
+
+    .arch-footer-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .arch-caption h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    .arch-caption p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .arch-enter-circle {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(230, 200, 135, 0.2);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      box-shadow: 0 0 16px var(--gold-glow);
+      transition: all 0.3s ease;
+    }
+
+    .portal-scene:hover .arch-enter-circle {
+      transform: scale(1.15) rotate(45deg);
+      background: var(--gold-primary);
+      color: #07070b;
+    }
+
+    /* Floating badges around the arch */
+    .floating-card {
+      position: absolute;
+      padding: 12px 18px;
+      border-radius: 16px;
+      background: rgba(18, 14, 28, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+      transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .floating-card.top-right {
+      top: 10%;
+      right: -24px;
+    }
+
+    .floating-card.bottom-left {
+      bottom: 12%;
+      left: -28px;
+    }
+
+    .fc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .fc-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .fc-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ════════════════════════════════
+       FULLSCREEN IMMERSION OVERLAY (ZOOM-THROUGH)
+    ════════════════════════════════ */
+    .immersion-controls {
+      position: absolute;
+      top: 36px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-30px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .viewport.fully-zoomed .immersion-controls {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .btn-return {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: rgba(7, 7, 11, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--gold-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .btn-return:hover {
+      background: var(--gold-primary);
+      color: #07070b;
+      transform: translateY(-2px);
+    }
+
+    .btn-launch-3d {
+      padding: 10px 22px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      border: none;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(124, 58, 237, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .btn-launch-3d:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 32px rgba(124, 58, 237, 0.75);
+    }
+
+    /* ════════════════════════════════
+       BOTTOM CONTROLLER & PROGRESS
+    ════════════════════════════════ */
+    .bottom-hint {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 30;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .hint-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .scroll-mouse-icon {
+      width: 22px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+
+    .scroll-wheel {
+      width: 3px;
+      height: 6px;
+      border-radius: 2px;
+      background: var(--gold-primary);
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: mouseWheel 2s ease-in-out infinite;
+    }
+
+    @keyframes mouseWheel {
+      0% { transform: translate(-50%, 0); opacity: 1; }
+      100% { transform: translate(-50%, 14px); opacity: 0; }
+    }
+
+    .zoom-progress-bar {
+      position: absolute;
+      bottom: 34px;
+      right: 48px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 30;
+    }
+
+    .progress-track {
+      width: 80px;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--gold-primary);
+      box-shadow: 0 0 10px var(--gold-primary);
+      transition: width 0.1s linear;
+    }
+
+    .progress-text {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="viewport" id="viewport">
+    
+    <div class="bg-gradient"></div>
+
+    <!-- Canvas for Floating Knowledge Glyphs & Particles -->
+    <canvas id="ambient-canvas"></canvas>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <nav class="nav-group">
+        <a href="index.html" class="nav-link">Không Gian 3D</a>
+        <a href="test_ai.html" class="nav-link">AI Loci</a>
+        <a href="giao diện thao tác.html" class="nav-link">Chiến Dịch</a>
+      </nav>
+
+      <div class="nav-star" title="Trọng tâm tri thức">✦</div>
+
+      <nav class="nav-group">
+        <a href="#method" class="nav-link">Phương Pháp</a>
+        <a href="#history" class="nav-link">Lịch Sử 12</a>
+        <a href="test_vr.html" class="nav-link">WebXR VR</a>
+      </nav>
+    </header>
+
+    <!-- Stage: Split-Screen Hero -->
+    <main class="stage" id="stage">
+      
+      <!-- Left: Information & Description -->
+      <section class="hero-info" id="hero-info">
+        <div class="eyebrow">
+          <span class="eyebrow-line"></span>
+          Cung Điện Ký Ức · NCKH 2024
+        </div>
+        <h1 class="hero-title">
+          Học Sử 12<br>
+          Qua <span>Cổng Vòm</span><br>
+          Không Gian 3D
+        </h1>
+        <p class="hero-desc">
+          Ứng dụng phương pháp Method of Loci: Biến từng mốc lịch sử thành vật thể trực quan trong căn hộ 3D, đồng hành cùng AI giọng nói và kính thực tế ảo WebXR.
+        </p>
+        <div class="cta-group">
+          <button class="btn-zoom" id="btn-zoom-in" title="Bấm để bay xuyên qua vòm vào phòng học">
+            <span>Phóng To Xuyên Vòm</span>
+            <span>→</span>
+          </button>
+          <a href="index.html" class="btn-outline">Vào Thẳng 3D</a>
+        </div>
+      </section>
+
+      <!-- Right: The Arch Portal (Vòm Tròn Tri Thức) -->
+      <section class="portal-scene" id="portal-scene">
+        
+        <!-- Ornate dashed border decoration -->
+        <div class="arch-ornament-ring" id="arch-ring"></div>
+
+        <!-- The zooming Arch Container -->
+        <div class="arch-portal-container" id="arch-portal" title="Cuộn chuột hoặc bấm vào vòm để zoom xuyên tâm">
+          
+          <!-- Looping video of the 3D Loft Memory Palace -->
+          <video class="arch-media" id="arch-video" autoplay loop muted playsinline
+            src="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/fc3ded42-e845-41f3-a830-5cab512d79cd.mp4">
+          </video>
+
+          <!-- Inner Arch Gradient & Information -->
+          <div class="arch-inner-overlay" id="arch-overlay">
+            <span class="arch-tag">✦ Memory Palace Loft</span>
+            <div class="arch-footer-info">
+              <div class="arch-caption">
+                <h3>Phòng Khách Tri Thức</h3>
+                <p>Khám phá 12 cột mốc lịch sử Việt Nam 1945 - 1975</p>
+              </div>
+              <div class="arch-enter-circle">↗</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Floating Info Badges around Arch -->
+        <div class="floating-card top-right" id="fc-1">
+          <div class="fc-icon">🥽</div>
+          <div>
+            <div class="fc-title">WebXR Sẵn Sàng</div>
+            <div class="fc-sub">Tương thích Meta Quest 2</div>
+          </div>
+        </div>
+
+        <div class="floating-card bottom-left" id="fc-2">
+          <div class="fc-icon">🤖</div>
+          <div>
+            <div class="fc-title">Trợ Lý AI Loci</div>
+            <div class="fc-sub">Hỏi đáp ôn thi Lịch Sử 12</div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Mouse Scroll Guidance -->
+    <div class="bottom-hint" id="bottom-hint">
+      <div class="scroll-mouse-icon">
+        <div class="scroll-wheel"></div>
+      </div>
+      <span class="hint-label">Lăn chuột hoặc bấm vào vòm để phóng to</span>
+    </div>
+
+    <!-- Zoom Progress Indicator -->
+    <div class="zoom-progress-bar">
+      <span class="progress-text">PORTAL</span>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="progress-text" id="progress-percent">0%</span>
+    </div>
+
+    <!-- Controls Revealed When Fully Zoomed Inside -->
+    <div class="immersion-controls" id="immersion-controls">
+      <button class="btn-return" id="btn-return">
+        <span>⌃</span>
+        <span>Thu Nhỏ Cổng Vòm</span>
+      </button>
+      <a href="index.html" class="btn-launch-3d">
+        <span>Khám Phá Cung Điện Đầy Đủ ↗</span>
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════════════
+       1. SMOOTH SCROLL-DRIVEN & CLICK ZOOM-THROUGH LOGIC
+    ══════════════════════════════════════════════════ */
+    const viewport = document.getElementById('viewport');
+    const archPortal = document.getElementById('arch-portal');
+    const archOverlay = document.getElementById('arch-overlay');
+    const archRing = document.getElementById('arch-ring');
+    const heroInfo = document.getElementById('hero-info');
+    const fc1 = document.getElementById('fc-1');
+    const fc2 = document.getElementById('fc-2');
+    const bottomHint = document.getElementById('bottom-hint');
+    const progressFill = document.getElementById('progress-fill');
+    const progressPercent = document.getElementById('progress-percent');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnReturn = document.getElementById('btn-return');
+
+    // Zoom state variables (0.0 = initial split screen, 1.0 = fully zoomed through)
+    let targetZoom = 0;
+    let currentZoom = 0;
+
+    // Mouse Parallax coordinates
+    let mouseX = 0, mouseY = 0;
+    let curMouseX = 0, curMouseY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+
+    // Wheel Scroll adjusts target zoom smoothly
+    window.addEventListener('wheel', (e) => {
+      const delta = e.deltaY * 0.0018;
+      targetZoom = Math.min(Math.max(targetZoom + delta, 0), 1);
+    }, { passive: true });
+
+    // Click triggers
+    archPortal.addEventListener('click', () => {
+      targetZoom = (targetZoom < 0.5) ? 1 : 0;
+    });
+
+    btnZoomIn.addEventListener('click', () => {
+      targetZoom = 1;
+    });
+
+    btnReturn.addEventListener('click', () => {
+      targetZoom = 0;
+    });
+
+    // Touch support for mobile/trackpads
+    let touchStartY = 0;
+    window.addEventListener('touchstart', e => {
+      touchStartY = e.touches[0].clientY;
+    });
+    window.addEventListener('touchmove', e => {
+      const delta = (touchStartY - e.touches[0].clientY) * 0.005;
+      targetZoom = Math.min(Math.max(targetZoom + delta, 0), 1);
+      touchStartY = e.touches[0].clientY;
+    });
+
+    /* Render Loop for Zoom & Parallax */
+    function updateScene() {
+      // Lerp zoom progress for cinematic smoothness
+      currentZoom += (targetZoom - currentZoom) * 0.085;
+
+      // Lerp mouse parallax
+      curMouseX += (mouseX - curMouseX) * 0.05;
+      curMouseY += (mouseY - curMouseY) * 0.05;
+
+      const p = currentZoom; // 0 to 1
+
+      // 1. Arch transformation:
+      // Scale from 1.0 up to 4.5x (filling the whole viewport)
+      // Radius transitions from 260px down to 0px (becoming borderless)
+      const scale = 1 + p * 3.5;
+      const borderRadiusTop = Math.max(0, 260 * (1 - p * 1.5));
+      const borderRadiusBottom = Math.max(0, 32 * (1 - p * 1.5));
+      
+      // When zooming, arch shifts toward screen center
+      const translateX = (p * -26) + (curMouseX * 10 * (1 - p));
+      const translateY = (p * 0) + (curMouseY * 8 * (1 - p));
+
+      archPortal.style.transform = `scale(${scale}) translate(${translateX}%, ${translateY}%)`;
+      archPortal.style.borderRadius = `${borderRadiusTop}px ${borderRadiusTop}px ${borderRadiusBottom}px ${borderRadiusBottom}px`;
+      archPortal.style.borderColor = `rgba(230, 200, 135, ${Math.max(0, 0.6 * (1 - p * 1.8))})`;
+
+      // 2. Elements fade out as we zoom in
+      const contentAlpha = Math.max(0, 1 - p * 1.8);
+      heroInfo.style.opacity = contentAlpha;
+      heroInfo.style.transform = `translateX(${p * -60}px) translate(${curMouseX * -15}px, ${curMouseY * -10}px)`;
+
+      fc1.style.opacity = contentAlpha;
+      fc1.style.transform = `translate(${curMouseX * 20}px, ${curMouseY * 15}px)`;
+      fc2.style.opacity = contentAlpha;
+      fc2.style.transform = `translate(${curMouseX * -18}px, ${curMouseY * -12}px)`;
+
+      archRing.style.opacity = Math.max(0, 0.7 * (1 - p * 2));
+      archOverlay.style.opacity = contentAlpha;
+      bottomHint.style.opacity = contentAlpha;
+
+      // 3. Update Progress Bar
+      const percent = Math.round(p * 100);
+      progressFill.style.width = percent + '%';
+      progressPercent.innerText = percent + '%';
+
+      // 4. Toggle fully-zoomed class for UI transitions
+      if (p > 0.85) {
+        viewport.classList.add('fully-zoomed');
+      } else {
+        viewport.classList.remove('fully-zoomed');
+      }
+
+      requestAnimationFrame(updateScene);
+    }
+    updateScene();
+
+
+    /* ══════════════════════════════════════════════════
+       2. AMBIENT PARTICLES & KNOWLEDGE GLYPHS CANVAS
+    ══════════════════════════════════════════════════ */
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H;
+
+    function resizeCanvas() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const particles = [];
+    const historyKeywords = ['1945', '1954', '1975', 'LOCI', '3D', 'WebXR', 'ĐIỆN BIÊN PHỦ', 'BA ĐÌNH', 'VIỆT BẮC', 'VR'];
+
+    class KnowledgeParticle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * W;
+        this.y = H + Math.random() * 50;
+        this.size = Math.random() * 2 + 1;
+        this.speedY = -(Math.random() * 0.4 + 0.15);
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.alpha = 0;
+        this.maxAlpha = Math.random() * 0.5 + 0.2;
+        this.life = 0;
+        this.maxLife = Math.random() * 300 + 150;
+        this.isGlyph = Math.random() < 0.15;
+        this.text = historyKeywords[Math.floor(Math.random() * historyKeywords.length)];
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life++;
+
+        if (this.life < 40) {
+          this.alpha = (this.life / 40) * this.maxAlpha;
+        } else if (this.life > this.maxLife - 40) {
+          this.alpha = ((this.maxLife - this.life) / 40) * this.maxAlpha;
+        }
+
+        if (this.life >= this.maxLife || this.y < -30) {
+          this.reset();
+        }
+      }
+      draw() {
+        if (this.alpha <= 0.01) return;
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+
+        if (this.isGlyph) {
+          ctx.fillStyle = '#e6c887';
+          ctx.font = '600 10px Plus Jakarta Sans';
+          ctx.fillText(this.text, this.x, this.y);
+        } else {
+          ctx.fillStyle = (Math.random() < 0.5) ? '#e6c887' : '#00f0ff';
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 45; i++) {
+      const p = new KnowledgeParticle();
+      p.y = Math.random() * H;
+      particles.push(p);
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of particles) {
+        p.update();
+        p.draw();
+      }
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  </script>
+</body>
+</html>

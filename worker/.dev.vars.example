@@ -1,0 +1,17 @@
+# Copy file này thành .dev.vars khi chạy `wrangler dev`.
+# TUYỆT ĐỐI không commit .dev.vars hay file service account.
+
+FIREBASE_PROJECT_ID=loci-b04a7
+FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"loci-b04a7","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"...@loci-b04a7.iam.gserviceaccount.com","client_id":"..."}
+
+TELEGRAM_BOT_TOKEN=<token-tu-BotFather>
+TELEGRAM_ADMIN_CHAT_ID=<chat-id-cua-ban>
+TELEGRAM_WEBHOOK_SECRET=<chuoi-ngau-nhien-32-ky-tu>
+
+GEMINI_API_KEY=<key-Gemini>
+GEMINI_MODEL=gemini-3.5-flash
+AI_THRESHOLD=0.75
+AI_IMAGES=0
+
+CRON_SECRET=<chuoi-ngau-nhien-khac>
+PORTAL_URL=https://<domain-portal-cua-ban>

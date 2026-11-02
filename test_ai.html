@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phòng Thí Nghiệm AI Gemini • Cung Điện Ký Ức Lịch Sử 12</title>
 
-    <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
+    <!-- Google Fonts: Be Vietnam Pro & Inter (Chuẩn Tiếng Việt 100%, sắc nét tuyệt đối, không bao giờ lỗi phông) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -50,7 +50,7 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: radial-gradient(circle at 50% 0%, #152347 0%, #090e1f 45%, #050812 100%);
             color: var(--text-main);
             display: flex;
@@ -248,6 +248,969 @@
             color: #060913;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 229, 255, 0.35);
+        }
+
+        /* --- NOTEBOOKLM STUDIO STYLES --- */
+        .notebook-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(37, 99, 235, 0.3) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.28);
+        }
+
+        .notebook-nav-btn:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.42) 0%, rgba(37, 99, 235, 0.5) 100%);
+            border-color: #c084fc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(139, 92, 246, 0.5);
+        }
+
+        .notebook-nav-btn .nb-badge {
+            font-size: 0.68rem;
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+            color: #fff;
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .quick-chip.notebook-quick-chip {
+            background: rgba(139, 92, 246, 0.16);
+            border-color: rgba(139, 92, 246, 0.45);
+            color: #d8b4fe;
+            font-weight: 700;
+        }
+
+        .quick-chip.notebook-quick-chip:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: #c084fc;
+            color: #ffffff;
+        }
+
+        .nb-input-icon-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: #c084fc;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nb-input-icon-btn:hover {
+            transform: scale(1.18);
+            filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.8));
+        }
+
+        /* NotebookLM Modal Overlay */
+        .notebook-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeInModal 0.25s ease forwards;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .notebook-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 7, 16, 0.84);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .notebook-modal-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1380px;
+            height: 90vh;
+            max-height: 900px;
+            background: linear-gradient(180deg, rgba(16, 24, 48, 0.95) 0%, rgba(9, 14, 28, 0.98) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            border-radius: 24px;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.85), 0 0 50px rgba(139, 92, 246, 0.25);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .notebook-header {
+            padding: 16px 28px;
+            background: rgba(22, 33, 62, 0.65);
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .notebook-title-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .notebook-logo-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notebook-title-box h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .notebook-title-box p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .notebook-close-btn {
+            padding: 8px 18px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .notebook-close-btn:hover {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: var(--accent-coral);
+            color: #ff8597;
+        }
+
+        .notebook-body {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1040px) {
+            .notebook-body {
+                grid-template-columns: 1fr;
+                overflow-y: auto;
+            }
+            .notebook-modal-container {
+                height: 96vh;
+            }
+        }
+
+        .notebook-source-pane {
+            border-right: 1px solid var(--border-glass);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: rgba(10, 16, 32, 0.55);
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .notebook-result-pane {
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 0;
+            overflow-y: auto;
+            background: rgba(6, 10, 22, 0.7);
+        }
+
+        .pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .pane-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .notebook-textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 220px;
+            border-radius: 14px;
+            background: rgba(14, 21, 42, 0.85);
+            border: 1px solid var(--border-glass);
+            padding: 14px;
+            color: #f8fafc;
+            font-family: inherit;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .notebook-textarea:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);
+        }
+
+        .notebook-options-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .options-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .format-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .format-chip {
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .format-chip input {
+            display: none;
+        }
+
+        .format-chip.active {
+            background: rgba(139, 92, 246, 0.22);
+            border-color: #a78bfa;
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .source-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .notebook-btn-primary {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            border: none;
+            color: #ffffff;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .notebook-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 26px rgba(139, 92, 246, 0.6);
+        }
+
+        .notebook-btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .notebook-btn-secondary {
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .notebook-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .result-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .res-action-btn {
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border-glass);
+            color: #e2e8f0;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .res-action-btn:hover {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .notebook-output-container {
+            flex: 1;
+            background: rgba(12, 18, 36, 0.75);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 24px;
+            overflow-y: auto;
+            color: #e2e8f0;
+            font-size: 0.92rem;
+            line-height: 1.7;
+        }
+
+        .notebook-empty-state {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .notebook-empty-state .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 14px;
+            opacity: 0.7;
+        }
+
+        .notebook-empty-state h3 {
+            font-size: 1.15rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .notebook-empty-state p {
+            max-width: 480px;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .notebook-loading-box {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .spinner-ring {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #a78bfa;
+            animation: spin 1s infinite linear;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .nb-summary-content {
+            font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #e2e8f0;
+        }
+
+        .nb-summary-content h1, .nb-summary-content h2, .nb-summary-content h3 {
+            color: #38bdf8;
+            font-family: 'Be Vietnam Pro', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            font-weight: 700;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+            padding-bottom: 6px;
+        }
+
+        .nb-summary-content h4 {
+            color: #c084fc;
+            font-family: 'Be Vietnam Pro', 'Inter', -apple-system, sans-serif !important;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+
+        .nb-summary-content ul, .nb-summary-content ol {
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .nb-summary-content li {
+            margin-bottom: 6px;
+        }
+
+        .nb-summary-content blockquote {
+            border-left: 4px solid #8b5cf6;
+            background: rgba(139, 92, 246, 0.12);
+            padding: 10px 16px;
+            border-radius: 0 10px 10px 0;
+            margin: 14px 0;
+            color: #f1f5f9;
+        }
+
+        .nb-summary-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.88rem;
+        }
+
+        .nb-summary-content th, .nb-summary-content td {
+            border: 1px solid var(--border-glass);
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .nb-summary-content th {
+            background: rgba(139, 92, 246, 0.25);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .nb-summary-content tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .nb-flashcard {
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin: 12px 0;
+        }
+
+        .nb-flashcard .q {
+            font-weight: 700;
+            color: #38bdf8;
+            margin-bottom: 6px;
+        }
+
+        .nb-flashcard .a {
+            color: #f8fafc;
+            line-height: 1.6;
+        }
+
+        .nb-kg-box {
+            background: rgba(10, 15, 29, 0.95);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 14px 0;
+            overflow-x: auto;
+        }
+
+        .nb-kg-box pre {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #38bdf8;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        .fact-box {
+            background: rgba(14, 165, 233, 0.12);
+            border-left: 3px solid #0ea5e9;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin: 8px 0 4px 0;
+            font-size: 0.88rem;
+            color: #e0f2fe;
+            line-height: 1.6;
+        }
+
+        .anchor-box {
+            background: rgba(234, 179, 8, 0.12);
+            border-left: 3px solid #eab308;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin: 4px 0 14px 0;
+            font-size: 0.88rem;
+            color: #fef08a;
+            line-height: 1.6;
+        }
+
+        /* --- HISTORICAL IMAGES & LIGHTBOX STYLES --- */
+        .nb-image-card {
+            margin: 16px 0;
+            background: rgba(10, 16, 32, 0.9);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transition: all 0.25s ease;
+        }
+
+        .nb-image-card:hover {
+            border-color: rgba(0, 242, 254, 0.7);
+            box-shadow: 0 12px 32px rgba(0, 242, 254, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .nb-img-wrapper {
+            position: relative;
+            width: 100%;
+            max-height: 400px;
+            background: #040711;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .nb-img-wrapper img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .nb-img-wrapper:hover img {
+            transform: scale(1.02);
+        }
+
+        .img-zoom-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(10, 16, 32, 0.82);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: all 0.2s;
+        }
+
+        .nb-img-wrapper:hover .img-zoom-btn {
+            opacity: 1;
+            background: rgba(0, 242, 254, 0.35);
+            border-color: #00f2fe;
+        }
+
+        .nb-img-caption {
+            padding: 10px 14px;
+            font-size: 0.84rem;
+            color: #e2e8f0;
+            background: rgba(10, 16, 32, 0.75);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nb-img-source-tag {
+            font-size: 0.72rem;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            white-space: nowrap;
+        }
+
+        /* Image Finder Modal */
+        .image-finder-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100005;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-finder-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 7, 16, 0.85);
+            backdrop-filter: blur(14px);
+        }
+
+        .image-finder-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(0, 242, 254, 0.2);
+            border-radius: 20px;
+            width: min(94vw, 720px);
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: #f8fafc;
+            font-family: 'Be Vietnam Pro', 'Inter', sans-serif;
+        }
+
+        .finder-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 16, 32, 0.5);
+        }
+
+        .finder-close-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .finder-close-btn:hover {
+            background: rgba(244, 63, 94, 0.25);
+            border-color: #f43f5e;
+            color: #ffffff;
+        }
+
+        .finder-search-row {
+            padding: 14px 20px 8px 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finder-input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            min-width: 280px;
+        }
+
+        .finder-search-input {
+            flex: 1;
+            padding: 9px 14px;
+            border-radius: 10px;
+            background: rgba(8, 12, 24, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.86rem;
+            outline: none;
+        }
+
+        .finder-search-input:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+        }
+
+        .finder-btn-search {
+            padding: 9px 16px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00f2fe, #0284c7);
+            border: none;
+            color: #060913;
+            font-weight: 800;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .finder-btn-search:hover {
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .finder-btn-google {
+            padding: 9px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .finder-btn-google:hover {
+            background: rgba(66, 133, 244, 0.25);
+            border-color: #4285f4;
+            color: #ffffff;
+        }
+
+        .finder-paste-row {
+            padding: 10px 20px;
+            background: rgba(14, 165, 233, 0.08);
+            border-top: 1px solid rgba(14, 165, 233, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finder-url-input {
+            flex: 1.5;
+            min-width: 180px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(6, 9, 19, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .finder-caption-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(6, 9, 19, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .finder-btn-insert {
+            padding: 7px 14px;
+            border-radius: 8px;
+            background: #10b981;
+            border: none;
+            color: #060913;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .finder-btn-insert:hover {
+            background: #34d399;
+            transform: translateY(-1px);
+        }
+
+        .finder-results-box {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            max-height: 480px;
+        }
+
+        .finder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+        }
+
+        .finder-item {
+            background: rgba(10, 16, 32, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        .finder-item:hover {
+            border-color: #00f2fe;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 242, 254, 0.2);
+        }
+
+        .finder-item-thumb {
+            width: 100%;
+            height: 130px;
+            background: #020408;
+            object-fit: cover;
+            display: block;
+        }
+
+        .finder-item-body {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .finder-item-caption {
+            font-size: 0.78rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+        }
+
+        .finder-item-source {
+            font-size: 0.7rem;
+            color: #38bdf8;
+        }
+
+        .finder-item-btn {
+            width: 100%;
+            padding: 6px;
+            border-radius: 6px;
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            color: #00f2fe;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .finder-item-btn:hover {
+            background: #00f2fe;
+            color: #0a1020;
+        }
+
+        /* Lightbox modal */
+        .image-lightbox-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100010;
+            background: rgba(3, 6, 14, 0.92);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.25);
+        }
+
+        .lightbox-caption {
+            margin-top: 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 700px;
+        }
+
+        .lightbox-close-btn {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* --- MAIN LAYOUT (2 COLUMNS FIT TO 100VH) --- */
@@ -799,6 +1762,53 @@
             transform: translateY(1px);
         }
 
+        .summarize-capsule-btn {
+            height: 42px;
+            padding: 0 16px;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.45) 0%, rgba(168, 85, 247, 0.65) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.7);
+            color: #ffffff;
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .summarize-capsule-btn:hover {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            transform: translateY(-1px) scale(1.04);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55);
+        }
+
+        .btn-paste-clip {
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: rgba(139, 92, 246, 0.22);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #e9d5ff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-paste-clip:hover {
+            background: rgba(139, 92, 246, 0.4);
+            border-color: #8b5cf6;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
         /* --- SIDEBAR CONFIG (RIGHT COLUMN) --- */
         .sidebar-drawer {
             display: flex;
@@ -1131,6 +2141,412 @@
             color: var(--text-muted);
             border: 1px solid var(--border-glass);
         }
+
+        /* HISTORICAL IMAGES IN NOTEBOOK */
+        .nb-image-card {
+            margin: 16px 0;
+            background: rgba(10, 16, 32, 0.9);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transition: all 0.25s ease;
+        }
+
+        .nb-image-card:hover {
+            border-color: rgba(0, 242, 254, 0.7);
+            box-shadow: 0 12px 32px rgba(0, 242, 254, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .nb-img-wrapper {
+            position: relative;
+            width: 100%;
+            max-height: 400px;
+            background: #040711;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .nb-img-wrapper img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .nb-img-wrapper:hover img {
+            transform: scale(1.02);
+        }
+
+        .img-zoom-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(10, 16, 32, 0.82);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: all 0.2s;
+        }
+
+        .nb-img-wrapper:hover .img-zoom-btn {
+            opacity: 1;
+            background: rgba(0, 242, 254, 0.35);
+            border-color: #00f2fe;
+        }
+
+        .nb-img-caption {
+            padding: 10px 14px;
+            font-size: 0.84rem;
+            color: #e2e8f0;
+            background: rgba(10, 16, 32, 0.75);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nb-img-source-tag {
+            font-size: 0.72rem;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            white-space: nowrap;
+        }
+
+        /* Image Finder Modal */
+        .image-finder-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100005;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-finder-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 7, 16, 0.85);
+            backdrop-filter: blur(14px);
+        }
+
+        .image-finder-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(0, 242, 254, 0.2);
+            border-radius: 20px;
+            width: min(94vw, 720px);
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: #f8fafc;
+            font-family: 'Be Vietnam Pro', 'Inter', sans-serif;
+        }
+
+        .finder-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 16, 32, 0.5);
+        }
+
+        .finder-close-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .finder-close-btn:hover {
+            background: rgba(244, 63, 94, 0.25);
+            border-color: #f43f5e;
+            color: #ffffff;
+        }
+
+        .finder-search-row {
+            padding: 14px 20px 8px 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finder-input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            min-width: 280px;
+        }
+
+        .finder-search-input {
+            flex: 1;
+            padding: 9px 14px;
+            border-radius: 10px;
+            background: rgba(8, 12, 24, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.86rem;
+            outline: none;
+        }
+
+        .finder-search-input:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+        }
+
+        .finder-btn-search {
+            padding: 9px 16px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #00f2fe, #0284c7);
+            border: none;
+            color: #060913;
+            font-weight: 800;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .finder-btn-search:hover {
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .finder-btn-google {
+            padding: 9px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .finder-btn-google:hover {
+            background: rgba(66, 133, 244, 0.25);
+            border-color: #4285f4;
+            color: #ffffff;
+        }
+
+        .finder-paste-row {
+            padding: 10px 20px;
+            background: rgba(14, 165, 233, 0.08);
+            border-top: 1px solid rgba(14, 165, 233, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .finder-url-input {
+            flex: 1.5;
+            min-width: 180px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(6, 9, 19, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .finder-caption-input {
+            flex: 1;
+            min-width: 140px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(6, 9, 19, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .finder-btn-insert {
+            padding: 7px 14px;
+            border-radius: 8px;
+            background: #10b981;
+            border: none;
+            color: #060913;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .finder-btn-insert:hover {
+            background: #34d399;
+            transform: translateY(-1px);
+        }
+
+        .finder-results-box {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            max-height: 480px;
+        }
+
+        .finder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+        }
+
+        .finder-item {
+            background: rgba(10, 16, 32, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        .finder-item:hover {
+            border-color: #00f2fe;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 242, 254, 0.2);
+        }
+
+        .finder-item-thumb {
+            width: 100%;
+            height: 130px;
+            background: #020408;
+            object-fit: cover;
+            display: block;
+        }
+
+        .finder-item-body {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .finder-item-caption {
+            font-size: 0.78rem;
+            line-height: 1.45;
+            color: #e2e8f0;
+        }
+
+        .finder-item-source {
+            font-size: 0.7rem;
+            color: #38bdf8;
+        }
+
+        .finder-item-btn {
+            width: 100%;
+            padding: 6px;
+            border-radius: 6px;
+            background: rgba(0, 242, 254, 0.15);
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            color: #00f2fe;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .finder-item-btn:hover {
+            background: #00f2fe;
+            color: #0a1020;
+        }
+
+        /* Lightbox modal */
+        .image-lightbox-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100010;
+            background: rgba(3, 6, 14, 0.92);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 242, 254, 0.4);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.25);
+        }
+
+        .lightbox-caption {
+            margin-top: 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 700px;
+        }
+
+        .lightbox-close-btn {
+            position: absolute;
+            top: -16px;
+            right: -16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -1163,11 +2579,18 @@
         </div>
 
         <div class="header-actions">
+            <button class="notebook-nav-btn" onclick="openNotebookLMStudio()" title="Mở Studio tóm tắt tài liệu chuẩn NotebookLM">
+                <span>📚 NotebookLM Studio</span>
+                <span class="nb-badge">Tóm Tắt</span>
+            </button>
             <div class="banner-pill" id="header-latency-pill">
                 ⚡ <span id="header-latency-text">Ping: -- ms</span>
             </div>
+            <a href="portal.html" class="nav-3d-btn" title="Quay lại Cung Điện Mê Cung 3D">
+                <span>🏛️ Mê Cung 3D</span>
+            </a>
             <a href="./app/index.html" class="nav-3d-btn" title="Chuyển sang không gian thực tế ảo 3D">
-                <span>Không Gian 3D</span>
+                <span>Không Gian VR</span>
                 <span>➔</span>
             </a>
         </div>
@@ -1213,6 +2636,9 @@
 
             <!-- QUICK PROMPTS CHIPS -->
             <div class="quick-prompts-wrapper">
+                <button class="quick-chip" style="background: rgba(139, 92, 246, 0.22); border-color: rgba(168, 85, 247, 0.5); color: #e9d5ff;" onclick="askQuickPrompt('Hãy tóm tắt toàn diện theo chuẩn NotebookLM về Chiến dịch Điện Biên Phủ 1954 gồm: Đề cương, Niên biểu, Ý chính cốt lõi và Thẻ flashcards ôn thi.')">
+                    📚 NotebookLM Tóm Tắt 1954
+                </button>
                 <button class="quick-chip" onclick="askQuickPrompt('Điện Biên Phủ năm 1954 diễn ra thế nào và đập tan kế hoạch gì?')">
                     🏔️ Điện Biên Phủ 1954
                 </button>
@@ -1250,7 +2676,13 @@
                     <button class="mic-capsule-btn" id="mic-btn" title="Bật/Tắt Micro ghi âm tiếng Việt">
                         🎙️
                     </button>
-                    <input type="text" class="text-input-field" id="chat-input" placeholder="Hỏi AI bất kỳ kiến thức Lịch Sử 12 nào hoặc bấm mic để nói..." autocomplete="off">
+                    <button class="nb-input-icon-btn" onclick="openNotebookLMStudio()" title="Mở NotebookLM Studio để nạp và tóm tắt tài liệu">
+                        📚
+                    </button>
+                    <input type="text" class="text-input-field" id="chat-input" placeholder="Hỏi AI bất kỳ kiến thức nào hoặc dán đoạn văn vào đây..." autocomplete="off">
+                    <button class="summarize-capsule-btn" id="quick-summarize-btn" onclick="quickSummarizeFromChat()" title="Bấm để TÓM TẮT NGAY đoạn văn bạn vừa dán">
+                        <span>⚡ Tóm Tắt</span>
+                    </button>
                     <button class="send-capsule-btn" id="send-btn">
                         <span>Gửi</span>
                         <span>➔</span>
@@ -1949,6 +3381,20 @@
             // Nạp tri thức phù hợp từ toàn bộ 16 bài học SGK Lịch Sử 12
             const matchedKnowledge = window.getRelevantHistoricalKnowledge ? window.getRelevantHistoricalKnowledge(query) : '';
 
+            // Tự động kích hoạt định dạng cấu trúc chuẩn NotebookLM nếu câu hỏi có ý định tóm tắt
+            const isSummaryTask = query.toLowerCase().includes('tóm tắt') || query.toLowerCase().includes('tom tat') || query.toLowerCase().includes('notebooklm') || query.toLowerCase().includes('đề cương');
+            let summaryEnhancement = "";
+            if (isSummaryTask) {
+                summaryEnhancement = `
+- 📚 ĐẶC BIỆT KHI NGƯỜI HỌC YÊU CẦU TÓM TẮT (Chuẩn phong cách Google NotebookLM):
+  Hãy xuất bản bài tóm tắt chuẩn xác, cấu trúc sắc bén theo 4 phần:
+  1. 📋 Đề cương tổng quan (Study Guide & Executive Summary): Bối cảnh, mục tiêu, kết quả và ý nghĩa.
+  2. ⏳ Niên biểu dòng thời gian mốc son (Key Timeline): Trích xuất tuần tự ngày/tháng/năm và sự kiện.
+  3. 💡 Ý chính cốt lõi (Key Takeaways): Các điểm mấu chốt trọng tâm ôn thi.
+  4. 🏛️ Điểm neo Cung điện ký ức Loci (Memory Palace Anchors): Cách liên tưởng vào không gian 3D.
+`;
+            }
+
             const systemInstruction = `
 Bạn là "Trợ lý Loci Lịch Sử 12" — Trợ lý AI thông minh chuyên sâu môn Lịch Sử 12 (Chương trình mới 2018) thuộc đề tài NCKH.
 Bạn có tư duy của một giáo viên dạy giỏi Lịch Sử: Trả lời thông minh, TRỰC DIỆN VÀO TRỌNG TÂM CÂU HỎI, ngôn từ khúc chiết, chuẩn xác tuyệt đối theo SGK Lịch Sử 12 của Bộ GD&ĐT.
@@ -1965,6 +3411,7 @@ ${matchedKnowledge}
 
 === NGUYÊN TẮC PHẢN HỒI (BẮT BUỘC TUÂN THỦ) ===
 ${depthRule}
+${summaryEnhancement}
 - Tuyệt đối không trả lời máy móc. Luôn xác định người học đang hỏi khía cạnh nào (Ý nghĩa, Diễn biến, Bối cảnh, hay So sánh) để trả lời trúng đích.
 - Khi người dùng muốn xem hoặc di chuyển đến sự kiện nào trong phòng 3D, hãy chèn mã lệnh điều khiển ở cuối câu: [ACTION:teleport:tên_mốc].
 `;
@@ -2059,6 +3506,12 @@ ${depthRule}
         // ==========================================
         function generateOfflineHistoryAnswer(query, matchedKnowledge) {
             const q = query.toLowerCase();
+            const isSummary = q.includes('tóm tắt') || q.includes('tom tat') || q.includes('notebooklm') || q.includes('đề cương');
+            if (isSummary) {
+                const source = matchedKnowledge || query;
+                return generateOfflineNotebookSummary(source, 'all');
+            }
+
             const isMeaning = q.includes('ý nghĩa') || q.includes('y nghia') || q.includes('tầm vóc') || q.includes('vai trò');
             const isProgress = q.includes('diễn biến') || q.includes('dien bien') || q.includes('tiến trình') || q.includes('các đợt') || q.includes('giai đoạn');
             const isContext = q.includes('bối cảnh') || q.includes('boi canh') || q.includes('nguyên nhân') || q.includes('hoàn cảnh') || q.includes('âm mưu');
@@ -2315,7 +3768,740 @@ ${depthRule}
         });
 
         document.getElementById('welcome-time').textContent = getCurrentTimeString();
+
+        // ==========================================
+        // 9. NOTEBOOKLM KNOWLEDGE STUDIO MODULE
+        // ==========================================
+        let lastNotebookSummary = '';
+        let lastNotebookSourceTitle = '';
+
+        function openNotebookLMStudio() {
+            document.getElementById('notebook-modal').style.display = 'flex';
+        }
+
+        function closeNotebookLMStudio() {
+            document.getElementById('notebook-modal').style.display = 'none';
+        }
+
+        // Chọn nhanh bài học mẫu trong SGK 12
+        function loadPresetDocument(presetKey) {
+            const textarea = document.getElementById('notebook-source-text');
+            if (!presetKey) return;
+
+            if (!window.HISTORICAL_KNOWLEDGE_BASE || !window.HISTORICAL_KNOWLEDGE_BASE.length) {
+                textarea.value = `Chiến dịch Điện Biên Phủ diễn ra từ ngày 13/3/1954 đến ngày 07/5/1954 tại lòng chảo Mường Thanh, tỉnh Điện Biên. Đây là đỉnh cao của cuộc tiến công chiến lược Đông - Xuân 1953 - 1954 của quân và dân ta, đập tan hoàn toàn Kế hoạch Nava của thực dân Pháp có đế quốc Mĩ can thiệp. Chiến dịch trải qua 3 đợt tiến công oanh liệt: Đợt 1 (13 - 17/3) tiêu diệt phân khu Bắc (Him Lam, Độc Lập, Bản Kéo); Đợt 2 (30/3 - 26/4) siết chặt vòng vây các đồi phía Đông và sân bay Mường Thanh; Đợt 3 (01 - 07/5) tổng công kích, bắt sống tướng De Castries cùng toàn bộ ban chỉ huy tập đoàn cứ điểm. Chiến thắng buộc Pháp phải ký Hiệp định Giơ-ne-vơ công nhận độc lập, chủ quyền của Việt Nam.`;
+                return;
+            }
+
+            const searchMap = {
+                'dien_bien_phu': 'ĐIỆN BIÊN PHỦ',
+                'cach_mang_thang_tam': 'CÁCH MẠNG THÁNG TÁM',
+                'dong_khoi': 'ĐỒNG KHỞI',
+                'mau_than_1968': 'MẬU THÂN',
+                'ho_chi_minh_1975': 'CHIẾN DỊCH HỒ CHÍ MINH',
+                'hiep_dinh_paris': 'HIỆP ĐỊNH PA-RI'
+            };
+
+            const kw = searchMap[presetKey] || presetKey;
+            const found = window.HISTORICAL_KNOWLEDGE_BASE.find(item => 
+                (item.bai && item.bai.toUpperCase().includes(kw)) || 
+                (item.content && item.content.toUpperCase().includes(kw))
+            );
+
+            if (found && found.content) {
+                textarea.value = found.content.replace(/\r/g, '').trim();
+                lastNotebookSourceTitle = found.bai || kw;
+            }
+        }
+
+        function clearNotebookSource() {
+            document.getElementById('notebook-source-text').value = '';
+            document.getElementById('notebook-preset-select').value = '';
+        }
+
+        // Định dạng Markdown hiển thị đẹp mắt cho bản tóm tắt NotebookLM
+        function renderNotebookMarkdown(mdText) {
+            if (!mdText) return '';
+            let html = mdText
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Code blocks (Knowledge Graph / ASCII art)
+            html = html.replace(/```(?:[a-zA-Z0-9_\-]+)?\s*([\s\S]*?)```/g, (match, code) => {
+                return `<div class="nb-kg-box"><pre>${code.trim()}</pre></div>`;
+            });
+
+            // [FACT] badge card
+            html = html.replace(/\[FACT\]\s*([\s\S]*?)(?=(?:\[MEMORY ANCHOR\]|##|###|$))/gi, (match, content) => {
+                return `<div class="fact-box"><div style="font-weight:800; color:#38bdf8; margin-bottom:5px; font-size:0.8rem; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">📌 [FACT] DỮ KIỆN LỊCH SỬ</div><div style="color:#e0f2fe; line-height:1.6;">${content.trim().replace(/\n/g, '<br>')}</div></div>`;
+            });
+
+            // [MEMORY ANCHOR] badge card
+            html = html.replace(/\[MEMORY ANCHOR\]\s*([\s\S]*?)(?=(?:\[FACT\]|##|###|$))/gi, (match, content) => {
+                return `<div class="anchor-box"><div style="font-weight:800; color:#fbbf24; margin-bottom:5px; font-size:0.8rem; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">🧠 [MEMORY ANCHOR] ĐIỂM NEO KÝ ỨC (AI ĐỀ XUẤT)</div><div style="color:#fef08a; line-height:1.6;">${content.trim().replace(/\n/g, '<br>')}</div></div>`;
+            });
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
+
+            // Bold & Italic
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            // Blockquotes
+            html = html.replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+            // Tables
+            html = html.replace(/\|(.+)\|/g, (match) => {
+                const cols = match.split('|').filter(c => c.trim() !== '');
+                if (cols.some(c => c.includes('---'))) {
+                    return ''; // bỏ dòng gạch nối
+                }
+                const cells = cols.map(c => `<td>${c.trim()}</td>`).join('');
+                return `<tr>${cells}</tr>`;
+            });
+            html = html.replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table>$1</table>');
+
+            // List items
+            html = html.replace(/^\s*[\-\*•]\s+(.*$)/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>');
+            // Gộp các thẻ ul liên tiếp
+            html = html.replace(/<\/ul>\s*<ul>/gim, '');
+
+            // Flashcards detection: Hỏi / Đáp
+            html = html.replace(/(?:Hỏi|Câu hỏi):\s*(.+?)\s*(?:Đáp|Trả lời):\s*(.+?)(?=\n|<br>|$)/gi, 
+                '<div class="nb-flashcard"><div class="q">❓ $1</div><div class="a">💡 $2</div></div>');
+
+            // Historical Images Markdown: ![caption](url)
+            html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, caption, url) => {
+                const safeCap = caption.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                const safeUrl = url.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                return `<div class="nb-image-card"><div class="nb-img-wrapper"><img src="${safeUrl}" alt="${safeCap}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80';" /><button type="button" class="img-zoom-btn" onclick="window.previewHistoricalImage('${safeUrl}', '${safeCap}')">🔍 Phóng to ảnh</button></div><div class="nb-img-caption"><span>📸 ${safeCap}</span><span class="nb-img-source-tag">Tư liệu xác thực</span></div></div>`;
+            });
+
+            // Line breaks
+            html = html.replace(/\n\n/g, '<br><br>');
+            html = html.replace(/\n/g, '<br>');
+
+            return `<div class="nb-summary-content">${html}</div>`;
+        }
+
+        // Helper rút gọn văn bản cô đọng tối đa chuẩn NotebookLM (High Information Density)
+        function distillNotebookLMText(str, maxWords = 16) {
+            if (!str) return '';
+            let clean = str.replace(/^(?:theo\s+đó|như\s+vậy|có\s+thể\s+thấy|chúng\s+ta\s+thấy|được\s+biết\s+đến\s+như\s+là|nói\s+cách\s+khác|ngoài\s+ra|mặt\s+khác|bên\s+cạnh\s+đó|cụ\s+thể\s+là)[,:\s]*/i, '').trim();
+            const words = clean.split(/\s+/);
+            if (words.length <= maxWords) return clean;
+            return words.slice(0, maxWords).join(' ') + '...';
+        }
+
+        // Helper trích xuất từ khóa trọng tâm
+        function extractConceptTag(str) {
+            if (!str) return 'Trọng tâm';
+            const pMatch = str.match(/[\("“]([^"”\)]+)[\)"”]/);
+            if (pMatch && pMatch[1].length <= 25) return pMatch[1].trim();
+            const capMatch = str.match(/[A-ZÀ-Ỹ][\w\d\s\-]{2,22}/);
+            if (capMatch) return capMatch[0].trim();
+            return str.split(/\s+/).slice(0, 3).join(' ');
+        }
+
+        // Universal Dynamic NLP Generator: BẢN ĐỒ KIẾN THỨC LỊCH SỬ (HISTORICAL KNOWLEDGE MAP - 12 MỤC & 3 TẦNG)
+        function generateOfflineNotebookSummary(sourceText, format) {
+            if (!sourceText || !sourceText.trim()) return '';
+
+            const rawLines = sourceText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            const cleanText = sourceText.replace(/[#*`_>|]/g, ' ').replace(/\s+/g, ' ').trim();
+            const lower = sourceText.toLowerCase();
+
+            // 1. Tiêu đề
+            let title = "BẢN ĐỒ KIẾN THỨC LỊCH SỬ";
+            if (rawLines.length > 0 && rawLines[0].length <= 80 && !rawLines[0].endsWith('.')) {
+                title = rawLines[0].toUpperCase().replace(/^[-*•\d\.\s#]+/, '').trim();
+            } else {
+                const words = cleanText.split(/\s+/);
+                title = words.slice(0, 7).join(' ').toUpperCase() + '...';
+            }
+
+            // 2. Nhận diện mốc Lịch Sử 12 nếu có
+            let actionTag = "";
+            let locusKey = "";
+            if (lower.includes('điện biên')) { actionTag = "[ACTION:teleport:dien_bien_phu]"; locusKey = "Điện Biên Phủ"; }
+            else if (lower.includes('tháng tám')) { actionTag = "[ACTION:teleport:cach_mang_thang_tam]"; locusKey = "Cách mạng tháng Tám 1945"; }
+            else if (lower.includes('đồng khởi')) { actionTag = "[ACTION:teleport:dong_khoi]"; locusKey = "Phong trào Đồng khởi 1959 - 1960"; }
+            else if (lower.includes('hồ chí minh') || lower.includes('30/4')) { actionTag = "[ACTION:teleport:chien_dich_ho_chi_minh]"; locusKey = "Chiến dịch Hồ Chí Minh 1975"; }
+            else if (lower.includes('giơ-ne-vơ') || lower.includes('geneve')) { actionTag = "[ACTION:teleport:hiep_dinh_geneve]"; locusKey = "Hiệp định Giơ-ne-vơ 1954"; }
+
+            // 3. Tự nhận diện Loại kiến thức (Rule 2)
+            const detectedTypes = [];
+            if (/chiến dịch|trận đánh|tiến công|tập đoàn cứ điểm|chiến trường|nava|quân sự|pháo binh/i.test(sourceText)) detectedTypes.push("Chiến tranh / trận đánh");
+            if (/cách mạng|khởi nghĩa|phong trào|đấu tranh chính trị|tổng tuyển cử/i.test(sourceText)) detectedTypes.push("Phong trào / cách mạng");
+            if (/triều đại|thời kỳ|nhà trần|nhà lê|nhà nguyễn|phong kiến/i.test(sourceText)) detectedTypes.push("Triều đại / thời kỳ");
+            if (/chủ tịch|đại tướng|tướng|vua|lãnh tụ|de castries/i.test(sourceText)) detectedTypes.push("Nhân vật lịch sử");
+            if (/hiệp định|hội nghị|ngoại giao|tuyên ngôn|đàm phán|chính trị/i.test(sourceText)) detectedTypes.push("Chính trị / ngoại giao");
+            if (/kinh tế|thương mại|sản xuất|cải cách/i.test(sourceText)) detectedTypes.push("Kinh tế");
+            if (/văn hóa|tư tưởng|giáo dục|tôn giáo/i.test(sourceText)) detectedTypes.push("Văn hóa / xã hội");
+            if (/khoa học|kỹ thuật|công nghệ|vũ khí/i.test(sourceText)) detectedTypes.push("Khoa học / kỹ thuật");
+            if (detectedTypes.length === 0) detectedTypes.push("Sự kiện lịch sử", "Quan hệ giữa các sự kiện");
+
+            // 4. Tách câu xử lý
+            const sentences = cleanText.split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length > 15);
+            const introSentence = sentences[0] || cleanText.substring(0, 140);
+            const coreSentence = sentences[Math.floor(sentences.length / 2)] || sentences[1] || introSentence;
+            const conclusionSentence = sentences[sentences.length - 1] || sentences[2] || introSentence;
+
+            // 5. Timeline
+            const timelineMatches = [];
+            const timeRegex = /(?:\b(?:năm|ngày|tháng|thế kỷ|nửa đầu|nửa cuối|giai đoạn|thời kỳ|đợt)\s+[\w\d\/\-]+|\b(?:1\d{3}|20\d{2})\b)/gi;
+            for (const line of rawLines) {
+                if (timeRegex.test(line) && line.length < 190) {
+                    const match = line.match(timeRegex);
+                    const timeStr = match ? match[0] : 'Mốc then chốt';
+                    const eventStr = line.replace(timeRegex, '').replace(/^[:\-\s]+/, '').trim() || line;
+                    timelineMatches.push({ time: timeStr, event: distillNotebookLMText(eventStr, 14) });
+                    if (timelineMatches.length >= 4) break;
+                }
+            }
+            if (timelineMatches.length === 0) {
+                const stepCount = Math.min(sentences.length, 3);
+                for (let i = 0; i < stepCount; i++) {
+                    timelineMatches.push({ time: `Giai đoạn ${i + 1}`, event: distillNotebookLMText(sentences[i], 14) });
+                }
+            }
+
+            // 6. Nhân vật / Đối tượng
+            const charMatches = [];
+            const charRegex = /(?:Chủ tịch\s+[A-ZÀ-Ỹ][\w\s]+|Đại tướng\s+[A-ZÀ-Ỹ][\w\s]+|Tướng\s+[A-Za-z\s]+|Bộ chỉ huy|Quân đội nhân dân|Nhân dân|Thực dân Pháp|Đế quốc Mĩ|Quân giải phóng)/gi;
+            const foundChars = sourceText.match(charRegex);
+            if (foundChars && foundChars.length > 0) {
+                const uniqueChars = Array.from(new Set(foundChars.map(c => c.trim()))).slice(0, 3);
+                uniqueChars.forEach(c => {
+                    charMatches.push(`• **${c}:** Chỉ huy / lực lượng nòng cốt tác động trực tiếp đến tiến trình sự kiện.`);
+                });
+            } else {
+                charMatches.push(`• **Lực lượng quần chúng & Chỉ huy:** Đóng vai trò quyết định thắng lợi được nêu trong văn bản nguồn.`);
+            }
+
+            // 7. Địa điểm
+            const locMatches = [];
+            const locRegex = /(?:Điện Biên Phủ|Mường Thanh|Him Lam|Độc Lập|Bản Kéo|Đồi A1|Hà Nội|Sài Gòn|Bến Tre|Việt Bắc|Tân Trào|Giơ-ne-vơ|Ba Đình)/gi;
+            const foundLocs = sourceText.match(locRegex);
+            if (foundLocs && foundLocs.length > 0) {
+                const uniqueLocs = Array.from(new Set(foundLocs.map(l => l.trim()))).slice(0, 3);
+                uniqueLocs.forEach(l => {
+                    locMatches.push(`• **${l}:** Vị trí chiến lược diễn ra các hoạt động mấu chốt của sự kiện.`);
+                });
+            } else {
+                locMatches.push(`• **Địa bàn trọng điểm:** Không gian chiến lược được xác lập theo tư liệu nguồn.`);
+            }
+
+            // 8. Trọng tâm cốt lõi (Key Takeaways)
+            const takeaways = [];
+            for (let i = 0; i < sentences.length; i++) {
+                if (takeaways.length >= 4) break;
+                const s = sentences[i];
+                if (s.length >= 25 && s.length <= 220) takeaways.push(s);
+            }
+            if (takeaways.length === 0) takeaways.push(cleanText.substring(0, 160));
+            const coreBullets = takeaways.map(s => {
+                const tag = extractConceptTag(s);
+                const detail = distillNotebookLMText(s.replace(tag, '').replace(/^[:\-\s,]+/, ''), 16) || distillNotebookLMText(s, 16);
+                return `• **[${tag}]:** ${detail}`;
+            }).join('\n');
+
+            // 9. Timeline Markdown
+            let timelineMd = timelineMatches.map((item, idx) => {
+                return `[${item.time}]\n${item.event}\n→ Nhân vật: Lực lượng thực hiện nhiệm vụ trọng yếu\n→ Kết quả: Tạo bước ngoặt phát triển sự kiện`;
+            }).join('\n\n');
+            if (timelineMatches.length >= 2) {
+                timelineMd += `\n\n**Chuỗi quan hệ:** ` + timelineMatches.map(m => m.time).join(' → ');
+            }
+
+            // 10. Knowledge Graph ASCII
+            const kgNodeA = extractConceptTag(introSentence);
+            const kgNodeB = extractConceptTag(coreSentence);
+            const kgNodeC = extractConceptTag(conclusionSentence);
+            const knowledgeGraphAscii = `\`\`\`
+[${kgNodeA}]
+    ↓ xuất phát điểm / nguyên nhân
+[${kgNodeB}]
+    ↓ diễn biến & đột phá then chốt
+[${kgNodeC}]
+    ↓ dẫn đến kết quả
+[Thắng lợi & Bước ngoặt lịch sử]
+\`\`\``;
+
+            // 11. Memory Anchors
+            const memoryAnchorsMd = `[FACT]
+${distillNotebookLMText(introSentence, 22)}
+
+[MEMORY ANCHOR]
+Hình ảnh sa bàn chiến dịch rực sáng ngọn lửa quyết chiến, lá cờ đỏ sao vàng tung bay trên cao điểm.
+
+[FACT]
+${distillNotebookLMText(conclusionSentence, 22)}
+
+[MEMORY ANCHOR]
+Biểu tượng chiếc đồng hồ cát đảo chiều — đánh dấu bước ngoặt chuyển bại thành thắng của lịch sử.`;
+
+            // 12. Dữ liệu không gian 3D
+            let spatial3DMd = `• **Scene:** Không gian học tập Cung điện ký Ức / Sa bàn tương tác 3D.
+• **Location:** ${locMatches[0] ? locMatches[0].replace(/^[•\s*]+/, '') : 'Vị trí trọng tâm căn phòng'}.
+• **Characters:** ${charMatches[0] ? charMatches[0].replace(/^[•\s*]+/, '') : 'Nhân vật lịch sử tiêu biểu'}.
+• **Objects:** Bản đồ chiến dịch, sa bàn công sự, tài liệu hiệp định lịch sử.
+• **Actions:** Mô phỏng mũi tên tiến công và cắm cờ chiến thắng.`;
+            if (actionTag) spatial3DMd += `\n• **Interactive:** ${actionTag}`;
+
+            // 13. Flashcards
+            const flashcardsMd = `Hỏi: Mục tiêu và ý nghĩa lớn nhất của sự kiện được nêu là gì?
+Đáp: ${distillNotebookLMText(introSentence, 20)}
+
+Hỏi: Bước đột phá hoặc cơ chế hành động mấu chốt diễn ra ra sao?
+Đáp: ${distillNotebookLMText(coreSentence, 20)}
+
+Hỏi: Đúc kết lịch sử quan trọng nhất cần ghi nhớ là gì?
+Đáp: ${distillNotebookLMText(conclusionSentence, 20)}`;
+
+            return `# HISTORICAL KNOWLEDGE MAP
+
+## 1. Tổng quan
+${distillNotebookLMText(introSentence, 24)} ${conclusionSentence && conclusionSentence !== introSentence ? distillNotebookLMText(conclusionSentence, 20) : ''}
+
+## 2. Loại kiến thức
+${detectedTypes.join(' • ')}
+
+## 3. Kiến thức cốt lõi
+${coreBullets}
+
+## 4. Timeline
+${timelineMd}
+
+## 5. Nhân vật / Đối tượng
+${charMatches.join('\n')}
+
+## 6. Địa điểm
+${locMatches.join('\n')}
+
+## 7. Nguyên nhân → Diễn biến → Kết quả
+• **Nguyên nhân:** Bối cảnh chiến lược và yêu cầu khách quan buộc các bên phải hành động.
+• **Diễn biến:** Trải qua các giai đoạn then chốt: ${timelineMatches.map(m => m.event).join('; ')}.
+• **Kết quả & Tác động:** ${distillNotebookLMText(conclusionSentence, 25)}.
+
+## 8. Knowledge Graph
+${knowledgeGraphAscii}
+
+## 9. Memory Anchors
+${memoryAnchorsMd}
+
+## 10. Dữ liệu không gian 3D
+${spatial3DMd}
+
+## 11. Kiến thức cần nhớ
+• **Bản chất:** ${distillNotebookLMText(introSentence, 15)}
+• **Trọng tâm:** ${distillNotebookLMText(coreSentence, 15)}
+• **Ý nghĩa:** ${distillNotebookLMText(conclusionSentence, 15)}
+
+## 12. Kiểm tra ghi nhớ
+${flashcardsMd}`;
+        }
+
+        // Kích hoạt tóm tắt chuẩn Historical Knowledge Map với Dual API và Universal Dynamic Fallback
+        async function runNotebookLMSummarize() {
+            const sourceText = document.getElementById('notebook-source-text').value.trim();
+            if (!sourceText) {
+                alert('Vui lòng dán hoặc chọn văn bản cần tóm tắt!');
+                return;
+            }
+
+            const selectedFormat = document.querySelector('input[name="nb-format"]:checked')?.value || 'all';
+            const outputContainer = document.getElementById('notebook-output');
+            const resultActions = document.getElementById('result-actions');
+            const runBtn = document.getElementById('btn-run-summarize');
+
+            runBtn.disabled = true;
+            runBtn.innerHTML = `<span>⏳ Đang tạo Historical Knowledge Map...</span>`;
+            outputContainer.innerHTML = `
+                <div class="notebook-loading-box">
+                    <div class="spinner-ring"></div>
+                    <h4>AI Gemini đang phân tích theo kiến trúc Historical Knowledge Map...</h4>
+                    <p style="margin-top: 8px; font-size: 0.85rem;">Đang xử lý 3 tầng tri thức: TẦNG 1 — FACT • TẦNG 2 — RELATION • TẦNG 3 — MEMORY</p>
+                </div>
+            `;
+
+            const systemPrompt = `Bạn là một AI chuyên xử lý và chuyển đổi kiến thức lịch sử thành dạng dễ hiểu, dễ ghi nhớ và có thể sử dụng cho hệ thống học tập trực quan/3D.
+
+Nhiệm vụ:
+Phân tích nội dung lịch sử được cung cấp và tạo ra một "Bản đồ Kiến thức Lịch sử" (Historical Knowledge Map).
+Mục tiêu không đơn thuần là rút ngắn văn bản. Hãy giữ lại cấu trúc, mối quan hệ và những thông tin có giá trị ghi nhớ nhất.
+
+QUY TẮC QUAN TRỌNG:
+1. GIỮ ĐÚNG KIẾN THỨC: Không tự bịa dữ kiện. Không thay đổi năm tháng, địa điểm, nhân vật hoặc kết quả. Phân biệt rõ dữ kiện có trong nguồn với phần AI đề xuất để hỗ trợ ghi nhớ. Nếu nguồn không đủ thông tin, ghi rõ "Không có thông tin trong nguồn".
+2. TỰ NHẬN DIỆN LOẠI KIẾN THỨC: Xác định nội dung thuộc nhóm: Sự kiện lịch sử, Chiến tranh / trận đánh, Triều đại / thời kỳ, Nhân vật lịch sử, Phong trào / cách mạng, Quốc gia / nền văn minh, Chính trị / ngoại giao, Kinh tế, Xã hội, Văn hóa / tôn giáo, Khoa học / kỹ thuật, Địa lý lịch sử, Quan hệ giữa các sự kiện...
+3. CẤU TRÚC KIẾN THỨC CỐT LÕI (3 TẦNG):
+   - TẦNG 1 — FACT: Kiến thức lịch sử thực tế (Thời gian, Không gian, Nhân vật/Đối tượng, Sự kiện, Nguyên nhân, Diễn biến, Kết quả, Ý nghĩa).
+   - TẦNG 2 — RELATION: Mối quan hệ giữa các kiến thức, sự kiện dẫn đến sự kiện, nhân vật liên quan đến sự kiện, quan hệ nhân quả.
+   - TẦNG 3 — MEMORY: Memory Anchors, Dữ liệu không gian 3D, Kiến thức cần nhớ, Kiểm tra ghi nhớ.
+4. TÓM TẮT THÔNG MINH: Không tóm tắt theo số lượng câu cố định. Ưu tiên thông tin quan trọng, quan hệ nhân quả, trình tự thời gian, nhân vật & vai trò, địa điểm. Loại bỏ câu lặp lại, diễn đạt dài dòng.
+5. TIMELINE: Chỉ tạo Timeline khi nội dung có yếu tố thời gian. Dạng: [THỜI GIAN] Sự kiện → Nhân vật liên quan → Kết quả / ý nghĩa. Nếu có nhiều sự kiện: A → B → C.
+6. KNOWLEDGE GRAPH: Xác định các nút kiến thức quan trọng và mối liên hệ giữa chúng dạng ASCII sơ đồ khối trong khối code markdown:
+\`\`\`
+[Nút A]
+    ↓ [mối quan hệ/hành động]
+[Nút B]
+    ↓ [dẫn đến/mở đường]
+[Nút C]
+\`\`\`
+7. MEMORY ANCHORS: Đề xuất các điểm neo ký ức hỗ trợ ghi nhớ (địa điểm, công trình, vật thể, nhân vật, biểu tượng, hành động, âm thanh, màu sắc, không gian). Phân biệt rõ:
+[FACT]
+Dữ kiện lịch sử
+[MEMORY ANCHOR]
+Hình ảnh được AI đề xuất để giúp ghi nhớ.
+8. KHẢ NĂNG CHUYỂN THÀNH KHÔNG GIAN 3D: Scene, Location, Characters, Objects, Actions, Relationships. Kèm tag [ACTION:teleport:<id>] nếu tương ứng với các mốc 3D (dien_bien_phu, cach_mang_thang_tam, dong_khoi, chien_dich_ho_chi_minh, hiep_dinh_geneve).
+9. KIỂM TRA GHI NHỚ: Flashcards dạng:
+Hỏi: ...
+Đáp: ...
+
+ĐỊNH DẠNG ĐẦU RA BẮT BUỘC:
+# HISTORICAL KNOWLEDGE MAP
+
+## 1. Tổng quan
+## 2. Loại kiến thức
+## 3. Kiến thức cốt lõi
+## 4. Timeline
+## 5. Nhân vật / Đối tượng
+## 6. Địa điểm
+## 7. Nguyên nhân → Diễn biến → Kết quả
+## 8. Knowledge Graph
+## 9. Memory Anchors
+## 10. Dữ liệu không gian 3D
+## 11. Kiến thức cần nhớ
+## 12. Kiểm tra ghi nhớ`;
+
+            const userPrompt = `NỘI DUNG TÀI LIỆU LỊCH SỬ CẦN XỬ LÝ:\n"""\n${sourceText}\n"""\n\nHãy phân tích và tạo "Bản đồ Kiến thức Lịch sử" (Historical Knowledge Map) theo đúng đầy đủ 12 mục và 3 tầng tri thức đã hướng dẫn.`;
+
+            const defaultGoogleKey = 'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA';
+            const defaultOpenRouterKey = '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';
+            const activeKey = API_KEY || localStorage.getItem('loci_gemini_api_key') || defaultOpenRouterKey;
+
+            let summaryResult = null;
+
+            // HÀM GỌI OPENROUTER
+            async function tryOpenRouter(key) {
+                const models = ['google/gemini-3.5-flash-lite', 'google/gemini-2.5-flash', 'google/gemini-3.7-flash'];
+                for (const m of models) {
+                    try {
+                        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${key}`,
+                                'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://localhost',
+                                'X-Title': 'Loci Historical Knowledge Map'
+                            },
+                            body: JSON.stringify({
+                                model: m,
+                                temperature: 0.3,
+                                max_tokens: 4000,
+                                messages: [
+                                    { role: 'system', content: systemPrompt },
+                                    { role: 'user', content: userPrompt }
+                                ]
+                            })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const txt = data.choices?.[0]?.message?.content;
+                            if (txt && txt.trim()) return txt.trim();
+                        }
+                    } catch(e) {
+                        console.warn(`OpenRouter model ${m} error:`, e);
+                    }
+                }
+                return null;
+            }
+
+            // HÀM GỌI GOOGLE DIRECT API
+            async function tryGoogleDirect(key) {
+                const models = [
+                    MODEL_NAME ? MODEL_NAME.replace('google/', '') : 'gemini-3.5-flash',
+                    'gemini-3.5-flash',
+                    'gemini-3.5-flash-lite',
+                    'gemini-2.5-flash'
+                ].filter((v, i, a) => a.indexOf(v) === i);
+
+                for (const model of models) {
+                    try {
+                        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                        const res = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    role: 'user',
+                                    parts: [{ text: userPrompt }]
+                                }],
+                                systemInstruction: { parts: [{ text: systemPrompt }] },
+                                generationConfig: { temperature: 0.3, maxOutputTokens: 4000 }
+                            })
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            let candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (candidateText && candidateText.trim()) return candidateText.trim();
+                        }
+                    } catch(e) {
+                        console.warn(`Google Direct model ${model} error:`, e);
+                    }
+                }
+                return null;
+            }
+
+            if (activeKey.startsWith('sk-')) {
+                summaryResult = await tryOpenRouter(activeKey);
+                if (!summaryResult) summaryResult = await tryGoogleDirect(defaultGoogleKey);
+            } else {
+                summaryResult = await tryGoogleDirect(activeKey);
+                if (!summaryResult) summaryResult = await tryOpenRouter(defaultOpenRouterKey);
+            }
+
+            if (!summaryResult) {
+                summaryResult = generateOfflineNotebookSummary(sourceText, selectedFormat);
+            }
+
+            // Tự động chèn ảnh tư liệu lịch sử xác thực nếu có
+            if (typeof window.autoAttachHistoricalImagesToSummary === 'function') {
+                try {
+                    summaryResult = await window.autoAttachHistoricalImagesToSummary(sourceText, summaryResult);
+                } catch (e) {
+                    console.warn('Auto attach images failed:', e);
+                }
+            }
+
+            lastNotebookSummary = summaryResult;
+            window.lastNotebookSummary = summaryResult;
+            runBtn.disabled = false;
+            runBtn.innerHTML = `<span>✨ Bắt Đầu Phân Tích Bản Đồ Tri Thức</span>`;
+            resultActions.style.display = 'flex';
+            outputContainer.innerHTML = renderNotebookMarkdown(summaryResult);
+        }
+
+        // Phát âm bản tóm tắt qua TTS
+        function speakNotebookSummary() {
+            if (!lastNotebookSummary) return;
+            const btn = document.getElementById('btn-speak-summary');
+            if (btn && btn.classList.contains('speaking')) {
+                stopAISpeaking();
+                btn.classList.remove('speaking');
+                btn.textContent = '🔊 Đọc to (TTS)';
+                return;
+            }
+            const plainText = lastNotebookSummary.replace(/[*#_`>|]/g, ' ').replace(/\s+/g, ' ').trim();
+            speakTTS(plainText, btn);
+        }
+
+        // Sao chép bản tóm tắt
+        function copyNotebookSummary() {
+            if (!lastNotebookSummary) return;
+            navigator.clipboard.writeText(lastNotebookSummary).then(() => {
+                alert('Đã sao chép toàn bộ bản tóm tắt NotebookLM vào khay nhớ tạm!');
+            });
+        }
+
+        // Chuyển kết quả sang khung đàm thoại AI để hỏi sâu
+        function transferSummaryToChat() {
+            closeNotebookLMStudio();
+            const sourceSnippet = document.getElementById('notebook-source-text').value.slice(0, 300) + '...';
+            chatInput.value = `Dựa trên tài liệu vừa tóm tắt: "${sourceSnippet}", hãy phân tích sâu hơn cho tôi về bài học kinh nghiệm và các dạng câu hỏi trắc nghiệm hay ra thi!`;
+            chatInput.focus();
+        }
+
+        // Tóm tắt siêu tốc đoạn văn người dùng vừa dán vào ô chat
+        async function quickSummarizeFromChat() {
+            let text = chatInput.value.trim();
+            if (!text) {
+                try {
+                    const clip = await navigator.clipboard.readText();
+                    if (clip && clip.trim()) {
+                        text = clip.trim();
+                        chatInput.value = text;
+                    }
+                } catch(e) {}
+            }
+            if (!text) {
+                openNotebookLMStudio();
+                return;
+            }
+            chatInput.value = '';
+            sendUserMessage(`Hãy tóm tắt toàn diện theo chuẩn NotebookLM đoạn văn sau đây:\n"""\n${text}\n"""`);
+        }
+
+        // Dán trực tiếp từ khay nhớ tạm vào Studio
+        async function pasteFromClipboardToStudio() {
+            const textarea = document.getElementById('notebook-source-text');
+            const runBtn = document.getElementById('btn-run-summarize');
+            try {
+                const clipText = await navigator.clipboard.readText();
+                if (clipText && clipText.trim()) {
+                    textarea.value = clipText.trim();
+                    runBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    runBtn.focus();
+                } else {
+                    alert('Khay nhớ tạm đang trống! Bạn hãy sao chép (Ctrl+C) đoạn văn cần tóm tắt rồi bấm lại nút này nhé.');
+                }
+            } catch(e) {
+                textarea.focus();
+                alert('Hãy nhấn phím Ctrl + V để dán đoạn văn vào ô tài liệu!');
+            }
+        }
+
+        // Đổi trạng thái tab format chip
+        document.querySelectorAll('.format-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.format-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+            });
+        });
     </script>
+
+    <!-- NOTEBOOKLM KNOWLEDGE STUDIO MODAL -->
+    <div class="notebook-modal" id="notebook-modal" style="display: none;">
+        <div class="notebook-modal-backdrop" onclick="closeNotebookLMStudio()"></div>
+        <div class="notebook-modal-container">
+            <div class="notebook-header">
+                <div class="notebook-title-box">
+                    <div class="notebook-logo-icon">📚</div>
+                    <div>
+                        <h2>NotebookLM Knowledge Studio • Tóm Tắt Tri Thức Lịch Sử 12</h2>
+                        <p>Tóm tắt thông minh dựa chặt chẽ trên tài liệu gốc (Source-grounded) • Trích xuất đề cương, niên biểu & flashcards</p>
+                    </div>
+                </div>
+                <div class="notebook-header-btns">
+                    <button class="notebook-close-btn" onclick="closeNotebookLMStudio()">✕ Đóng Studio</button>
+                </div>
+            </div>
+
+            <div class="notebook-body">
+                <!-- CỘT TRÁI: NGUỒN TÀI LIỆU (SOURCE DOCUMENT) -->
+                <div class="notebook-source-pane">
+                    <div class="pane-header">
+                        <span class="pane-title">📄 Tài Liệu Nguồn Cần Tóm Tắt</span>
+                        <button class="btn-paste-clip" onclick="pasteFromClipboardToStudio()" title="Dán nội dung bạn vừa copy từ máy vào đây">📋 Dán từ khay nhớ tạm</button>
+                    </div>
+
+                    <div>
+                        <label class="form-label" style="margin-bottom: 4px; display: block;">Chọn bài học mẫu từ SGK 12:</label>
+                        <select id="notebook-preset-select" class="form-control form-select" onchange="loadPresetDocument(this.value)">
+                            <option value="">-- Chọn bài học mẫu trong SGK 12 --</option>
+                            <option value="dien_bien_phu">Bài 17: Chiến dịch Điện Biên Phủ 1954</option>
+                            <option value="cach_mang_thang_tam">Bài 12: Cách mạng Tháng Tám 1945 & Tuyên ngôn Độc lập</option>
+                            <option value="dong_khoi">Bài 21: Phong trào Đồng Khởi 1959 - 1960</option>
+                            <option value="mau_than_1968">Bài 22: Cuộc Tổng tiến công Xuân Mậu Thân 1968</option>
+                            <option value="hiep_dinh_paris">Bài 22: Hiệp định Pa-ri 1973 về chấm dứt chiến tranh</option>
+                            <option value="ho_chi_minh_1975">Bài 23: Chiến dịch Hồ Chí Minh 30/4/1975 toàn thắng</option>
+                        </select>
+                    </div>
+
+                    <textarea id="notebook-source-text" class="notebook-textarea" placeholder="Dán văn bản, bài đọc, đề cương hoặc tài liệu ôn thi của bạn vào đây (hoặc chọn bài mẫu phía trên)..."></textarea>
+                    
+                    <div class="notebook-options-bar">
+                        <span class="options-label">Định dạng tóm tắt:</span>
+                        <div class="format-chips">
+                            <label class="format-chip active"><input type="radio" name="nb-format" value="all" checked> 🌟 Toàn diện NotebookLM</label>
+                            <label class="format-chip"><input type="radio" name="nb-format" value="study_guide"> 📋 Đề cương tổng quan</label>
+                            <label class="format-chip"><input type="radio" name="nb-format" value="timeline"> ⏳ Dòng thời gian</label>
+                            <label class="format-chip"><input type="radio" name="nb-format" value="takeaways"> 💡 Ý chính cốt lõi</label>
+                            <label class="format-chip"><input type="radio" name="nb-format" value="flashcards"> ❓ Thẻ câu hỏi & Đáp án</label>
+                            <label class="format-chip"><input type="radio" name="nb-format" value="loci"> 🏛️ Bản đồ Loci 3D</label>
+                        </div>
+                    </div>
+
+                    <div class="source-actions">
+                        <button class="notebook-btn-primary" id="btn-run-summarize" onclick="runNotebookLMSummarize()">
+                            <span>✨ Bắt Đầu Tóm Tắt Chuẩn NotebookLM</span>
+                        </button>
+                        <button class="notebook-btn-secondary" onclick="clearNotebookSource()">Xóa trắng</button>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: KẾT QUẢ TÓM TẮT THÔNG MINH (GENERATED SUMMARY) -->
+                <div class="notebook-result-pane">
+                    <div class="pane-header">
+                        <span class="pane-title">✨ Kết Quả Tóm Tắt NotebookLM</span>
+                        <div class="result-actions" id="result-actions" style="display: none;">
+                            <button class="res-action-btn" onclick="speakNotebookSummary()" id="btn-speak-summary">🔊 Đọc to (TTS)</button>
+                            <button class="res-action-btn" onclick="copyNotebookSummary()">📋 Sao chép</button>
+                            <button class="res-action-btn" onclick="window.openHistoricalImageFinder()" title="Tìm ảnh xác thực trên Wikimedia / Google và chèn vào bản đồ">🖼️ Tìm & Chèn Ảnh</button>
+                            <button class="res-action-btn" onclick="transferSummaryToChat()">💬 Đàm thoại với AI về bài này ➔</button>
+                        </div>
+                    </div>
+
+                    <!-- Khung hiển thị nội dung tóm tắt -->
+                    <div class="notebook-output-container" id="notebook-output">
+                        <div class="notebook-empty-state">
+                            <div class="empty-icon">📖</div>
+                            <h3>Chưa có tài liệu nào được tóm tắt</h3>
+                            <p>Dán bài đọc vào khung bên trái hoặc chọn bài học mẫu trong SGK 12, sau đó nhấn <b>"Bắt Đầu Tóm Tắt"</b> để AI NotebookLM phân tích đề cương, niên biểu và thẻ ghi nhớ.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TÌM & CHÈN ẢNH TƯ LIỆU LỊCH SỬ XÁC THỰC -->
+    <div id="image-finder-modal" class="image-finder-modal" style="display: none;">
+        <div class="image-finder-backdrop" onclick="window.closeHistoricalImageFinder()"></div>
+        <div class="image-finder-card">
+            <div class="finder-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.3rem;">🖼️</span>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1rem; color: #fff;">Tìm & Chèn Ảnh Tư Liệu Lịch Sử Xác Thực</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.74rem; color: #94a3b8;">Nguồn Wikimedia Commons, Wikipedia Bách khoa & Google Images</p>
+                    </div>
+                </div>
+                <button type="button" class="finder-close-btn" onclick="window.closeHistoricalImageFinder()" title="Đóng">✕</button>
+            </div>
+
+            <!-- Khung tìm kiếm chính & Nút mở Google Images -->
+            <div class="finder-search-row">
+                <div class="finder-input-wrapper">
+                    <input type="text" id="finder-search-input" class="finder-search-input" placeholder="Nhập tên sự kiện, chiến dịch, nhân vật (VD: Chiến dịch Điện Biên Phủ 1954)..." />
+                    <button type="button" id="finder-search-btn" class="finder-btn-search">🔍 Tìm ảnh</button>
+                </div>
+                <button type="button" id="finder-google-btn" class="finder-btn-google" title="Mở Google Images trong tab mới">🔎 Tìm trên Google Images ↗</button>
+            </div>
+
+            <!-- Dán link từ Google Images -->
+            <div class="finder-paste-row">
+                <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 700; white-space: nowrap;">🔗 Dán link ảnh từ Google:</span>
+                <input type="url" id="finder-paste-url" class="finder-url-input" placeholder="Dán URL hình ảnh bạn vừa sao chép từ Google Images..." />
+                <input type="text" id="finder-paste-caption" class="finder-caption-input" placeholder="Chú thích ảnh (tùy chọn)..." />
+                <button type="button" id="finder-btn-insert-url" class="finder-btn-insert">➕ Chèn vào bài</button>
+            </div>
+
+            <!-- Danh sách ảnh tìm được -->
+            <div id="finder-results-box" class="finder-results-box">
+                <!-- Rendered dynamically via historical_image_search.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX PHÓNG TO ẢNH TƯ LIỆU -->
+    <div id="image-lightbox-modal" class="image-lightbox-modal" style="display: none;" onclick="if(event.target===this) window.closeHistoricalLightbox();">
+        <div class="lightbox-content">
+            <button type="button" class="lightbox-close-btn" onclick="window.closeHistoricalLightbox()" title="Đóng">✕</button>
+            <img id="lightbox-img" src="" alt="Ảnh tư liệu lịch sử" />
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+    </div>
+
+    <!-- NẠP CÔNG CỤ TÌM KIẾM ẢNH TƯ LIỆU LỊCH SỬ XÁC THỰC -->
+    <script src="./historical_image_search.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Quản trị LOCI EDU</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --accent: #10b981;
+            --danger: #e11d48;
+            --warn: #f59e0b;
+            --text: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 12% 0%, rgba(2, 132, 199, .10), transparent 45%),
+                radial-gradient(circle at 88% 8%, rgba(16, 185, 129, .10), transparent 42%),
+                var(--bg);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 28px;
+            background: rgba(255, 255, 255, .85);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 19px;
+            letter-spacing: -.3px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand img {
+            width: 36px;
+            height: 36px;
+            border-radius: 11px;
+            object-fit: cover;
+            box-shadow: 0 6px 16px rgba(9, 22, 56, .22);
+        }
+
+        .topbar .spacer { flex: 1; }
+
+        .who {
+            font-size: 12.5px;
+            color: var(--muted);
+            text-align: right;
+            line-height: 1.35;
+        }
+
+        .who b { color: var(--text); }
+
+        .shell {
+            max-width: 1240px;
+            margin: 26px auto 60px;
+            padding: 0 20px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, .05);
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            border-bottom: 1px solid var(--line);
+            overflow-x: auto;
+        }
+
+        .tab {
+            border: 0;
+            background: transparent;
+            font: inherit;
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--muted);
+            padding: 9px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab:hover { background: #f1f5f9; color: var(--text); }
+        .tab.active { background: #e0f2fe; color: var(--primary-dark); }
+
+        .panel { padding: 18px 20px 22px; }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        input[type=search], select {
+            font: inherit;
+            font-size: 13px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: #fff;
+            color: var(--text);
+            outline: none;
+        }
+
+        input[type=search]:focus, select:focus { border-color: #7dd3fc; box-shadow: 0 0 0 3px rgba(14, 165, 233, .12); }
+
+        input[type=search] { flex: 1; min-width: 220px; }
+
+        button.act {
+            font: inherit;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        button.act:hover { background: #f8fafc; }
+        button.act.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        button.act.primary:hover { background: var(--primary-dark); }
+        button.act.danger { border-color: #fecdd3; color: var(--danger); }
+        button.act.danger:hover { background: #fff1f2; }
+        button.act:disabled { opacity: .5; cursor: not-allowed; }
+
+        .row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+        .mini {
+            font: inherit;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            background: #fff;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .mini:hover { background: #f1f5f9; }
+        .mini.danger { color: var(--danger); border-color: #fecdd3; }
+        .mini:disabled { opacity: .45; cursor: not-allowed; background: #fff; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--line);
+            white-space: nowrap;
+        }
+        td { padding: 11px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+        tr:last-child td { border-bottom: 0; }
+        tbody tr:hover { background: #f8fafc; }
+
+        .name { font-weight: 700; }
+        .sub { font-size: 11.5px; color: var(--muted); word-break: break-all; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+        .badge.ok { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        .badge.warn { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .badge.bad { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .badge.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge.ghost { background: #f1f5f9; color: var(--muted); border: 1px solid var(--line); }
+
+        .empty { padding: 34px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 860px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .list {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            max-height: 62vh;
+            overflow: auto;
+        }
+
+        .list-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            font-size: 12.5px;
+        }
+        .list-item:last-child { border-bottom: 0; }
+        .list-item:hover { background: #f8fafc; }
+        .list-item.active { background: #e0f2fe; }
+        .list-item .id { font-weight: 700; word-break: break-all; }
+
+        pre.json {
+            margin: 0;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 12px;
+            line-height: 1.55;
+            max-height: 62vh;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px 14px;
+            background: #fff;
+        }
+        .stat .k { font-size: 11px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--muted); }
+        .stat .v { font-size: 22px; font-weight: 900; margin-top: 2px; }
+
+        .gate {
+            max-width: 560px;
+            margin: 70px auto;
+            padding: 30px;
+            text-align: center;
+        }
+        .gate h1 { font-size: 22px; margin: 12px 0 6px; }
+        .gate p { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+        .uid {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin: 14px 0;
+            flex-wrap: wrap;
+        }
+        .uid code {
+            background: #f1f5f9;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        .notice {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            border-radius: 14px;
+            padding: 12px 16px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .notice.admin { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+        .notice code {
+            background: rgba(146, 64, 14, .08);
+            border-radius: 6px;
+            padding: 1px 6px;
+        }
+        .notice .uid-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .notice .uid-box code { background: #fff; border: 1px solid #fde68a; }
+
+        .detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 60;
+        }
+        .detail-box {
+            background: #fff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 620px;
+            max-height: 86vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+        }
+        .detail-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+        }
+        .detail-head .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            color: #fff;
+            font-weight: 800;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+        }
+        .detail-body { padding: 6px 20px 20px; overflow: auto; }
+        .kv { width: 100%; font-size: 13px; }
+        .kv th { width: 34%; }
+        .kv td { word-break: break-word; }
+        .detail-body pre.json { max-height: 40vh; margin-top: 12px; }
+
+        .toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: #0f172a;
+            color: #fff;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, .3);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: .2s;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .toast.show { opacity: 1; transform: none; }
+        .toast.err { background: #9f1239; }
+    </style>
+</head>
+
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <img src="assets/images/logo_loci_edu.png" alt="LOCI EDU">
+            Quản trị LOCI EDU
+        </div>
+        <div class="spacer"></div>
+        <div class="who" id="who">Đang kiểm tra quyền…</div>
+        <button class="act" onclick="location.href='portal_v2.html'">← Về portal</button>
+    </div>
+
+    <div class="shell" id="shell">
+        <div id="notice-host"></div>
+        <div class="card">
+            <div class="panel" id="panel">
+                <div class="empty">Đang tải…</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-host"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+        import { LociFirebase } from './firebase_service.js';
+        import { Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const COLLECTIONS = [
+            { id: 'users', label: 'users — tài khoản' },
+            { id: 'posts', label: 'posts — bảng tin Kết nối' },
+            { id: 'shared_spaces', label: 'shared_spaces — không gian chia sẻ' },
+            { id: 'user_spaces', label: 'user_spaces — không gian 360 cá nhân' },
+            { id: 'user_chats', label: 'user_chats — lịch sử chat AI' },
+            { id: 'moderation_logs', label: 'moderation_logs — nhật ký kiểm duyệt' }
+        ];
+
+        const state = {
+            user: null,
+            isAdmin: false,
+            tab: 'users',
+            users: [],
+            posts: [],
+            logs: [],
+            search: '',
+            postFilter: 'all',
+            dataCol: 'users',
+            dataDocs: [],
+            dataSelected: null
+        };
+
+        const $ = (sel) => document.querySelector(sel);
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[c]);
+        }
+
+        function fmtTime(v) {
+            if (!v) return '—';
+            let d;
+            if (typeof v.toDate === 'function') d = v.toDate();
+            else if (typeof v === 'object' && v.seconds) d = new Date(v.seconds * 1000);
+            else d = new Date(v);
+            return isNaN(d.getTime()) ? '—' : d.toLocaleString('vi-VN');
+        }
+
+        function toast(msg, isErr) {
+            const el = $('#toast');
+            el.textContent = msg;
+            el.className = 'toast show' + (isErr ? ' err' : '');
+            clearTimeout(el._t);
+            el._t = setTimeout(() => { el.className = 'toast'; }, 3200);
+        }
+
+        function isMuted(u) {
+            const t = u && u.mutedUntil;
+            if (!t) return false;
+            const ms = typeof t.toMillis === 'function' ? t.toMillis() : (t.seconds ? t.seconds * 1000 : Number(t));
+            return ms > Date.now();
+        }
+
+        function statusBadge(status) {
+            if (status === 'hidden') return '<span class="badge bad">Đã ẩn</span>';
+            if (status === 'pending_review') return '<span class="badge warn">Chờ duyệt</span>';
+            return '<span class="badge ok">Đang hiển thị</span>';
+        }
+
+        function renderGate(uid, reason) {
+            $('#who').textContent = '';
+            $('#panel').innerHTML = `
+                <div class="gate">
+                    <div style="font-size:40px;">🔒</div>
+                    <h1>${reason === 'anon' ? 'Bạn chưa đăng nhập' : 'Bạn chưa có quyền quản trị'}</h1>
+                    <p>${reason === 'anon'
+                        ? 'Hãy đăng nhập bằng tài khoản Firebase của bạn ở portal, sau đó mở lại trang này.'
+                        : 'Trang này chỉ mở cho tài khoản có <code>role = "admin"</code> trong Firestore.'}</p>
+                    ${uid ? `<div class="uid"><code id="my-uid">${esc(uid)}</code>
+                        <button class="act" id="copy-uid">Sao chép UID</button></div>
+                    <p style="text-align:left; background:#f8fafc; border:1px solid var(--line); border-radius:12px; padding:14px;">
+                        <b>Cách cấp quyền (1 lần):</b><br>
+                        1. Mở Firebase Console → Firestore → collection <code>users</code> → chọn document có ID trùng UID trên.<br>
+                        2. Thêm field <code>role</code> = <code>admin</code>.<br>
+                        3. Tải lại trang này.
+                    </p>` : '<p><a href="portal_v2.html">← Về portal để đăng nhập</a></p>'}
+                </div>`;
+            const btn = $('#copy-uid');
+            if (btn) btn.onclick = () => navigator.clipboard.writeText(uid).then(() => toast('Đã sao chép UID'));
+        }
+
+        function shell(activeTab) {
+            return `
+            <div class="tabs">
+                ${[['users', '👥 Tài khoản'], ['posts', '📝 Bài viết'], ['logs', '🛡️ Kiểm duyệt'], ['data', '🗄️ Dữ liệu']]
+                    .map(([id, label]) => `<button class="tab${activeTab === id ? ' active' : ''}" data-tab="${id}">${label}</button>`).join('')}
+            </div>
+            <div class="panel" id="tab-panel"></div>`;
+        }
+
+        function bindTabs() {
+            document.querySelectorAll('.tab').forEach(btn => {
+                btn.onclick = () => switchTab(btn.dataset.tab);
+            });
+        }
+
+        async function switchTab(tab) {
+            state.tab = tab;
+            $('#panel').innerHTML = shell(tab);
+            bindTabs();
+            if (tab === 'users') await renderUsers();
+            else if (tab === 'posts') await renderPosts();
+            else if (tab === 'logs') await renderLogs();
+            else await renderData();
+        }
+
+        // ---------------- TÀI KHOẢN ----------------
+        async function renderUsers() {
+            const panel = $('#tab-panel');
+            panel.innerHTML = '<div class="empty">Đang tải tài khoản từ Firestore…</div>';
+            try {
+                state.users = await LociFirebase.adminList('users', 500);
+            } catch (e) {
+                panel.innerHTML = `<div class="empty">Không tải được: ${esc(e.message)}</div>`;
+                return;
+            }
+
+            const admins = state.users.filter(u => u.role === 'admin').length;
+            const muted = state.users.filter(isMuted).length;
+            const warned = state.users.filter(u => Number(u.strikes) > 0).length;
+
+            panel.innerHTML = `
+                <div class="stat-grid">
+                    <div class="stat"><div class="k">Tổng tài khoản</div><div class="v">${state.users.length}</div></div>
+                    <div class="stat"><div class="k">Quản trị viên</div><div class="v" style="color:#0369a1">${admins}</div></div>
+                    <div class="stat"><div class="k">Đang bị khóa</div><div class="v" style="color:#be123c">${muted}</div></div>
+                    <div class="stat"><div class="k">Đã bị cảnh cáo</div><div class="v" style="color:#b45309">${warned}</div></div>
+                </div>
+                <div class="toolbar">
+                    <input type="search" id="u-search" placeholder="Tìm theo tên, email hoặc UID…" value="${esc(state.search)}">
+                    <button class="act" id="u-refresh">Làm mới</button>
+                </div>
+                <div style="overflow:auto;">
+                    <table>
+                        <thead><tr>
+                            <th>Tài khoản</th><th>Vai trò</th><th>Vi phạm</th><th>Khóa đến</th><th>Hoạt động</th><th style="text-align:right">Thao tác</th>
+                        </tr></thead>
+                        <tbody id="u-body"></tbody>
+                    </table>
+                </div>`;
+
+            $('#u-refresh').onclick = renderUsers;
+            $('#u-search').oninput = (e) => { state.search = e.target.value; paintUsers(); };
+            paintUsers();
+        }
+
+        function paintUsers() {
+            const body = $('#u-body');
+            if (!body) return;
+            const q = state.search.toLowerCase().trim();
+            const list = state.users.filter(u => {
+                if (!q) return true;
+                return [u.displayName, u.name, u.email, u._id].some(v => String(v || '').toLowerCase().includes(q));
+            });
+
+            if (!list.length) {
+                body.innerHTML = '<tr><td colspan="6"><div class="empty">Không có tài khoản phù hợp.</div></td></tr>';
+                return;
+            }
+
+            body.innerHTML = list.map(u => {
+                const name = u.displayName || u.name || 'Người dùng';
+                const email = u.email || '—';
+                const muted = isMuted(u);
+                const strikes = Number(u.strikes) || 0;
+                return `<tr data-row="${esc(u._id)}" style="cursor:pointer">
+                    <td>
+                        <div class="name">${esc(name)}${u._id === (state.user && state.user.uid) ? ' <span class="badge info">bạn</span>' : ''}</div>
+                        <div class="sub">${esc(email)}</div>
+                        <div class="sub">UID: ${esc(u._id)}</div>
+                    </td>
+                    <td>${u.role === 'admin' ? '<span class="badge info">admin</span>' : '<span class="badge ghost">student</span>'}</td>
+                    <td>${strikes ? `<span class="badge warn">${strikes} lần</span>` : '<span class="badge ghost">0</span>'}</td>
+                    <td>${muted ? `<span class="badge bad">${esc(fmtTime(u.mutedUntil))}</span>` : '<span class="badge ghost">Không</span>'}</td>
+                    <td class="sub">${esc(fmtTime(u.lastActive || u.updatedAt || u.createdAt))}</td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="mini" data-act="role" data-uid="${esc(u._id)}"${state.isAdmin ? '' : ' disabled'}>${u.role === 'admin' ? 'Thu admin' : 'Cấp admin'}</button>
+                            <button class="mini" data-act="warn" data-uid="${esc(u._id)}"${state.isAdmin ? '' : ' disabled'}>Cảnh cáo</button>
+                            <button class="mini" data-act="mute" data-uid="${esc(u._id)}"${state.isAdmin ? '' : ' disabled'}>Khóa 1 ngày</button>
+                            <button class="mini" data-act="unmute" data-uid="${esc(u._id)}"${state.isAdmin ? '' : ' disabled'}>Mở khóa</button>
+                            <button class="mini danger" data-act="del" data-uid="${esc(u._id)}"${state.isAdmin ? '' : ' disabled'}>Xoá</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            body.querySelectorAll('button[data-act]').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (!state.isAdmin) { toast('Chế độ chỉ xem — cần quyền admin để thao tác', true); return; }
+                    userAction(btn.dataset.act, btn.dataset.uid);
+                };
+            });
+            body.querySelectorAll('tr[data-row]').forEach(tr => {
+                tr.onclick = () => {
+                    const u = state.users.find(x => x._id === tr.dataset.row);
+                    if (u) openUserDetail(u);
+                };
+            });
+        }
+
+        function openUserDetail(u) {
+            const host = $('#detail-host');
+            const fields = [
+                ['Tên hiển thị', u.displayName || u.name],
+                ['Email', u.email],
+                ['UID', u._id],
+                ['Vai trò', u.role || 'student'],
+                ['Số lần vi phạm', u.strikes],
+                ['Khóa đến', isMuted(u) ? fmtTime(u.mutedUntil) : null],
+                ['Số lần bị khóa', u.muteCount],
+                ['Lớp', u.class],
+                ['Trường', u.school],
+                ['Ngày tạo', fmtTime(u.createdAt)],
+                ['Hoạt động gần nhất', fmtTime(u.lastActive || u.updatedAt)],
+                ['Chuỗi ngày học', u.stats && u.stats.currentStreak],
+                ['Độ chính xác TB', u.stats && u.stats.accuracy ? u.stats.accuracy + '%' : null],
+                ['Mốc đã nhớ', Array.isArray(u.stats && u.stats.masteredLoci) ? u.stats.masteredLoci.length : null],
+                ['Thông báo kiểm duyệt', u.moderationNotice],
+                ['Mật khẩu (fallback)', u.password ? { masked: true, value: u.password } : null]
+            ].filter(([, v]) => v !== undefined && v !== null && v !== '');
+
+            const rows = fields.map(([k, v]) => {
+                if (v && v.masked) {
+                    return `<tr><th>${esc(k)}</th><td><span id="pwd-mask">••••••</span>
+                        <button class="mini" id="pwd-show">Hiện</button></td></tr>`;
+                }
+                return `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
+            }).join('');
+
+            const json = JSON.stringify(u, (k, v) => {
+                if (v && typeof v === 'object' && typeof v.toDate === 'function') return v.toDate().toISOString();
+                return v;
+            }, 2);
+
+            host.innerHTML = `<div class="detail-overlay" id="detail-overlay">
+                <div class="detail-box">
+                    <div class="detail-head">
+                        <div class="avatar">${esc((u.displayName || u.name || 'U')[0].toUpperCase())}</div>
+                        <div style="flex:1">
+                            <div style="font-weight:800; font-size:16px;">${esc(u.displayName || u.name || 'Người dùng')}</div>
+                            <div class="sub">${esc(u.email || u._id)}</div>
+                        </div>
+                        <button class="act" id="detail-close">Đóng</button>
+                    </div>
+                    <div class="detail-body">
+                        <table class="kv"><tbody>${rows}</tbody></table>
+                        <pre class="json">${esc(json)}</pre>
+                    </div>
+                </div>
+            </div>`;
+
+            const close = () => { host.innerHTML = ''; };
+            $('#detail-close').onclick = close;
+            $('#detail-overlay').onclick = (e) => { if (e.target.id === 'detail-overlay') close(); };
+            const show = $('#pwd-show');
+            if (show) show.onclick = () => {
+                $('#pwd-mask').textContent = u.password;
+                show.remove();
+            };
+        }
+
+        async function userAction(act, uid) {
+            if (!state.isAdmin) { toast('Cần quyền admin để thao tác', true); return; }
+            const u = state.users.find(x => x._id === uid);
+            if (!u) return;
+            const me = state.user && state.user.uid;
+            try {
+                if (act === 'role') {
+                    if (uid === me && u.role === 'admin') {
+                        toast('Không thể tự thu quyền admin của chính mình', true);
+                        return;
+                    }
+                    await LociFirebase.adminUpdate('users', uid, { role: u.role === 'admin' ? 'student' : 'admin' });
+                    toast(u.role === 'admin' ? 'Đã thu quyền admin' : 'Đã cấp quyền admin');
+                } else if (act === 'warn') {
+                    await LociFirebase.adminUpdate('users', uid, {
+                        strikes: (Number(u.strikes) || 0) + 1,
+                        lastViolationAt: Timestamp.now()
+                    });
+                    toast('Đã cảnh cáo');
+                } else if (act === 'mute') {
+                    await LociFirebase.adminUpdate('users', uid, {
+                        strikes: (Number(u.strikes) || 0) + 1,
+                        muteCount: (Number(u.muteCount) || 0) + 1,
+                        mutedUntil: Timestamp.fromDate(new Date(Date.now() + 86400000)),
+                        lastViolationAt: Timestamp.now()
+                    });
+                    toast('Đã khóa 1 ngày');
+                } else if (act === 'unmute') {
+                    await LociFirebase.adminUpdate('users', uid, {
+                        mutedUntil: null, strikes: 0, muteCount: 0
+                    });
+                    toast('Đã mở khóa');
+                } else if (act === 'del') {
+                    if (uid === me) { toast('Không thể xoá hồ sơ của chính mình', true); return; }
+                    if (!confirm(`Xoá hồ sơ của ${u.displayName || u.email || uid}?\n(Tài khoản đăng nhập Firebase vẫn còn, chỉ mất dữ liệu hồ sơ.)`)) return;
+                    await LociFirebase.adminDelete('users', uid);
+                    toast('Đã xoá hồ sơ');
+                }
+                await renderUsers();
+            } catch (e) {
+                toast('Lỗi: ' + (e.code || e.message), true);
+            }
+        }
+
+        // ---------------- BÀI VIẾT ----------------
+        async function renderPosts() {
+            const panel = $('#tab-panel');
+            panel.innerHTML = '<div class="empty">Đang tải bài viết…</div>';
+            try {
+                state.posts = await LociFirebase.adminList('posts', 300, 'createdAt');
+            } catch (e) {
+                panel.innerHTML = `<div class="empty">Không tải được: ${esc(e.message)}</div>`;
+                return;
+            }
+
+            const pending = state.posts.filter(p => p.status === 'pending_review').length;
+            const hidden = state.posts.filter(p => p.status === 'hidden').length;
+
+            panel.innerHTML = `
+                <div class="stat-grid">
+                    <div class="stat"><div class="k">Tổng bài viết</div><div class="v">${state.posts.length}</div></div>
+                    <div class="stat"><div class="k">Chờ duyệt</div><div class="v" style="color:#b45309">${pending}</div></div>
+                    <div class="stat"><div class="k">Đã ẩn</div><div class="v" style="color:#be123c">${hidden}</div></div>
+                </div>
+                <div class="toolbar">
+                    <select id="p-filter">
+                        ${[['all', 'Tất cả'], ['pending_review', 'Chờ duyệt'], ['hidden', 'Đã ẩn'], ['published', 'Đang hiển thị']]
+                            .map(([v, l]) => `<option value="${v}"${state.postFilter === v ? ' selected' : ''}>${l}</option>`).join('')}
+                    </select>
+                    <button class="act" id="p-refresh">Làm mới</button>
+                </div>
+                <div id="p-list"></div>`;
+
+            $('#p-refresh').onclick = renderPosts;
+            $('#p-filter').onchange = (e) => { state.postFilter = e.target.value; paintPosts(); };
+            paintPosts();
+        }
+
+        function paintPosts() {
+            const host = $('#p-list');
+            if (!host) return;
+            const list = state.posts.filter(p => state.postFilter === 'all' || (p.status || 'published') === state.postFilter);
+            if (!list.length) {
+                host.innerHTML = '<div class="empty">Không có bài viết nào.</div>';
+                return;
+            }
+            host.innerHTML = `<table><thead><tr><th>Nội dung</th><th>Người đăng</th><th>Trạng thái</th><th>Thời gian</th><th style="text-align:right">Thao tác</th></tr></thead><tbody>
+                ${list.map(p => `<tr>
+                    <td style="max-width:420px;">
+                        <div style="font-size:13px; line-height:1.5; white-space:pre-wrap;">${esc((p.content || '').slice(0, 280))}${(p.content || '').length > 280 ? '…' : ''}</div>
+                        ${p.imageUrl ? `<div class="sub">🖼️ có ảnh đính kèm</div>` : ''}
+                        ${p.moderation && p.moderation.label ? `<div class="sub">AI: ${esc(p.moderation.label)} • ${Math.round((p.moderation.confidence || 0) * 100)}%</div>` : ''}
+                    </td>
+                    <td><div class="name">${esc(p.authorName || 'Ẩn danh')}</div><div class="sub">${esc(p.authorId || '')}</div></td>
+                    <td>${statusBadge(p.status)}</td>
+                    <td class="sub">${esc(fmtTime(p.createdAt))}</td>
+                    <td><div class="row-actions">
+                        <button class="mini" data-pact="published" data-pid="${esc(p._id)}"${state.isAdmin ? '' : ' disabled'}>Duyệt</button>
+                        <button class="mini" data-pact="hidden" data-pid="${esc(p._id)}"${state.isAdmin ? '' : ' disabled'}>Ẩn</button>
+                        <button class="mini danger" data-pact="del" data-pid="${esc(p._id)}"${state.isAdmin ? '' : ' disabled'}>Xoá</button>
+                    </div></td>
+                </tr>`).join('')}
+            </tbody></table>`;
+
+            host.querySelectorAll('button[data-pact]').forEach(btn => {
+                btn.onclick = () => postAction(btn.dataset.pact, btn.dataset.pid);
+            });
+        }
+
+        async function postAction(act, id) {
+            if (!state.isAdmin) { toast('Cần quyền admin để thao tác', true); return; }
+            try {
+                if (act === 'del') {
+                    if (!confirm('Xoá bài viết này?')) return;
+                    await LociFirebase.adminDelete('posts', id);
+                    toast('Đã xoá bài viết');
+                } else {
+                    await LociFirebase.adminUpdate('posts', id, { status: act });
+                    toast(act === 'published' ? 'Đã duyệt bài' : 'Đã ẩn bài');
+                }
+                await renderPosts();
+            } catch (e) {
+                toast('Lỗi: ' + (e.code || e.message), true);
+            }
+        }
+
+        // ---------------- NHẬT KÝ KIỂM DUYỆT ----------------
+        async function renderLogs() {
+            const panel = $('#tab-panel');
+            panel.innerHTML = '<div class="empty">Đang tải nhật ký kiểm duyệt…</div>';
+            try {
+                state.logs = await LociFirebase.adminList('moderation_logs', 200, 'at');
+            } catch (e) {
+                panel.innerHTML = `<div class="empty">${e.code === 'permission-denied'
+                    ? 'Nhật ký kiểm duyệt chỉ mở cho tài khoản admin.'
+                    : 'Không tải được: ' + esc(e.message)}</div>`;
+                return;
+            }
+            if (!state.logs.length) {
+                panel.innerHTML = '<div class="empty">Chưa có bản ghi kiểm duyệt nào. Bot sẽ ghi vào đây sau khi bạn duyệt/cảnh cáo trên Telegram.</div>';
+                return;
+            }
+            panel.innerHTML = `<table><thead><tr><th>Hành động</th><th>Bài viết</th><th>Người dùng</th><th>Người duyệt</th><th>Thời gian</th></tr></thead><tbody>
+                ${state.logs.map(l => `<tr>
+                    <td>${esc(l.action || '—')}</td>
+                    <td class="sub">${esc(l.postId || '—')}</td>
+                    <td class="sub">${esc(l.targetUid || '—')}</td>
+                    <td class="sub">${esc(l.by || '—')}</td>
+                    <td class="sub">${esc(fmtTime(l.at))}</td>
+                </tr>`).join('')}
+            </tbody></table>`;
+        }
+
+        // ---------------- DỮ LIỆU ----------------
+        async function renderData() {
+            const panel = $('#tab-panel');
+            panel.innerHTML = `
+                <div class="toolbar">
+                    <select id="d-col">
+                        ${COLLECTIONS.map(c => `<option value="${c.id}"${state.dataCol === c.id ? ' selected' : ''}>${c.label}</option>`).join('')}
+                    </select>
+                    <button class="act primary" id="d-load">Tải dữ liệu</button>
+                    <button class="act" id="d-export">Tải JSON</button>
+                </div>
+                <div class="grid">
+                    <div class="list" id="d-list"><div class="empty">Chọn “Tải dữ liệu”.</div></div>
+                    <div id="d-view"><div class="empty">Chọn một document để xem nội dung.</div></div>
+                </div>`;
+            $('#d-col').onchange = (e) => { state.dataCol = e.target.value; state.dataSelected = null; };
+            $('#d-load').onclick = loadData;
+            $('#d-export').onclick = () => {
+                if (!state.dataDocs.length) { toast('Chưa có dữ liệu để tải', true); return; }
+                const blob = new Blob([JSON.stringify(state.dataDocs, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `loci_${state.dataCol}_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            };
+            await loadData();
+        }
+
+        async function loadData() {
+            const listEl = $('#d-list');
+            const viewEl = $('#d-view');
+            listEl.innerHTML = '<div class="empty">Đang tải…</div>';
+            viewEl.innerHTML = '<div class="empty">Chọn một document để xem nội dung.</div>';
+            try {
+                state.dataDocs = await LociFirebase.adminList(state.dataCol, 200);
+            } catch (e) {
+                listEl.innerHTML = `<div class="empty">${esc(e.code === 'permission-denied' ? 'Rules không cho phép đọc collection này.' : e.message)}</div>`;
+                return;
+            }
+            if (!state.dataDocs.length) {
+                listEl.innerHTML = '<div class="empty">Collection trống.</div>';
+                return;
+            }
+            listEl.innerHTML = state.dataDocs.map((d, i) => {
+                const label = d.title || d.displayName || d.name || d.content || d._id;
+                return `<div class="list-item" data-idx="${i}">
+                    <div class="id">${esc(d._id)}</div>
+                    <div class="sub">${esc(String(label).slice(0, 60))}</div>
+                </div>`;
+            }).join('');
+            listEl.querySelectorAll('.list-item').forEach(el => {
+                el.onclick = () => showDoc(Number(el.dataset.idx), el);
+            });
+        }
+
+        function showDoc(idx, el) {
+            document.querySelectorAll('.list-item').forEach(n => n.classList.remove('active'));
+            if (el) el.classList.add('active');
+            const d = state.dataDocs[idx];
+            state.dataSelected = d;
+            const json = JSON.stringify(d, (k, v) => {
+                if (v && typeof v === 'object' && typeof v.toDate === 'function') return v.toDate().toISOString();
+                return v;
+            }, 2);
+            const viewEl = $('#d-view');
+            viewEl.innerHTML = `
+                <div class="toolbar">
+                    <code style="font-size:12px; color:var(--muted); word-break:break-all;">${esc(d._id)}</code>
+                    <div style="flex:1"></div>
+                    <button class="act" id="d-copy">Sao chép JSON</button>
+                    <button class="act danger" id="d-del">Xoá document</button>
+                </div>
+                <pre class="json">${esc(json)}</pre>`;
+            $('#d-copy').onclick = () => navigator.clipboard.writeText(json).then(() => toast('Đã sao chép JSON'));
+            $('#d-del').onclick = async () => {
+                if (!confirm(`Xoá document ${d._id} trong ${state.dataCol}?`)) return;
+                try {
+                    await LociFirebase.adminDelete(state.dataCol, d._id);
+                    toast('Đã xoá');
+                    await loadData();
+                } catch (e) {
+                    toast('Lỗi: ' + (e.code || e.message), true);
+                }
+            };
+        }
+
+        // ---------------- KHỞI ĐỘNG ----------------
+        function renderNotice() {
+            const host = $('#notice-host');
+            if (!host) return;
+            if (state.isAdmin) {
+                host.innerHTML = `<div class="notice admin">✅ Bạn đang ở chế độ <b>quản trị đầy đủ</b> — có thể sửa vai trò, cảnh cáo, khóa và xoá dữ liệu.</div>`;
+                return;
+            }
+            host.innerHTML = `<div class="notice">
+                <div>
+                    👁️ <b>Chế độ chỉ xem.</b> Bạn xem được toàn bộ tài khoản và dữ liệu công khai, nhưng chưa thể sửa/xoá.
+                    <div class="uid-box">
+                        <span>UID của bạn:</span><code id="notice-uid">${esc(state.user.uid)}</code>
+                        <button class="mini" id="notice-copy">Sao chép</button>
+                        <span class="sub">Muốn toàn quyền: Firestore → <code>users</code> → document này → thêm field <code>role</code> = <code>admin</code> → tải lại trang.</span>
+                    </div>
+                </div>
+            </div>`;
+            const btn = $('#notice-copy');
+            if (btn) btn.onclick = () => navigator.clipboard.writeText(state.user.uid).then(() => toast('Đã sao chép UID'));
+        }
+
+        function start() {
+            const roleLabel = state.isAdmin ? '<span class="badge info">admin</span>' : '<span class="badge ghost">chỉ xem</span>';
+            $('#who').innerHTML = `<b>${esc(state.user.displayName || state.user.email || 'Người dùng')}</b> ${roleLabel}<br>UID: ${esc(state.user.uid)}`;
+            renderNotice();
+            $('#panel').innerHTML = shell(state.tab);
+            bindTabs();
+            switchTab(state.tab);
+        }
+
+        LociFirebase.onAuth(async (user) => {
+            if (!user || !user.uid) {
+                renderGate(null, 'anon');
+                return;
+            }
+            state.user = user;
+            state.isAdmin = await LociFirebase.isAdminUser(user.uid);
+            start();
+        });
+    </script>
+</body>
+
+</html>

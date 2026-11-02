@@ -1,0 +1,3 @@
+// ĐÃ CHUYỂN SANG FILE CHÍNH: ../firestore.rules
+// File đó là bản đầy đủ để dán vào Firebase Console → Firestore → Rules.
+// Giữ file này chỉ làm điểm trỏ, tránh 2 bản rules lệch nhau.

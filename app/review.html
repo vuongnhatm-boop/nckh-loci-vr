@@ -1,0 +1,3747 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ôn tập Đa dạng · Loci.Edu</title>
+    <meta name="description"
+        content="Hệ thống thẻ ôn tập đa dạng hình thức: Gõ đáp án, Điền khuyết, Đảo chiều, Flashcard và Trắc nghiệm theo thuật toán SM-2.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        // Nhận diện ngay lập tức khi chạy nhúng trong iframe (Portal v2) để áp dụng giao diện full-screen ngay
+        if (window.self !== window.top || location.search.includes('embed=1')) {
+            document.documentElement.classList.add('is-embedded');
+            if (document.body) document.body.classList.add('is-embedded');
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --accent: #ec4899;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --ok: #10b981;
+            --bad: #ef4444;
+            --warn: #f59e0b;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            min-height: 100vh;
+            min-width: 0;
+            width: 100%;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.15), transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1), transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.15), transparent 50%);
+            animation: meshFlow 20s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes meshFlow {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            100% {
+                transform: rotate(15deg) scale(1.1);
+            }
+        }
+
+        h1,
+        h2,
+        h3,
+        .q {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            text-decoration: none;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header a.back {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 99px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s var(--ease);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        header a.back:hover {
+            color: var(--text-main);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        html.is-embedded header,
+        body.is-embedded header,
+        .is-embedded header {
+            display: none !important;
+        }
+
+        body.is-embedded main {
+            max-width: 960px;
+            margin: 16px auto 50px;
+            padding: 0 20px 60px;
+        }
+
+        /* --- CHẾ ĐỘ NHÚNG TRONG PORTAL (TOÀN MÀN HÌNH 100% FULL-WIDTH KHÔNG BỊ THỤT LỀ) --- */
+        html.is-embedded,
+        body.is-embedded {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            min-height: 100vh;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+        }
+
+        body.is-embedded::before {
+            display: none !important;
+        }
+
+        html.is-embedded header,
+        body.is-embedded header,
+        .is-embedded header {
+            display: none !important;
+        }
+
+        body.is-embedded main#root,
+        html.is-embedded main#root {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 24px 32px 60px !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-sizing: border-box !important;
+        }
+
+        body.is-embedded .trio-tabs-nav,
+        html.is-embedded .trio-tabs-nav {
+            width: 100% !important;
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 4px !important;
+            margin-bottom: 20px !important;
+        }
+
+        body.is-embedded .trio-tab-btn,
+        html.is-embedded .trio-tab-btn {
+            padding: 13px 16px !important;
+        }
+
+        body.is-embedded .formats-panel,
+        html.is-embedded .formats-panel {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            background: #ffffff !important;
+            border: 1px solid #e6ebf2 !important;
+            border-radius: 18px !important;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 28px -12px rgba(16, 24, 40, 0.08) !important;
+            padding: 22px 24px !important;
+        }
+
+        body.is-embedded .format-subgrid,
+        html.is-embedded .format-subgrid {
+            width: 100% !important;
+        }
+
+        body.is-embedded .formats-panel-actions.solo,
+        html.is-embedded .formats-panel-actions.solo {
+            grid-template-columns: 1fr !important;
+        }
+
+        body.is-embedded .results-container,
+        html.is-embedded .results-container {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        body.is-embedded .results-stats-grid,
+        html.is-embedded .results-stats-grid {
+            width: 100% !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 14px !important;
+        }
+
+        @media (max-width: 860px) {
+
+            body.is-embedded .trio-tabs-nav,
+            html.is-embedded .trio-tabs-nav {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 4px !important;
+            }
+        }
+
+        @media (max-width: 640px) {
+
+            body.is-embedded .trio-tabs-nav,
+            html.is-embedded .trio-tabs-nav {
+                grid-template-columns: 1fr !important;
+            }
+
+            body.is-embedded main#root,
+            html.is-embedded main#root {
+                padding: 16px 14px 40px !important;
+            }
+        }
+
+        main {
+            max-width: 760px;
+            width: 100%;
+            margin: 30px auto;
+            padding: 0 16px 80px;
+            box-sizing: border-box;
+        }
+
+        .glass-box {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        h1 {
+            font-size: 32px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .lede {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding: 8px;
+            background: rgba(241, 245, 249, 0.85);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-left: 6px;
+            margin-right: 4px;
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 700;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .filter-chip.active {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        /* Lesson picker */
+        .lessons {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lesson {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 22px;
+            transition: all 0.3s var(--ease);
+            cursor: pointer;
+        }
+
+        .lesson:not(:disabled):hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 16px 32px rgba(79, 70, 229, .12);
+        }
+
+        .lesson h3 {
+            font-size: 18px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .lesson small {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .lesson .due {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: var(--primary);
+            padding: 6px 14px;
+            border-radius: 99px;
+            transition: transform .2s var(--ease);
+            white-space: nowrap;
+        }
+
+        .lesson .due.none {
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+
+        .lesson:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Session */
+        .session-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .session-top button {
+            background: none;
+            border: 0;
+            color: var(--accent);
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: underline;
+        }
+
+        .session-top button:hover {
+            color: #be185d;
+        }
+
+        .bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .bar i {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width .4s var(--ease);
+            border-radius: 99px;
+        }
+
+        /* Card Types / Badges */
+        .kind {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            padding: 5px 14px;
+            border-radius: 99px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .kind.fc {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .kind.quiz {
+            background: #fce7f3;
+            color: #be185d;
+            border: 1px solid #fbcfe8;
+        }
+
+        .kind.reversed {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .kind.typein {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .kind.cloze {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .q {
+            font-size: 24px;
+            font-weight: 700;
+            line-height: 1.45;
+            color: var(--text-main);
+            margin-bottom: 24px;
+        }
+
+        /* Reversed Banner */
+        .reversed-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0284c7;
+            background: #f0f9ff;
+            padding: 12px 18px;
+            border-radius: 14px;
+            border: 1px dashed #7dd3fc;
+            margin-bottom: 22px;
+        }
+
+        .reversed-indicator .rev-arrow {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0284c7;
+        }
+
+        /* Type-in Form */
+        .typein-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .typein-input {
+            flex: 1;
+            min-width: 240px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            border: 2px solid #cbd5e1;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            background: #fff;
+            color: var(--text-main);
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .typein-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        }
+
+        .typein-input:disabled {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .typein-hint {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .typein-result {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .typein-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .typein-badge.exact {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .typein-badge.close {
+            background: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fef08a;
+        }
+
+        .typein-badge.wrong {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .typein-row {
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .typein-row b {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .typein-row span {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .typein-row.target span {
+            color: #047857;
+        }
+
+        .typein-row.yours span.is-exact {
+            color: #15803d;
+        }
+
+        .typein-row.yours span.is-close {
+            color: #d97706;
+        }
+
+        .typein-row.yours span.is-wrong {
+            color: #dc2626;
+            text-decoration: line-through;
+        }
+
+        /* Cloze Deletion Card */
+        .cloze-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 26px;
+            margin-bottom: 26px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .cloze-sentence {
+            font-size: 19px;
+            font-weight: 600;
+            line-height: 1.7;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .cloze-blank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            padding: 2px 14px;
+            margin: 0 4px;
+            border-radius: 10px;
+            background: #e2e8f0;
+            border: 2px dashed #94a3b8;
+            color: #64748b;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            vertical-align: middle;
+        }
+
+        .cloze-blank:hover {
+            background: #cbd5e1;
+            border-color: var(--primary);
+        }
+
+        .cloze-revealed {
+            display: inline-block;
+            padding: 2px 14px;
+            margin: 0 4px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 2px solid #10b981;
+            color: #065f46;
+            font-weight: 800;
+            animation: clozePop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            vertical-align: middle;
+        }
+
+        @keyframes clozePop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .cloze-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .cloze-try-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* Answer & Mnemonic */
+        .answer {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--accent);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .answer b {
+            display: block;
+            font-size: 14px;
+            color: var(--accent);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .mnemonic-box {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 24px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn.ghost {
+            background: #f1f5f9;
+            color: #334155;
+            box-shadow: none;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn.ghost:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn.btn-highlight {
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+        }
+
+        /* Rate SM-2 */
+        .rate {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .rate .btn {
+            flex-direction: column;
+            padding: 16px 12px;
+            gap: 4px;
+            line-height: 1.2;
+        }
+
+        .rate small {
+            font-weight: 500;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Quiz options */
+        .opts {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .opt {
+            text-align: left;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all .2s var(--ease);
+            cursor: pointer;
+        }
+
+        .opt:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: #f8fafc;
+        }
+
+        .opt.right {
+            border-color: var(--ok);
+            background: #ecfdf5;
+            color: #065f46;
+        }
+
+        .opt.wrong {
+            border-color: var(--bad);
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .opt:disabled {
+            cursor: default;
+        }
+
+        .why {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 24px;
+            background: #fff;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+        }
+
+        /* Done Screen */
+        .done {
+            text-align: center;
+        }
+
+        .done h1 {
+            margin-bottom: 12px;
+            font-size: 36px;
+        }
+
+        .done .figs {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin: 32px 0 24px;
+            flex-wrap: wrap;
+        }
+
+        .done .figs div {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 44px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.1;
+        }
+
+        .done .figs small {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .done-breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .breakdown-chip {
+            padding: 6px 14px;
+            border-radius: 99px;
+            background: #f1f5f9;
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        /* Giữ nguyên bố cục desktop 1280px khi hiển thị thu nhỏ trên điện thoại */
+
+        /* Lesson Filter Bar & Lesson Cards Redesign */
+        .lesson-tab-nav {
+            display: flex;
+            gap: 6px;
+            padding: 6px;
+            margin-bottom: 20px;
+            background: rgba(241, 245, 249, 0.95);
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .lesson-tab-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .lesson-tab-btn {
+            flex: 1;
+            min-width: 130px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 10px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .lesson-tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .lesson-tab-btn.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.14), 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .lesson-tab-badge {
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 99px;
+            background: rgba(100, 116, 139, 0.12);
+            color: inherit;
+            font-weight: 800;
+        }
+
+        .lesson-tab-btn.active .lesson-tab-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Format Pills Filter */
+        .format-filter-bar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            align-items: center;
+            padding: 6px 10px;
+            background: rgba(248, 250, 252, 0.85);
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .format-filter-chip {
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 12.5px;
+            font-weight: 700;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: inherit;
+        }
+
+        .format-filter-chip:hover {
+            border-color: var(--primary);
+            color: var(--text-main);
+        }
+
+        .format-filter-chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+        }
+
+        /* Compact Hero Card for single lesson */
+        .lesson-hero-card {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #e2e8f0;
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .lesson-hero-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .lesson-hero-title {
+            font-size: 21px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lesson-hero-sub {
+            color: var(--text-muted);
+            font-size: 13.5px;
+            font-weight: 500;
+        }
+
+        /* 5 Dạng câu hỏi Sub-grid */
+        .format-subgrid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 660px) {
+            .format-subgrid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+
+        .format-subcard {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .format-subcard:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.08);
+        }
+
+        .format-subcard-icon {
+            font-size: 22px;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .format-subcard-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .format-subcard-count {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 2px 8px;
+            border-radius: 99px;
+        }
+
+        /* Action Buttons */
+        .lesson-hero-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 560px) {
+            .lesson-hero-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-hero-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.38);
+        }
+
+        .btn-hero-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            background: #fff;
+            color: var(--text-main);
+            border: 1.5px solid #cbd5e1;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+        }
+
+        .btn-hero-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fafc;
+        }
+
+        /* Accordion for 'Tất cả 3 bài' */
+        .accordion-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .accordion-item {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            transition: all 0.25s var(--ease);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .accordion-item:hover {
+            border-color: #cbd5e1;
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            cursor: pointer;
+            user-select: none;
+            background: #fff;
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: #f8fafc;
+        }
+
+        .accordion-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .accordion-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .accordion-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .accordion-sub {
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+
+        .accordion-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .accordion-chevron {
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: transform 0.25s var(--ease);
+        }
+
+        .accordion-item.expanded .accordion-chevron {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            padding: 0 22px 20px 22px;
+            border-top: 1px solid #f1f5f9;
+            display: none;
+        }
+
+        .accordion-item.expanded .accordion-body {
+            display: block;
+            padding-top: 16px;
+        }
+
+        .due-count-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 99px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .due-count-pill.zero {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        /* Giữ nguyên bố cục desktop 1280px khi hiển thị thu nhỏ trên điện thoại */
+
+        /* Lesson Filter Bar & Lesson Cards Redesign */
+        .lesson-filter-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            padding: 8px;
+            background: rgba(241, 245, 249, 0.85);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+        }
+
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 22px 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s var(--ease);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        }
+
+        .lesson-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .lesson-card-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lesson-card-sub {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .lesson-badges-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .format-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 99px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .format-badge.typein {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .format-badge.cloze {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .format-badge.reversed {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+
+        .format-badge.fc {
+            background: #e0e7ff;
+            color: #4338ca;
+            border-color: #c7d2fe;
+        }
+
+        .format-badge.quiz {
+            background: #fce7f3;
+            color: #be185d;
+            border-color: #fbcfe8;
+        }
+
+        .lesson-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 14px;
+            margin-top: 4px;
+        }
+
+        .btn-action-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-action-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-action-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action-secondary:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+            color: var(--text-main);
+        }
+
+        .due-count-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 800;
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .due-count-pill.zero {
+            background: #10b981;
+        }
+
+        /* ══════════════ THẺ ÔN TẬP — REDESIGN ══════════════ */
+        .rv-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .rv-eyebrow {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .rv-title {
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            color: var(--text-main);
+        }
+
+        .rv-sub {
+            margin-top: 6px;
+            font-size: 13.5px;
+            color: var(--text-muted);
+        }
+
+        .rv-head-side {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Chọn bài — segmented control */
+        .trio-tabs-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            padding: 5px;
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            border: 1px solid #e6ebf2;
+            border-radius: 16px;
+        }
+
+        .trio-tab-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            padding: 12px 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.18s var(--ease), border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+        }
+
+        .trio-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .trio-tab-btn:focus-visible {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22);
+        }
+
+        .trio-tab-btn.active {
+            background: #fff;
+            border-color: #e6ebf2;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 16px -8px rgba(79, 70, 229, 0.35);
+        }
+
+        .trio-tab-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .trio-tab-btn.active .trio-tab-badge {
+            color: var(--primary);
+        }
+
+        .trio-tab-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--text-main);
+        }
+
+        .trio-tab-btn.active .trio-tab-title {
+            color: var(--primary);
+        }
+
+        .trio-tab-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 640px) {
+            .trio-tabs-nav {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Khung chính của bài đang chọn */
+        .formats-panel {
+            background: #fff;
+            border: 1px solid #e6ebf2;
+            border-radius: 18px;
+            padding: 22px 24px;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 12px 28px -12px rgba(16, 24, 40, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            animation: fadeIn 0.22s var(--ease);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .formats-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .formats-panel-title {
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.35;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+        }
+
+        .formats-panel-sub {
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .rv-formats-label {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        /* 6 hình thức luyện tập */
+        .format-subgrid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        /* Trong portal khung rộng chia 3 cột đều cho 6 thẻ (2 hàng) */
+        body.is-embedded .format-subgrid,
+        html.is-embedded .format-subgrid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 900px) {
+
+            .format-subgrid,
+            body.is-embedded .format-subgrid,
+            html.is-embedded .format-subgrid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 520px) {
+            .format-subgrid,
+            body.is-embedded .format-subgrid,
+            html.is-embedded .format-subgrid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .format-subcard.exam-subcard {
+            border-color: #c7d2fe;
+            background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.08);
+            position: relative;
+        }
+
+        .format-subcard.exam-subcard:hover {
+            border-color: #818cf8;
+            background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+            box-shadow: 0 8px 22px -6px rgba(79, 70, 229, 0.28);
+            transform: translateY(-2px);
+        }
+
+        .format-subcard.exam-subcard .format-subcard-icon {
+            background: #eef2ff;
+            color: #4f46e5;
+        }
+
+        .btn-hero-exam {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 22px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
+        }
+
+        .btn-hero-exam:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(79, 70, 229, 0.45);
+            filter: brightness(1.08);
+        }
+
+        .format-subcard {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            padding: 11px 13px;
+            background: #fff;
+            border: 1px solid #e6ebf2;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.16s var(--ease), background 0.16s var(--ease), box-shadow 0.16s var(--ease);
+        }
+
+        .format-subcard:hover {
+            border-color: #c7d2fe;
+            background: #fbfbff;
+            box-shadow: 0 4px 14px -8px rgba(79, 70, 229, 0.35);
+        }
+
+        .format-subcard:focus-visible {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.22);
+        }
+
+        .format-subcard-icon {
+            flex: none;
+            width: 34px;
+            height: 34px;
+            display: grid;
+            place-items: center;
+            margin: 0;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: #475569;
+            transition: background 0.16s var(--ease), color 0.16s var(--ease);
+        }
+
+        .format-subcard-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .format-subcard:hover .format-subcard-icon {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .format-subcard-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .format-subcard-name {
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.35;
+            color: var(--text-main);
+        }
+
+        .format-subcard-desc {
+            font-size: 11.5px;
+            line-height: 1.35;
+            color: var(--text-muted);
+        }
+
+        .format-subcard-count {
+            flex: none;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        /* 2 nút hành động chính */
+        .formats-panel-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .formats-panel-actions.solo {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 540px) {
+            .formats-panel-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .rv-cta-hint {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .btn-hero-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 18px -8px rgba(79, 70, 229, 0.75);
+            transition: background 0.18s var(--ease), box-shadow 0.18s var(--ease);
+        }
+
+        .btn-hero-primary:hover {
+            background: #4338ca;
+            box-shadow: 0 8px 22px -8px rgba(79, 70, 229, 0.85);
+        }
+
+        .btn-hero-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 20px;
+            border: 1px solid #d5dce6;
+            border-radius: 12px;
+            background: #fff;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.18s var(--ease), background 0.18s var(--ease), color 0.18s var(--ease);
+        }
+
+        .btn-hero-secondary:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #fbfbff;
+        }
+
+        /* Nhãn số câu đến hạn */
+        .due-count-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #b42318;
+            background: #fff5f4;
+            border: 1px solid #fed7d2;
+            white-space: nowrap;
+        }
+
+        .due-count-pill.zero {
+            color: #047857;
+            background: #f2fdf7;
+            border-color: #cdeede;
+        }
+
+        .due-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Results Screen & Error Analysis Styles */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s var(--ease);
+        }
+
+        .results-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .results-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-val {
+            font-size: 26px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Wrong Review Card */
+        .wrong-review-card {
+            background: #fff;
+            border: 1.5px solid #fecaca;
+            border-radius: 20px;
+            padding: 20px 22px;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.05);
+        }
+
+        .wrong-review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #fee2e2;
+        }
+
+        .btn-retry-wrong {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 99px;
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+        }
+
+        .btn-retry-wrong:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .wrong-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .wrong-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .wrong-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+
+        .wrong-item {
+            background: #fef2f2;
+            border: 1px solid #fee2e2;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .wrong-item-num {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #b91c1c;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .wrong-item-q {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.45;
+        }
+
+        .wrong-item-comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+            font-size: 13px;
+        }
+
+        .wrong-ans-row {
+            display: flex;
+            gap: 8px;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        .wrong-tag {
+            font-weight: 800;
+            color: #dc2626;
+            min-width: 120px;
+        }
+
+        .wrong-text {
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        .right-tag {
+            font-weight: 800;
+            color: #059669;
+            min-width: 120px;
+        }
+
+        .right-text {
+            color: #065f46;
+            font-weight: 700;
+        }
+
+        .wrong-item-hint {
+            font-size: 12.5px;
+            color: #64748b;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid #f59e0b;
+            line-height: 1.4;
+        }
+
+        .perfect-score-card {
+            background: #ecfdf5;
+            border: 1.5px solid #a7f3d0;
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .results-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding-top: 10px;
+        }
+
+        .btn-action-highlight {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ef4444, #f43f5e);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-action-highlight:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-action-norm {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            background: #fff;
+            color: var(--text-main);
+            border: 1.5px solid #cbd5e1;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+        }
+
+        .btn-action-norm:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fafc;
+        }
+
+        /* Session Top Bar */
+        .session-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .session-badge {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 10px;
+            border-radius: 99px;
+        }
+
+        .session-quit-btn {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 99px;
+            padding: 4px 14px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-quit-btn:hover {
+            border-color: var(--bad);
+            color: var(--bad);
+        }
+
+
+        /* Interactive 3D Flip Card Styles */
+        .flip-card-stage {
+            perspective: 1200px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            user-select: none;
+            outline: none;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            min-height: 240px;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card-stage.is-flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 240px;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+        }
+
+        .flip-card-front {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .flip-card-stage:hover .flip-card-front {
+            border-color: var(--primary);
+            box-shadow: 0 14px 36px rgba(79, 70, 229, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border: 2px solid #a7f3d0;
+            transform: rotateY(180deg);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08);
+        }
+
+        .flip-card-stage:hover .flip-card-back {
+            box-shadow: 0 14px 36px rgba(16, 185, 129, 0.15);
+            transform: rotateY(180deg) translateY(-2px);
+        }
+
+        .flip-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .flip-card-badge {
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 99px;
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .flip-card-badge.reversed {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+
+        .flip-card-badge.success {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .flip-hint-badge {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 3px 10px;
+            border-radius: 99px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .flip-card-prompt {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.45;
+            margin: 14px 0;
+        }
+
+        .flip-card-answer {
+            font-size: 21px;
+            font-weight: 800;
+            color: #047857;
+            line-height: 1.45;
+            margin: 10px 0;
+        }
+
+        .flip-card-mnemonic {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            color: #92400e;
+            line-height: 1.45;
+            margin-top: 8px;
+        }
+
+        .flip-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .flip-click-cta {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+
+        /* Pause Modal & Resume Banner */
+        .pause-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.2s var(--ease);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .pause-modal-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 28px 24px;
+            max-width: 440px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transform: scale(0.96);
+            animation: modalPop 0.25s var(--ease) forwards;
+        }
+
+        @keyframes modalPop {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .btn-modal-action {
+            width: 100%;
+            padding: 13px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-modal-action.pri {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-modal-action.pri:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-modal-action.sec {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 1.5px solid #cbd5e1;
+        }
+
+        .btn-modal-action.sec:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #fff;
+        }
+
+        .btn-modal-action.ghost {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 10px;
+        }
+
+        .btn-modal-action.ghost:hover {
+            color: var(--text-main);
+        }
+
+        /* Resume Banner */
+        .resume-session-banner {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1.5px solid #a7f3d0;
+            border-radius: 18px;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+        }
+
+        .btn-resume-session {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 99px;
+            background: #10b981;
+            color: #fff;
+            border: none;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            font-family: inherit;
+        }
+
+        .btn-resume-session:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-discard-session {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+            border-radius: 99px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .btn-discard-session:hover {
+            border-color: var(--bad);
+            color: var(--bad);
+            background: #fff;
+        }
+
+        /* Lesson Progress Pill */
+        .lesson-progress-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #0f172a;
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 99px;
+            border: 1px solid #e2e8f0;
+            margin-top: 6px;
+        }
+
+        /* 1-3-7 Reminder Pill Button */
+        .btn-reminder-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 99px;
+            font-size: 12.5px;
+            font-weight: 700;
+            background: #fff;
+            color: #4338ca;
+            border: 1.5px solid #c7d2fe;
+            cursor: pointer;
+            transition: all 0.2s var(--ease);
+            font-family: inherit;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+        }
+
+        .btn-reminder-pill:hover {
+            background: #e0e7ff;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.16);
+        }
+
+        .btn-reminder-pill b {
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* Lộ trình 1-3-7 (Ebbinghaus) — dạng timeline */
+        .cycle-137-widget {
+            background: #fafbfd;
+            border: 1px solid #eef2f7;
+            border-radius: 14px;
+            padding: 16px 18px 18px;
+            margin: 0;
+        }
+
+        .cycle-137-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .cycle-137-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .cycle-137-title > span {
+            display: none;
+        }
+
+        .cycle-137-status-badge {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #047857;
+            background: #f2fdf7;
+            border: 1px solid #cdeede;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+
+        .cycle-137-status-badge.is-due {
+            color: #4338ca;
+            background: #eef2ff;
+            border-color: #c7d2fe;
+            animation: none;
+        }
+
+        .cycle-137-steps {
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            align-items: start;
+        }
+
+        .cycle-137-steps::before {
+            content: '';
+            position: absolute;
+            top: 19px;
+            left: 16.66%;
+            right: 16.66%;
+            height: 2px;
+            border-radius: 2px;
+            background: #e6ebf2;
+        }
+
+        .cycle-step-card,
+        .cycle-step-card.done,
+        .cycle-step-card.due,
+        .cycle-step-card.waiting,
+        .cycle-step-card.pending {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 0 4px;
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            opacity: 1;
+            text-align: center;
+        }
+
+        .step-num-pill {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            margin-bottom: 8px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            color: #94a3b8;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+
+        .cycle-step-card.done .step-num-pill {
+            background: #f2fdf7;
+            border-color: #10b981;
+            color: #047857;
+        }
+
+        .cycle-step-card.due .step-num-pill {
+            background: #eef2ff;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .step-label {
+            font-size: 13.5px;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--text-main);
+        }
+
+        .step-desc {
+            font-size: 11.5px;
+            font-weight: 500;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+
+        .step-state {
+            margin-top: 5px;
+            padding: 0;
+            border: 0;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .cycle-step-card.done .step-state {
+            color: #047857;
+        }
+
+        .cycle-step-card.due .step-state {
+            color: var(--primary);
+        }
+
+        .cycle-arrow {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .cycle-137-steps {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .cycle-137-steps::before {
+                display: none;
+            }
+
+            .step-num-pill {
+                margin-bottom: 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a class="brand" href="portal_v2.html"><span>🏛️</span> Loci EDU</a>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <a class="back" href="de_thi.html" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; border-color: #4338ca; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);" title="Phòng thi thử Lịch sử tốt nghiệp THPT Quốc Gia (28 câu · 50 phút)"><span>📝</span> Phòng thi THPT</a>
+            <a class="back" href="javascript:void(0)" onclick="window.goBackToPortal()"><span>←</span> Về tổng quan</a>
+        </div>
+    </header>
+    <main id="root" class="glass-box" aria-live="polite"></main>
+
+    <script src="app/loci_anchors_data.js"></script>
+    <script src="app/flashcard_formats.js"></script>
+    <script src="app/review_engine.js"></script>
+    <script src="app/reminder_137.js?v=2.2"></script>
+    <script>
+                window.goBackToPortal = function () {
+            if (window.top && window.top !== window.self) {
+                if (typeof window.top.switchPortalTab === 'function') {
+                    window.top.switchPortalTab('overview');
+                    return;
+                }
+                window.top.location.href = 'portal_v2.html#overview';
+                return;
+            }
+            window.location.href = 'portal_v2.html#overview';
+        };
+
+        (function () {
+            if (window.self !== window.top || location.search.includes('embed=1')) {
+                document.documentElement.classList.add('is-embedded');
+                document.body.classList.add('is-embedded');
+            }
+            const root = document.getElementById('root');
+            const engine = window.reviewEngine || { isDue: () => true, processReview: () => { } };
+            const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+            // Lấy danh sách câu hỏi đa dạng
+            function questionsOf(lesson) {
+                if (window.LociFlashcardFormats && window.LociFlashcardFormats.buildDiverseQuestionsForLesson) {
+                    return window.LociFlashcardFormats.buildDiverseQuestionsForLesson(lesson);
+                }
+                const out = [];
+                (lesson.anchors || []).forEach(a => {
+                    (a.flashcards || []).forEach((f, i) => out.push({ type: 'fc', id: `${a.id}_fc${i}`, data: f }));
+                    (a.quizzes || []).forEach((q, i) => out.push({ type: 'quiz', id: `${a.id}_qz${i}`, data: q }));
+                });
+                return out;
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CHỈ LẤY BÀI 6, BÀI 7, BÀI 8 THEO YÊU CẦU NCKH (TUYỆT ĐỐI BỎ QUA BÀI 9)
+            // ═══════════════════════════════════════════════════════════════════
+            const ALLOWED_LESSONS = ['bai_6', 'bai_7', 'bai_8'];
+            const rawLessons = ALLOWED_LESSONS.map(k => (window.LOCI_ANCHORS || {})[k])
+                .filter(l => l && l.anchors)
+                .map(l => {
+                    const qs = questionsOf(l);
+                    return { lesson: l, qs };
+                }).filter(x => x.qs.length);
+
+            const urlParams = new URLSearchParams(location.search);
+            let activeLessonFilter = (urlParams.get('lesson') && ALLOWED_LESSONS.includes(urlParams.get('lesson')))
+                ? urlParams.get('lesson')
+                : 'bai_6'; // Mặc định hiển thị Bài 6
+
+            function shuffle(a) {
+                a = a.slice();
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            const lessonMeta = {
+                bai_6: { icon: '🇻🇳', badge: 'Bài 6 · 1945', short: 'Cách mạng tháng Tám', title: 'Cách mạng tháng Tám (1945)', sub: 'Khởi nghĩa giành chính quyền & Khai sinh nước VNDCCH' },
+                bai_7: { icon: '⚔️', badge: 'Bài 7 · 1945–1954', short: 'Kháng chiến chống Pháp', title: 'Kháng chiến chống Pháp', sub: 'Toàn quốc kháng chiến, Việt Bắc, Biên giới & Điện Biên Phủ' },
+                bai_8: { icon: '🚀', badge: 'Bài 8 · 1954–1975', short: 'Kháng chiến chống Mỹ', title: 'Kháng chiến chống Mỹ', sub: 'Đồng khởi, 4 Chiến lược chiến tranh & Đại thắng mùa Xuân 1975' }
+            };
+
+            function home() {
+                // Luôn đảm bảo chọn đúng 1 trong 3 bài
+                if (!ALLOWED_LESSONS.includes(activeLessonFilter)) {
+                    activeLessonFilter = 'bai_6';
+                }
+
+                const currentData = rawLessons.find(r => r.lesson.id === activeLessonFilter) || rawLessons[0];
+                const meta = lessonMeta[activeLessonFilter] || { icon: '📖', badge: activeLessonFilter, title: currentData.lesson.title, sub: '' };
+
+                const due = (currentData ? currentData.qs : []).filter(q => engine.isDue(q.id));
+
+                // Đếm 5 dạng câu hỏi
+                const counts = { typein: 0, cloze: 0, reversed: 0, fc: 0, quiz: 0 };
+                (currentData ? currentData.qs : []).forEach(q => {
+                    if (counts[q.type] !== undefined) counts[q.type]++;
+                });
+
+                // Đọc tiến trình lưu gần nhất
+                let lastProg = null;
+                try {
+                    const progMap = JSON.parse(localStorage.getItem('loci_lesson_progress') || '{}');
+                    lastProg = progMap[currentData.lesson.id] || null;
+                } catch (e) { }
+
+                // Đọc phiên tạm dừng (nếu có)
+                let savedSession = null;
+                try {
+                    const s = JSON.parse(localStorage.getItem('loci_saved_session') || 'null');
+                    if (s && s.lessonId === currentData.lesson.id) {
+                        savedSession = s;
+                    }
+                } catch (e) { }
+
+                const remindSettings = window.LociReminder137 ? window.LociReminder137.getSettings() : { enabled: true, time: '20:00' };
+
+                let resumeBannerHtml = '';
+                if (savedSession) {
+                    resumeBannerHtml = `
+                <div class="resume-session-banner">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:24px;">⏸️</span>
+                        <div style="text-align:left;">
+                            <div style="font-size:14px; font-weight:800; color:#065f46;">
+                                Phiên ôn tập đang tạm dừng (Câu ${savedSession.idx + 1}/${savedSession.total})
+                            </div>
+                            <div style="font-size:12px; color:#047857; margin-top:2px;">
+                                Đã làm: <b>${savedSession.good} đúng</b> · <b>${savedSession.wrong} sai</b> · Tiến trình được bảo toàn an toàn
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button class="btn-resume-session" id="btn-resume-active">▶️ Tiếp tục làm tiếp</button>
+                        <button class="btn-discard-session" id="btn-discard-active" title="Hủy bỏ phiên dở">✕</button>
+                    </div>
+                </div>`;
+                }
+
+                root.innerHTML = `
+                <!-- HEADER CHÍNH -->
+                <div class="rv-head">
+                    <div>
+                        <div class="rv-eyebrow">Ôn tập chủ động · Chủ đề 3</div>
+                        <h2 class="rv-title">Thẻ ôn tập</h2>
+                        <p class="rv-sub">Chọn bài rồi chọn một trong 5 hình thức luyện tập theo thuật toán SM-2.</p>
+                    </div>
+                    <div class="rv-head-side">
+                        <button id="btn-open-reminder" class="btn-reminder-pill" title="Đặt giờ để web tự động phát chuông và gửi thông báo nhắc ôn tập">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M12 7v5l3 2"></path>
+                            </svg>
+                            Nhắc hẹn: <b id="header-reminder-time">${remindSettings.enabled ? remindSettings.time : 'Đang tắt'}</b>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ĐÚNG 3 TAB TƯƠNG ỨNG 3 BÀI -->
+                <div class="trio-tabs-nav">
+                    ${ALLOWED_LESSONS.map(k => {
+                    const lData = rawLessons.find(r => r.lesson.id === k);
+                    const qCount = lData ? lData.qs.length : 90;
+                    const m = lessonMeta[k];
+                    const isActive = activeLessonFilter === k;
+                    return `
+                        <button type="button" class="trio-tab-btn ${isActive ? 'active' : ''}" data-lesson="${k}" aria-pressed="${isActive}">
+                            <span class="trio-tab-badge">${m.badge}</span>
+                            <span class="trio-tab-title">${m.short}</span>
+                            <span class="trio-tab-count">${qCount} câu</span>
+                        </button>`;
+                }).join('')}
+                </div>
+
+                ${resumeBannerHtml}
+
+                <div class="formats-panel" id="formats-panel">
+                    <div class="formats-panel-header">
+                        <div>
+                            <div class="formats-panel-title">${esc(currentData.lesson.title)}</div>
+                            <div class="formats-panel-sub">
+                                ${meta.sub}
+                            </div>
+                            ${lastProg ? `
+                            <div class="lesson-progress-badge">
+                                <span>Lượt ôn gần nhất:</span> 
+                                <b style="color:var(--ok);">${lastProg.percent}% chính xác</b> 
+                                <span style="color:var(--text-muted);">(${lastProg.good} đúng · ${lastProg.wrong} sai)</span>
+                            </div>` : ''}
+                        </div>
+                        <div class="due-count-pill ${due.length === 0 ? 'zero' : ''}">
+                            <span class="due-dot"></span>
+                            ${due.length > 0 ? `${due.length} câu cần ôn hôm nay` : `Đã hoàn thành mục tiêu`}
+                        </div>
+                    </div>
+
+                    <!-- LỘ TRÌNH ÔN TẬP CHU KỲ 1-3-7 (EBBINGHAUS) -->
+                    ${window.LociReminder137 ? window.LociReminder137.renderTimelineWidget(currentData.lesson.id) : ''}
+
+                    <!-- 5 HÌNH THỨC ÔN TẬP CỦA BÀI NÀY (BẤM VÀO LUYỆN NGAY) -->
+                    <div>
+                        <div class="rv-formats-label">Chọn hình thức luyện tập</div>
+                        <div class="format-subgrid">
+                            <div class="format-subcard" data-action="format" data-format="typein" title="Luyện riêng ${counts.typein} câu Gõ đáp án chính xác">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="2.5" y="6" width="19" height="12" rx="2.5"></rect>
+                                        <path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M6 14h12"></path>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name">Gõ đáp án</span>
+                                    <span class="format-subcard-desc">Gõ từ khóa chính xác</span>
+                                </span>
+                                <span class="format-subcard-count">${counts.typein} câu</span>
+                            </div>
+                            <div class="format-subcard" data-action="format" data-format="cloze" title="Luyện riêng ${counts.cloze} câu Điền khuyết sự kiện">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 6.5h16"></path>
+                                        <path d="M4 12h6"></path>
+                                        <path d="M14 12h6"></path>
+                                        <path d="M4 17.5h10"></path>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name">Điền khuyết</span>
+                                    <span class="format-subcard-desc">Điền từ còn thiếu</span>
+                                </span>
+                                <span class="format-subcard-count">${counts.cloze} câu</span>
+                            </div>
+                            <div class="format-subcard" data-action="format" data-format="reversed" title="Luyện riêng ${counts.reversed} câu Thẻ nhớ đảo chiều">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M4 8.5h13"></path>
+                                        <path d="M14 5.5l3 3-3 3"></path>
+                                        <path d="M20 15.5H7"></path>
+                                        <path d="M10 12.5l-3 3 3 3"></path>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name">Đảo chiều</span>
+                                    <span class="format-subcard-desc">Nhân quả hai chiều</span>
+                                </span>
+                                <span class="format-subcard-count">${counts.reversed} câu</span>
+                            </div>
+                            <div class="format-subcard" data-action="format" data-format="fc" title="Luyện riêng ${counts.fc} Flashcard trực quan">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="3" y="6.5" width="12" height="13" rx="2.5"></rect>
+                                        <path d="M17 4.5h2.5A1.5 1.5 0 0 1 21 6v11a1.5 1.5 0 0 1-1.5 1.5H17"></path>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name">Flashcard</span>
+                                    <span class="format-subcard-desc">Lật thẻ & mẹo nhớ</span>
+                                </span>
+                                <span class="format-subcard-count">${counts.fc} câu</span>
+                            </div>
+                            <div class="format-subcard" data-action="format" data-format="quiz" title="Luyện riêng ${counts.quiz} câu Trắc nghiệm 4 lựa chọn">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M9.5 6h11"></path>
+                                        <path d="M9.5 12h11"></path>
+                                        <path d="M9.5 18h11"></path>
+                                        <path d="M3.5 6l1.3 1.3L7 5"></path>
+                                        <path d="M3.5 12l1.3 1.3L7 11"></path>
+                                        <path d="M3.5 18l1.3 1.3L7 17"></path>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name">Trắc nghiệm</span>
+                                    <span class="format-subcard-desc">4 phương án lựa chọn</span>
+                                </span>
+                                <span class="format-subcard-count">${counts.quiz} câu</span>
+                            </div>
+                            <div class="format-subcard exam-subcard" data-action="exam" title="Vào Phòng thi chuẩn THPT Quốc Gia (24 TN + 4 Đúng/Sai · 50 phút)">
+                                <span class="format-subcard-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </span>
+                                <span class="format-subcard-text">
+                                    <span class="format-subcard-name" style="color:#4338ca;">Đề thi THPT</span>
+                                    <span class="format-subcard-desc">28 câu chuẩn cấu trúc Bộ GD&ĐT</span>
+                                </span>
+                                <span class="format-subcard-count" style="background:#eef2ff; color:#4f46e5; font-weight:700;">28 câu · 50'</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NÚT HÀNH ĐỘNG CHÍNH -->
+                    ${due.length === 0 ? `
+                    <div class="formats-panel-actions">
+                        <button class="btn-hero-primary" data-action="all" title="Luyện toàn bộ ${currentData.qs.length} câu của bài">
+                            Luyện toàn bài (${currentData.qs.length} câu)
+                        </button>
+                        <button class="btn-hero-exam" data-action="exam" title="Vào phòng thi thử tốt nghiệp THPT Quốc Gia (28 câu - 50 phút)">
+                            📝 Vào phòng thi THPT (28 câu)
+                        </button>
+                    </div>
+                    <div class="rv-cta-hint">Hôm nay không còn câu đến hạn — lịch 1-3-7 đã hoàn thành.</div>` : due.length === currentData.qs.length ? `
+                    <div class="formats-panel-actions">
+                        <button class="btn-hero-primary" data-action="due" title="Ôn toàn bộ ${currentData.qs.length} câu đến hạn hôm nay">
+                            Ôn ${currentData.qs.length} câu hôm nay
+                        </button>
+                        <button class="btn-hero-exam" data-action="exam" title="Vào phòng thi thử tốt nghiệp THPT Quốc Gia (28 câu - 50 phút)">
+                            📝 Vào phòng thi THPT (28 câu)
+                        </button>
+                    </div>` : `
+                    <div class="formats-panel-actions">
+                        <button class="btn-hero-primary" data-action="due" title="Ôn ${due.length} câu đến hạn theo lịch SM-2">
+                            Ôn theo lịch (${due.length} câu)
+                        </button>
+                        <button class="btn-hero-secondary" data-action="all" title="Luyện toàn bộ ${currentData.qs.length} câu của bài">
+                            Luyện toàn bài (${currentData.qs.length} câu)
+                        </button>
+                        <button class="btn-hero-exam" data-action="exam" title="Vào phòng thi thử tốt nghiệp THPT Quốc Gia (28 câu - 50 phút)">
+                            📝 Vào phòng thi THPT
+                        </button>
+                    </div>`}
+                </div>
+            `;
+
+                // Chọn bài: chỉ phản hồi khi click (không re-render theo hover)
+                root.querySelectorAll('.trio-tab-btn').forEach(btn => {
+                    const targetLesson = btn.dataset.lesson;
+                    btn.onclick = () => {
+                        if (activeLessonFilter === targetLesson) return;
+                        activeLessonFilter = targetLesson;
+                        home();
+                    };
+                });
+
+                // Lắng nghe nút Đặt nhắc hẹn trên Web
+                const btnReminder = document.getElementById('btn-open-reminder');
+                if (btnReminder && window.LociReminder137) {
+                    btnReminder.onclick = () => {
+                        window.LociReminder137.openReminderModal();
+                    };
+                }
+
+
+                // Lắng nghe nút Tiếp tục phiên tạm dừng
+                const btnResume = document.getElementById('btn-resume-active');
+                if (btnResume && savedSession) {
+                    btnResume.onclick = () => {
+                        resumeSession(savedSession);
+                    };
+                }
+                const btnDiscard = document.getElementById('btn-discard-active');
+                if (btnDiscard) {
+                    btnDiscard.onclick = () => {
+                        localStorage.removeItem('loci_saved_session');
+                        home();
+                    };
+                }
+
+                // Lắng nghe các nút bắt đầu luyện tập (Toàn bài / SM-2 / Từng hình thức / Đề thi)
+                root.querySelectorAll('[data-action]').forEach(btn => {
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        const action = btn.dataset.action;
+                        if (action === 'exam') {
+                            const curLesson = (currentData && currentData.lesson && currentData.lesson.id) || activeLessonFilter || 'all';
+                            const param = curLesson && curLesson !== 'all' ? `?lesson=${encodeURIComponent(curLesson)}` : '';
+                            window.location.href = `de_thi.html${param}`;
+                            return;
+                        }
+                        const format = btn.dataset.format || 'all';
+                        start(currentData, action, format);
+                    };
+                });
+            }
+
+            function resumeSession(saved) {
+                const lessonData = rawLessons.find(r => r.lesson.id === saved.lessonId);
+                if (!lessonData) return;
+                start(lessonData, saved.mode, saved.typeFilter, saved);
+            }
+
+            function start(x, mode = 'all', typeFilter = 'all', resumeState = null) {
+                let list = mode === 'due' ? (x.qs || []).filter(q => engine.isDue(q.id)) : x.qs;
+                if (typeFilter && typeFilter !== 'all') {
+                    list = list.filter(q => q.type === typeFilter);
+                }
+                if (!list || list.length === 0) {
+                    list = x.qs.filter(q => (typeFilter && typeFilter !== 'all') ? q.type === typeFilter : true);
+                }
+
+                // Nếu tiếp tục phiên trước
+                let idx = 0;
+                const stat = {
+                    total: list.length,
+                    good: 0,
+                    wrong: 0,
+                    byType: {},
+                    wrongQuestions: []
+                };
+
+                if (resumeState) {
+                    list = resumeState.list && resumeState.list.length ? resumeState.list : list;
+                    idx = resumeState.idx || 0;
+                    stat.good = resumeState.good || 0;
+                    stat.wrong = resumeState.wrong || 0;
+                    stat.byType = resumeState.byType || {};
+                    stat.wrongQuestions = resumeState.wrongQuestions || [];
+                } else {
+                    list = shuffle(list);
+                }
+
+                const top = () => `
+                <div class="session-top">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-weight:800; font-size:15px; color:var(--text-main);">${esc(x.lesson.title)}</span>
+                        <span class="session-badge">Câu ${idx + 1}/${list.length}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span style="font-size:13px; font-weight:700; color:var(--ok);">✅ ${stat.good} đúng</span>
+                        <span style="font-size:13px; font-weight:700; color:var(--bad);">❌ ${stat.wrong} sai</span>
+                        <button id="quit" class="session-quit-btn" title="Dừng và lưu tiến trình">⏸️ Dừng</button>
+                    </div>
+                </div>
+                <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="${list.length}" aria-valuenow="${idx}">
+                    <i style="width:${idx / list.length * 100}%"></i>
+                </div>`;
+
+                function saveCurrentState() {
+                    try {
+                        const sessionData = {
+                            lessonId: x.lesson.id,
+                            mode,
+                            typeFilter,
+                            idx,
+                            total: list.length,
+                            good: stat.good,
+                            wrong: stat.wrong,
+                            byType: stat.byType,
+                            wrongQuestions: stat.wrongQuestions,
+                            list: list,
+                            savedAt: Date.now()
+                        };
+                        localStorage.setItem('loci_saved_session', JSON.stringify(sessionData));
+                    } catch (e) { }
+                }
+
+                function next() {
+                    window.onkeydown = null;
+                    idx++;
+                    saveCurrentState(); // Tự động lưu tiến trình từng câu!
+                    idx >= list.length ? finish() : show();
+                }
+
+                function recordRate(score, userDetail = null) {
+                    const q = list[idx];
+                    stat.byType[q.type] = (stat.byType[q.type] || 0) + 1;
+                    engine.processReview(q.id, score);
+
+                    if (score >= 3) {
+                        stat.good++;
+                    } else {
+                        stat.wrong++;
+
+                        const promptText = q.type === 'typein' ? q.data.prompt :
+                            q.type === 'cloze' ? q.data.sentence :
+                                q.type === 'quiz' ? q.data.question : q.data.front;
+                        const correctText = q.type === 'typein' ? q.data.answer :
+                            q.type === 'cloze' ? q.data.blank :
+                                q.type === 'quiz' ? q.data.options[q.data.correct] : q.data.back;
+                        const hintText = q.data.hint || q.data.explanation || q.data.mnemonic || q.data.fullText || '';
+
+                        stat.wrongQuestions.push({
+                            id: q.id,
+                            qObj: q,
+                            type: q.type,
+                            prompt: promptText,
+                            userAnswer: userDetail || '(Chưa nhớ)',
+                            correctAnswer: correctText,
+                            hint: hintText
+                        });
+                    }
+                    next();
+                }
+
+                function openPauseModal() {
+                    window.onkeydown = null;
+                    const existing = document.getElementById('pauseModal');
+                    if (existing) existing.remove();
+
+                    const modal = document.createElement('div');
+                    modal.className = 'pause-modal-overlay';
+                    modal.id = 'pauseModal';
+                    modal.innerHTML = `
+                    <div class="pause-modal-box">
+                        <div style="font-size:38px; margin-bottom:8px;">⏸️</div>
+                        <h3 style="font-size:20px; font-weight:800; color:var(--text-main); margin-bottom:6px;">
+                            Tạm dừng & Ghi nhận tiến trình
+                        </h3>
+                        <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:20px; line-height:1.5;">
+                            Bạn đang ở <b>câu ${idx + 1}/${list.length}</b> (${stat.good} đúng · ${stat.wrong} sai).<br>
+                            Toàn bộ tiến trình sẽ được lưu lại nguyên vẹn!
+                        </p>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <button class="btn-modal-action pri" id="btn-modal-save">
+                                💾 Lưu tiến trình & Tiếp tục sau
+                            </button>
+                            ${idx > 0 ? `
+                            <button class="btn-modal-action sec" id="btn-modal-early-finish">
+                                📊 Kết thúc sớm & Xem kết quả các câu đã làm
+                            </button>` : ''}
+                            <button class="btn-modal-action ghost" id="btn-modal-continue">
+                                ▶️ Tiếp tục làm câu này
+                            </button>
+                        </div>
+                    </div>`;
+
+                    document.body.appendChild(modal);
+
+                    document.getElementById('btn-modal-save').onclick = () => {
+                        saveCurrentState();
+                        modal.remove();
+                        home();
+                    };
+
+                    const earlyBtn = document.getElementById('btn-modal-early-finish');
+                    if (earlyBtn) {
+                        earlyBtn.onclick = () => {
+                            modal.remove();
+                            localStorage.removeItem('loci_saved_session');
+                            finish(true);
+                        };
+                    }
+
+                    document.getElementById('btn-modal-continue').onclick = () => {
+                        modal.remove();
+                        show();
+                    };
+                } function show() {
+                    const q = list[idx];
+
+                    // ══════════════════════════════════════════════════════
+                    // 1. DẠNG GÕ ĐÁP ÁN CHÍNH XÁC (TYPE-IN ANSWER)
+                    // ══════════════════════════════════════════════════════
+                    if (q.type === 'typein') {
+                        root.innerHTML = top() + `
+                        <div class="kind typein">⌨️ GÕ ĐÁP ÁN CHÍNH XÁC</div>
+                        <p class="q">${esc(q.data.prompt)}</p>
+                        ${q.data.hint ? `<p class="typein-hint">💡 Gợi ý: ${esc(q.data.hint)}</p>` : ''}
+                        
+                        <div class="typein-box" id="typein-box">
+                            <input type="text" id="typein-input" class="typein-input" placeholder="Gõ câu trả lời chính xác bằng bàn phím..." autocomplete="off" spellcheck="false" autofocus />
+                            <button class="btn" id="typein-submit">Kiểm tra ↵</button>
+                        </div>
+                        <div id="slot"></div>`;
+
+                        const inp = document.getElementById('typein-input');
+                        const sub = document.getElementById('typein-submit');
+                        const slot = document.getElementById('slot');
+
+                        function handleCheck() {
+                            const val = inp.value.trim();
+                            inp.disabled = true;
+                            sub.disabled = true;
+
+                            const checker = window.LociFlashcardFormats?.checkTypeInAnswer;
+                            const res = checker
+                                ? checker(val, q.data.answer, q.data.accepted || [], q.data.hint || '')
+                                : { score: 100, status: 'exact', title: 'Hoàn tất', typed: val, target: q.data.answer, recommendedGrade: 5 };
+
+                            const isCorrectAnswer = res.recommendedGrade >= 3;
+                            slot.innerHTML = `
+                            <div class="typein-result">
+                                <div class="typein-badge ${res.status}">${res.title} (Khớp ${res.score}%)</div>
+                                <div class="typein-row yours">
+                                    <b>Câu bạn đã gõ:</b>
+                                    <span class="is-${res.status}">${esc(res.typed || '(Chưa gõ)')}</span>
+                                </div>
+                                <div class="typein-row target">
+                                    <b>Đáp án chuẩn:</b>
+                                    <span>${esc(res.target)}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:10px; align-items:center; margin-top:16px;">
+                                <button class="btn btn-highlight" id="btn-typein-continue" style="min-width:240px; padding:12px 28px; font-size:15px;">
+                                    ${isCorrectAnswer ? '✅ Tiếp tục (Đúng +1) ➔' : '▶️ Tiếp tục (Cần ôn lại) ➔'}
+                                </button>
+                                ${isCorrectAnswer ? `
+                                <button class="btn-text-subtle" id="btn-typein-self-review" style="font-size:12px; color:var(--text-muted); background:none; border:none; cursor:pointer; text-decoration:underline;">
+                                    Tôi muốn đánh dấu ôn lại câu này ngày mai
+                                </button>` : ''}
+                            </div>`;
+
+                            const continueBtn = document.getElementById('btn-typein-continue');
+                            const selfReviewBtn = document.getElementById('btn-typein-self-review');
+
+                            function goNextTypein(forcedWrong = false) {
+                                window.onkeydown = null;
+                                if (forcedWrong) {
+                                    recordRate(1, val);
+                                } else {
+                                    recordRate(isCorrectAnswer ? 5 : 1, val);
+                                }
+                            }
+
+                            continueBtn.onclick = () => goNextTypein(false);
+                            if (selfReviewBtn) selfReviewBtn.onclick = () => goNextTypein(true);
+
+                            window.onkeydown = (e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    goNextTypein(false);
+                                }
+                            };
+                        }
+
+                        sub.onclick = handleCheck;
+                        inp.onkeydown = e => { if (e.key === 'Enter') handleCheck(); };
+                    }
+
+                    // ══════════════════════════════════════════════════════
+                    // 2. DẠNG ĐIỀN KHUYẾT TRONG NGỮ CẢNH (CLOZE DELETION)
+                    // ══════════════════════════════════════════════════════
+                    else if (q.type === 'cloze') {
+                        const blankDisplay = `<span class="cloze-blank" id="cloze-mark" title="Nhấn để lật mở đáp án">[ ... ]</span>`;
+                        const sentenceHtml = esc(q.data.sentence).replace(/\[BLANK\]/g, blankDisplay);
+
+                        root.innerHTML = top() + `
+                        <div class="kind cloze">🧩 ĐIỀN KHUYẾT NGỮ CẢNH</div>
+                        <div class="cloze-card">
+                            <div class="cloze-sentence">${sentenceHtml}</div>
+                            <div id="cloze-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
+                                <button class="btn" id="cloze-reveal">Hiện từ bị ẩn</button>
+                                <button class="btn ghost" id="cloze-try-btn">Thử tự gõ từ khuyết</button>
+                            </div>
+                            <div id="cloze-try-box" style="display:none; margin-top:16px; gap:10px;">
+                                <input type="text" id="cloze-inp" class="typein-input" placeholder="Nhập từ bị khuyết..." />
+                                <button class="btn" id="cloze-check-btn">Kiểm tra</button>
+                            </div>
+                        </div>
+                        <div id="slot"></div>`;
+
+                        const mark = document.getElementById('cloze-mark');
+                        const actions = document.getElementById('cloze-actions');
+                        const tryBox = document.getElementById('cloze-try-box');
+
+                        function revealCloze(typedAnswer = null) {
+                            actions.style.display = 'none';
+                            tryBox.style.display = 'none';
+                            if (mark) {
+                                mark.textContent = q.data.blank;
+                                mark.classList.add('revealed');
+                            }
+
+                            let matchHtml = '';
+                            let suggestedGrade = 5;
+
+                            if (typedAnswer !== null) {
+                                const checker = window.LociFlashcardFormats?.checkTypeInAnswer;
+                                const res = checker
+                                    ? checker(typedAnswer, q.data.blank, [q.data.blank])
+                                    : { status: 'exact', score: 100, title: 'Hoàn tất', recommendedGrade: 5 };
+
+                                suggestedGrade = res.recommendedGrade;
+                                matchHtml = `
+                                <div class="typein-result" style="margin-top:16px;">
+                                    <div class="typein-badge ${res.status}">${res.title}</div>
+                                    <div class="typein-row yours"><b>Bạn đã đoán:</b> <span class="is-${res.status}">${esc(typedAnswer)}</span></div>
+                                    <div class="typein-row target"><b>Từ chính xác:</b> <span>${esc(q.data.blank)}</span></div>
+                                </div>`;
+                            }
+
+                            const isCorrectCloze = suggestedGrade >= 3;
+                            const slot = document.getElementById('slot');
+                            slot.innerHTML = `
+                            ${matchHtml}
+                            <div class="answer" style="margin-top:14px; border-left: 4px solid #38bdf8;">
+                                <b>Ngữ cảnh đầy đủ:</b>
+                                <div style="font-size:16px; line-height:1.6; margin-top:6px; color:#1e293b;">
+                                    ${esc(q.data.fullText || q.data.sentence.replace('[BLANK]', q.data.blank))}
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:center; margin-top:16px;">
+                                <button class="btn btn-highlight" id="btn-cloze-next" style="min-width:240px; padding:12px 28px; font-size:15px;">
+                                    ${isCorrectCloze ? '✅ Tiếp tục (Chính xác +1) ➔' : '▶️ Tiếp tục (Cần ôn lại) ➔'}
+                                </button>
+                            </div>`;
+
+                            const clozeNextBtn = document.getElementById('btn-cloze-next');
+                            function advanceCloze() {
+                                window.onkeydown = null;
+                                recordRate(isCorrectCloze ? 5 : 1, typedAnswer);
+                            }
+                            clozeNextBtn.onclick = advanceCloze;
+                            window.onkeydown = (e) => {
+                                if (e.key === 'Enter' || e.code === 'Space') {
+                                    e.preventDefault();
+                                    advanceCloze();
+                                }
+                            };
+                        }
+
+                        document.getElementById('cloze-reveal').onclick = () => revealCloze(null);
+                        if (mark) mark.onclick = () => revealCloze(null);
+
+                        document.getElementById('cloze-try-btn').onclick = () => {
+                            actions.style.display = 'none';
+                            tryBox.style.display = 'flex';
+                            const cinp = document.getElementById('cloze-inp');
+                            cinp.focus();
+                            document.getElementById('cloze-check-btn').onclick = () => revealCloze(cinp.value.trim());
+                            cinp.onkeydown = e => { if (e.key === 'Enter') revealCloze(cinp.value.trim()); };
+                        };
+                    }
+
+                    // ══════════════════════════════════════════════════════
+                    // 3 & 4. DẠNG FLASHCARD & ĐẢO CHIỀU (FLIP ON CLICK HOẶC SPACE)
+                    // ══════════════════════════════════════════════════════
+                    else if (q.type === 'reversed' || q.type === 'fc') {
+                        const isRev = q.type === 'reversed';
+                        const badgeText = isRev ? '🔄 TRUY VẤN ĐẢO HAI CHIỀU' : '🃏 THẺ NHỚ TRỰC QUAN';
+                        const badgeClass = isRev ? 'reversed' : '';
+
+                        root.innerHTML = top() + `
+                        <div class="flip-card-stage" id="flipCardStage" tabindex="0">
+                            <div class="flip-card-inner" id="flipCardInner">
+                                <!-- MẶT TRƯỚC (FRONT) -->
+                                <div class="flip-card-front">
+                                    <div class="flip-card-header">
+                                        <span class="flip-card-badge ${badgeClass}">${badgeText}</span>
+                                        <span class="flip-hint-badge">⌨️ Nhấn [Phím cách] hoặc chạm thẻ để lật</span>
+                                    </div>
+                                    <div class="flip-card-body">
+                                        <div class="flip-card-prompt">${esc(q.data.front)}</div>
+                                    </div>
+                                    <div class="flip-card-footer">
+                                        <span class="flip-click-cta">👆 Bấm vào thẻ để lật mặt sau</span>
+                                        <span style="font-size:12px; font-weight:700; color:var(--primary);">Space ↵</span>
+                                    </div>
+                                </div>
+
+                                <!-- MẶT SAU (BACK) -->
+                                <div class="flip-card-back">
+                                    <div class="flip-card-header">
+                                        <span class="flip-card-badge success">✅ ĐÁP ÁN CHÍNH XÁC</span>
+                                        <span class="flip-hint-badge">🔄 Nhấn [Space] để lật lại mặt trước</span>
+                                    </div>
+                                    <div class="flip-card-body">
+                                        <div class="flip-card-answer">${esc(q.data.back)}</div>
+                                        ${q.data.mnemonic ? `
+                                        <div class="flip-card-mnemonic">
+                                            <b>💡 Mẹo nhớ Loci:</b> ${esc(q.data.mnemonic)}
+                                        </div>` : ''}
+                                    </div>
+                                    <div class="flip-card-footer">
+                                        <span class="flip-click-cta">Đã mở đáp án · Vui lòng chọn mức độ nhớ bên dưới:</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KHU VỰC ĐÁNH GIÁ (RATE SM-2) -->
+                        <div id="rateBox" style="opacity:0; pointer-events:none; transition:opacity 0.25s ease;">
+                            <p style="font-size:13px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-align:center;">
+                                Đánh giá mức độ ghi nhớ theo thuật toán SM-2: <small>[Phím 1, 3, 5]</small>
+                            </p>
+                            <div class="rate">
+                                <button class="btn ghost" data-q="1">Chưa nhớ<small>[Phím 1] · ôn lại ngày mai</small></button>
+                                <button class="btn ghost" data-q="3">Nhớ mang máng<small>[Phím 3] · ôn sớm</small></button>
+                                <button class="btn" data-q="5">Nhớ chuẩn<small>[Phím 5 hoặc Enter] · giãn lịch</small></button>
+                            </div>
+                        </div>
+                    `;
+
+                        const stage = document.getElementById('flipCardStage');
+                        const rateBox = document.getElementById('rateBox');
+                        let isFlipped = false;
+
+                        function doFlip() {
+                            isFlipped = !isFlipped;
+                            if (isFlipped) {
+                                stage.classList.add('is-flipped');
+                                rateBox.style.opacity = '1';
+                                rateBox.style.pointerEvents = 'auto';
+                            } else {
+                                stage.classList.remove('is-flipped');
+                            }
+                        }
+
+                        // 1. Nhấp trực tiếp vào thẻ để lật
+                        stage.onclick = doFlip;
+
+                        // 2. Bấm phím cách (Spacebar) hoặc phím tắt số 1, 3, 5
+                        window.onkeydown = function (e) {
+                            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+
+                            // Phím cách: Lật thẻ
+                            if (e.code === 'Space' || e.key === ' ') {
+                                e.preventDefault();
+                                doFlip();
+                                return;
+                            }
+
+                            // Khi đã lật: hỗ trợ phím số đánh giá
+                            if (isFlipped) {
+                                if (e.key === '1') {
+                                    window.onkeydown = null;
+                                    recordRate(1);
+                                } else if (e.key === '2' || e.key === '3') {
+                                    window.onkeydown = null;
+                                    recordRate(3);
+                                } else if (e.key === '4' || e.key === '5' || e.key === 'Enter') {
+                                    window.onkeydown = null;
+                                    recordRate(5);
+                                }
+                            }
+                        };
+
+                        rateBox.querySelectorAll('[data-q]').forEach(b => {
+                            b.onclick = (e) => {
+                                e.stopPropagation();
+                                window.onkeydown = null;
+                                recordRate(+b.dataset.q);
+                            };
+                        });
+                    }
+
+                    // ══════════════════════════════════════════════════════
+                    // 5. DẠNG TRẮC NGHIỆM (QUIZ)
+                    // ══════════════════════════════════════════════════════
+                    else {
+                        root.innerHTML = top() + `
+                        <div class="kind quiz">📝 TRẮC NGHIỆM PHÂN BIỆT</div>
+                        <p class="q">${esc(q.data.question)}</p>
+                        <div class="opts">${q.data.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>
+                        <div id="slot"></div>`;
+
+                        document.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+                            const pick = +b.dataset.i, ok = pick === q.data.correct;
+                            document.querySelectorAll('.opt').forEach(o => o.disabled = true);
+                            b.classList.add(ok ? 'right' : 'wrong');
+                            if (!ok) {
+                                const rightBtn = document.querySelector(`.opt[data-i="${q.data.correct}"]`);
+                                if (rightBtn) rightBtn.classList.add('right');
+                            }
+
+                            if (ok) {
+                                document.getElementById('slot').innerHTML = `
+                                <div class="answer" style="border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.08);">
+                                    <b style="color: #10b981; font-size:15px;">🎉 Chính xác xuất sắc! (+1 Điểm)</b>
+                                    ${q.data.explanation ? `<div style="margin-top:6px; color:#1e293b;">${esc(q.data.explanation)}</div>` : ''}
+                                </div>
+                                <div style="display:flex; justify-content:center; margin-top:16px;">
+                                    <button class="btn btn-highlight" id="btn-quiz-next" style="min-width:240px; padding:12px 28px; font-size:15px;">
+                                        Tiếp tục (Chính xác) ➔
+                                    </button>
+                                </div>`;
+
+                                const quizNextBtn = document.getElementById('btn-quiz-next');
+                                function advanceQuiz() {
+                                    window.onkeydown = null;
+                                    recordRate(5, q.data.options[pick]);
+                                }
+                                quizNextBtn.onclick = advanceQuiz;
+                                window.onkeydown = (e) => {
+                                    if (e.key === 'Enter' || e.code === 'Space') {
+                                        e.preventDefault();
+                                        advanceQuiz();
+                                    }
+                                };
+                            } else {
+                                document.getElementById('slot').innerHTML = `
+                                <div class="answer" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.08);">
+                                    <b style="color: #ef4444; font-size:15px;">❌ Chưa chính xác!</b>
+                                    <div style="margin-top:6px; font-weight:700; color:#1e293b;">Đáp án đúng là: <span style="color:#059669; background:#ecfdf5; padding:2px 8px; border-radius:6px;">${esc(q.data.options[q.data.correct])}</span></div>
+                                    ${q.data.explanation ? `<div style="margin-top:6px; color:#64748b; font-size:13.5px;">${esc(q.data.explanation)}</div>` : ''}
+                                </div>
+                                <div style="display:flex; justify-content:center; margin-top:16px;">
+                                    <button class="btn ghost btn-highlight" id="btn-quiz-next" style="min-width:240px; padding:12px 28px; font-size:15px;">
+                                        Tiếp tục (Cần ôn lại câu này) ➔
+                                    </button>
+                                </div>`;
+
+                                const quizNextBtn = document.getElementById('btn-quiz-next');
+                                function advanceQuiz() {
+                                    window.onkeydown = null;
+                                    recordRate(1, q.data.options[pick]);
+                                }
+                                quizNextBtn.onclick = advanceQuiz;
+                                window.onkeydown = (e) => {
+                                    if (e.key === 'Enter' || e.code === 'Space') {
+                                        e.preventDefault();
+                                        advanceQuiz();
+                                    }
+                                };
+                            }
+                        });
+                    }
+
+                    const quit = document.getElementById('quit');
+                    if (quit) quit.onclick = openPauseModal;
+                }
+
+                function finish(isEarly = false) {
+                    localStorage.removeItem('loci_saved_session'); // Đã hoàn thành nên giải phóng session dở
+                    const actualTotal = isEarly ? Math.max(idx, 1) : stat.total;
+                    const percent = Math.round(stat.good / actualTotal * 100) || 0;
+
+                    // Lưu tiến trình vào localStorage
+                    try {
+                        const prog = JSON.parse(localStorage.getItem('loci_lesson_progress') || '{}');
+                        prog[x.lesson.id] = {
+                            percent: percent,
+                            good: stat.good,
+                            wrong: stat.wrong,
+                            total: stat.total,
+                            updatedAt: Date.now()
+                        };
+                        localStorage.setItem('loci_lesson_progress', JSON.stringify(prog));
+                    } catch (e) { }
+
+                    // Ghi nhận hoàn thành mốc chu kỳ 1-3-7
+                    try {
+                        if (window.LociReminder137 && percent >= 50) {
+                            window.LociReminder137.recordLessonCompleted(x.lesson.id, percent);
+                        }
+                    } catch (e) { }
+
+                    function formatLabel(type) {
+                        const map = {
+                            typein: '⌨️ Gõ đáp án',
+                            cloze: '🧩 Điền khuyết',
+                            reversed: '🔄 Đảo chiều',
+                            fc: '🃏 Flashcard',
+                            quiz: '📝 Trắc nghiệm'
+                        };
+                        return map[type] || 'Câu hỏi';
+                    }
+
+                    root.innerHTML = `
+                    <div class="results-container">
+                        <!-- HEADER TỔNG KẾT -->
+                        <div style="text-align:center; padding:10px 0 6px;">
+                            <div style="font-size:52px; margin-bottom:6px;">${percent >= 80 ? '🏆' : percent >= 50 ? '🎉' : '💪'}</div>
+                            <h2 style="font-size:24px; font-weight:800; color:var(--text-main); margin-bottom:4px;">
+                                ${percent >= 80 ? 'Xuất sắc! Nắm rất vững kiến thức' : percent >= 50 ? 'Hoàn thành tốt lượt ôn tập!' : 'Cần củng cố thêm các mốc quan trọng'}
+                            </h2>
+                            <p class="lede" style="margin-bottom:0; font-size:14px;">
+                                ${esc(x.lesson.title)} · Thuật toán SM-2 đã cập nhật dữ liệu
+                            </p>
+                        </div>
+
+                        <!-- 4 Ô TIẾN TRÌNH & KẾT QUẢ -->
+                        <div class="results-stats-grid">
+                            <div class="stat-box">
+                                <div class="stat-val" style="color:var(--primary);">${percent}%</div>
+                                <div class="stat-label">Tỷ lệ chính xác</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-val" style="color:var(--ok);">✅ ${stat.good}</div>
+                                <div class="stat-label">Số câu đúng</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-val" style="color:var(--bad);">❌ ${stat.wrong}</div>
+                                <div class="stat-label">Số câu sai</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-val" style="color:#6366f1;">${isEarly ? Math.round(actualTotal / stat.total * 100) + '%' : '⏱️ 100%'}</div>
+                                <div class="stat-label">${isEarly ? 'Hoàn thành (' + actualTotal + '/' + stat.total + ')' : 'Tiến trình (' + stat.total + '/' + stat.total + ')'}</div>
+                            </div>
+                        </div>
+
+                        <!-- CHI TIẾT "SAI Ở ĐÂU" -->
+                        ${stat.wrongQuestions.length > 0 ? `
+                        <div class="wrong-review-card">
+                            <div class="wrong-review-header">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:20px;">⚠️</span>
+                                    <div>
+                                        <div style="font-size:15.5px; font-weight:800; color:var(--text-main);">
+                                            Chi tiết câu sai & Cần ôn lại (${stat.wrongQuestions.length} câu)
+                                        </div>
+                                        <div style="font-size:12.5px; color:var(--text-muted);">
+                                            Đối chiếu câu bạn đã trả lời với đáp án chuẩn và mẹo Loci
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn-retry-wrong" id="retry-wrong-top-btn">
+                                    <span>🔄</span> Ôn lại ${stat.wrongQuestions.length} câu sai
+                                </button>
+                            </div>
+
+                            <div class="wrong-list">
+                                ${stat.wrongQuestions.map((wq, i) => `
+                                <div class="wrong-item">
+                                    <div class="wrong-item-num">Câu ${i + 1} · ${formatLabel(wq.type)}</div>
+                                    <div class="wrong-item-q">${esc(wq.prompt)}</div>
+                                    
+                                    <div class="wrong-item-comparison">
+                                        <div class="wrong-ans-row wrong">
+                                            <span class="wrong-tag">❌ Bạn đã trả lời:</span>
+                                            <span class="wrong-text">${esc(wq.userAnswer)}</span>
+                                        </div>
+                                        <div class="wrong-ans-row right">
+                                            <span class="right-tag">✅ Đáp án chính xác:</span>
+                                            <span class="right-text">${esc(wq.correctAnswer)}</span>
+                                        </div>
+                                    </div>
+
+                                    ${wq.hint ? `
+                                    <div class="wrong-item-hint">
+                                        <b>💡 Gợi ý / Mẹo nhớ Loci:</b> ${esc(wq.hint)}
+                                    </div>` : ''}
+                                </div>`).join('')}
+                            </div>
+                        </div>` : `
+                        <div class="perfect-score-card">
+                            <span style="font-size:32px;">🌟</span>
+                            <div>
+                                <div style="font-weight:800; font-size:16px; color:#065f46;">Hoàn hảo! Không có câu nào trả lời sai</div>
+                                <div style="font-size:13.5px; color:#047857;">Bạn đã ghi nhớ trọn vẹn toàn bộ kiến thức trong phiên ôn tập này.</div>
+                            </div>
+                        </div>`}
+
+                        <!-- HÀNH ĐỘNG TIẾP THEO -->
+                        <div class="results-actions">
+                            ${stat.wrongQuestions.length > 0 ? `
+                            <button class="btn-action-highlight" id="btn-practice-wrong">
+                                <span>🔄</span> Ôn lại riêng ${stat.wrongQuestions.length} câu sai ngay
+                            </button>` : ''}
+                            <button class="btn-action-norm" id="btn-goto-exam" style="background: linear-gradient(135deg, #eef2ff, #e0e7ff); border-color: #818cf8; color: #4338ca; font-weight:700;">
+                                <span>📝</span> Làm Đề thi THPT (${x.lesson ? x.lesson.title : 'bài này'})
+                            </button>
+                            <button class="btn-action-norm" id="btn-retry-all">
+                                <span>✨</span> Luyện lại bài này
+                            </button>
+                            <button class="btn-action-norm" id="btn-back-home">
+                                <span>🏠</span> Trở về danh sách 3 bài
+                            </button>
+                        </div>
+                    </div>`;
+
+                    // Nút ôn lại riêng các câu sai
+                    const retryWrongTop = document.getElementById('retry-wrong-top-btn');
+                    const practiceWrong = document.getElementById('btn-practice-wrong');
+                    function startRetryWrong() {
+                        const customLesson = {
+                            lesson: x.lesson,
+                            qs: stat.wrongQuestions.map(w => w.qObj),
+                            due: []
+                        };
+                        start(customLesson, 'all', 'all');
+                    }
+                    if (retryWrongTop) retryWrongTop.onclick = startRetryWrong;
+                    if (practiceWrong) practiceWrong.onclick = startRetryWrong;
+
+                    // Nút luyện lại toàn bộ
+                    document.getElementById('btn-retry-all').onclick = () => start(x, 'all', typeFilter);
+
+                    // Nút làm đề thi THPT
+                    const btnGotoExam = document.getElementById('btn-goto-exam');
+                    if (btnGotoExam) {
+                        btnGotoExam.onclick = () => {
+                            const lid = x.lesson ? x.lesson.id : '';
+                            window.location.href = `de_thi.html${lid ? '?lesson=' + encodeURIComponent(lid) : ''}`;
+                        };
+                    }
+
+                    // Nút về trang chủ
+                    document.getElementById('btn-back-home').onclick = home;
+                }
+
+                show();
+            }
+
+            // Bắt đầu khởi tạo giao diện
+            home();
+        })();
+    </script>
+</body>
+
+</html>

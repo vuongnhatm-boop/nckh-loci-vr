@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trạm 1: Chiến Dịch Mãn Châu 1945 — Sa Bàn 3D Loci VR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #07090c;
+            --primary-red: #ef4444;
+            --primary-amber: #f59e0b;
+            --primary-soviet: #dc2626;
+            --glass-bg: rgba(15, 23, 42, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #f8fafc;
+        }
+
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        /* Top HUD Bar */
+        .hud-top {
+            position: absolute;
+            top: 18px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .title-badge {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px);
+            padding: 10px 18px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-red);
+            box-shadow: 0 0 10px var(--primary-red);
+            animation: pulseDot 1.8s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35); opacity: 0.6; }
+        }
+
+        .title-text {
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: #f1f5f9;
+        }
+
+        .tag-pill {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Camera Controls Pill */
+        .camera-bar {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            padding: 6px 10px;
+            border-radius: 999px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .cam-btn {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .cam-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .cam-btn.active {
+            background: linear-gradient(135deg, #ef4444, #f59e0b);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Info Card Drawer (Right) */
+        .info-card {
+            position: absolute;
+            top: 76px;
+            right: 20px;
+            width: 320px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            border-radius: 18px;
+            padding: 18px 20px;
+            z-index: 20;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: #fef08a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .loci-quote {
+            background: rgba(245, 158, 11, 0.12);
+            border-left: 3px solid var(--primary-amber);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-style: italic;
+            color: #fde68a;
+        }
+
+        .mnemonic-tag {
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.18);
+            border: 1px dashed rgba(239, 68, 68, 0.5);
+            padding: 7px 10px;
+            border-radius: 8px;
+            color: #fca5a5;
+        }
+
+        /* Loading Screen */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #080a0f;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: opacity 0.6s ease;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(239, 68, 68, 0.2);
+            border-top: 4px solid var(--primary-red);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        #load-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #cbd5e1;
+            letter-spacing: 0.3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loader">
+        <div class="spinner"></div>
+        <div id="load-text">Đang nạp Sa Bàn Chiến Dịch Mãn Châu 1945...</div>
+    </div>
+
+    <!-- Top HUD -->
+    <div class="hud-top">
+        <div class="title-badge">
+            <div class="status-dot"></div>
+            <span class="title-text">Trạm 1: Chiến Dịch Mãn Châu 1945 — Bão Lửa Thế Giới</span>
+            <span class="tag-pill">HỒNG QUÂN TRUY KÍCH</span>
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    <div class="info-card">
+        <div class="card-title">⚔️ Bước Ngoặt 8/1945</div>
+        <div class="card-desc">
+            Ngày 9/8/1945, hơn 1.5 triệu quân Hồng quân Liên Xô cùng hàng ngàn xe tăng T-34-85 thần tốc mở chiến dịch Mãn Châu, quét sạch 1 triệu quân Quan Đông phát xít Nhật.
+        </div>
+        <div class="loci-quote">
+            "Liên Xô đánh tan đạo quân Quan Đông — con bài phòng thủ cuối cùng của Nhật Bản hoàn toàn sụp đổ!"
+        </div>
+        <div class="mnemonic-tag">
+            💡 <b>Mẹo nhớ Loci:</b> T-34 xốc tới ➔ Quan Đông tháo chạy ➔ Nhật Hoàng đầu hàng 15/8 ➔ Thời cơ ngàn năm có một!
+        </div>
+    </div>
+
+    <!-- Camera Navigation Pill -->
+    <div class="camera-bar">
+        <button class="cam-btn active" id="btnCamOverview">👁️ Toàn cảnh Sa bàn</button>
+        <button class="cam-btn" id="btnCamSoviet">🚩 Lính Hồng Quân (Cầm súng)</button>
+        <button class="cam-btn" id="btnCamTank">💥 Xe tăng T-34-85</button>
+        <button class="cam-btn" id="btnCamJapan">🏃 Quân Nhật tháo chạy</button>
+    </div>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+
+        // 1. Scene, Camera, Renderer
+        const canvas = document.getElementById('webgl-canvas');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0c10);
+        scene.fog = new THREE.FogExp2(0x0a0c10, 0.055);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 80);
+        camera.position.set(3.2, 2.4, 3.4);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 0.75, -0.15);
+        controls.maxPolarAngle = Math.PI / 2 - 0.03;
+        controls.minDistance = 1.2;
+        controls.maxDistance = 14.0;
+
+        window.camera = camera;
+        window.controls = controls;
+
+        // 2. Battlefield Lighting (War-torn Sky & Warm Embers)
+        const ambientLight = new THREE.AmbientLight(0xd1d5db, 1.25);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 2.5);
+        sunLight.position.set(5, 8, 4);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = -0.0004;
+        scene.add(sunLight);
+
+        // Fill Light (Cool bluish twilight)
+        const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.85);
+        fillLight.position.set(-5, 4, -3);
+        scene.add(fillLight);
+
+        // Warm fiery glow from tank engine
+        const fireLight = new THREE.PointLight(0xf97316, 2.2, 4.5);
+        fireLight.position.set(0, 0.8, 1.0);
+        scene.add(fireLight);
+
+        // 3. Clean Diorama Pedestal Base (Gọn gàng như Mốc 2)
+        const baseRadius = 2.2;
+        const baseGeo = new THREE.CylinderGeometry(baseRadius, baseRadius + 0.22, 0.20, 64);
+        const baseMat = new THREE.MeshStandardMaterial({
+            color: 0x1e1b18,
+            roughness: 0.88,
+            metalness: 0.12
+        });
+        const pedestal = new THREE.Mesh(baseGeo, baseMat);
+        pedestal.position.y = -0.10;
+        pedestal.receiveShadow = true;
+        scene.add(pedestal);
+
+        // Bronze Rim
+        const rimGeo = new THREE.TorusGeometry(baseRadius + 0.015, 0.022, 16, 64);
+        const rimMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.35, metalness: 0.75 });
+        const rim = new THREE.Mesh(rimGeo, rimMat);
+        rim.rotation.x = Math.PI / 2;
+        rim.position.y = 0.002;
+        scene.add(rim);
+
+        // Treadmill Ground Texture Conveyor (Đất chiến hào cuộn trôi tạo cảm giác tiến quân liên tục không giật)
+        const groundGeo = new THREE.PlaneGeometry(baseRadius * 1.9, baseRadius * 1.9, 16, 16);
+        const canvasTex = document.createElement('canvas');
+        canvasTex.width = 512; canvasTex.height = 512;
+        const ctx = canvasTex.getContext('2d');
+        ctx.fillStyle = '#292520';
+        ctx.fillRect(0, 0, 512, 512);
+        ctx.fillStyle = '#1c1917';
+        for (let i = 0; i < 20; i++) {
+            const y = (i * 26);
+            ctx.fillRect(90, y, 65, 14);
+            ctx.fillRect(355, y, 65, 14);
+        }
+        const groundTexture = new THREE.CanvasTexture(canvasTex);
+        groundTexture.wrapS = THREE.RepeatWrapping;
+        groundTexture.wrapT = THREE.RepeatWrapping;
+        groundTexture.repeat.set(1, 3);
+
+        const groundMat = new THREE.MeshStandardMaterial({
+            map: groundTexture,
+            roughness: 0.92,
+            metalness: 0.05
+        });
+        const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+        groundMesh.rotation.x = -Math.PI / 2;
+        groundMesh.position.y = 0.003;
+        groundMesh.receiveShadow = true;
+        scene.add(groundMesh);
+
+        // Subtle low-poly battlefield rocks along pedestal edge (như Mốc 2)
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x44403c, roughness: 0.85, flatShading: true });
+        [
+            [-baseRadius * 0.7, 0.04, -baseRadius * 0.45, 0.12],
+            [baseRadius * 0.72, 0.04, baseRadius * 0.4, 0.14],
+            [-baseRadius * 0.55, 0.03, baseRadius * 0.55, 0.09],
+            [baseRadius * 0.6, 0.04, -baseRadius * 0.5, 0.11]
+        ].forEach(r => {
+            const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r[3], 0), rockMat);
+            rock.position.set(r[0], r[1], r[2]);
+            scene.add(rock);
+        });
+
+        // Dust / Ember Particles drifting backward
+        const particleCount = 75;
+        const pPositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            pPositions[i] = (Math.random() - 0.5) * 3.6;
+            pPositions[i + 1] = Math.random() * 1.6 + 0.1;
+            pPositions[i + 2] = (Math.random() - 0.5) * 3.6;
+        }
+        const pGeo = new THREE.BufferGeometry();
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+        const pMat = new THREE.PointsMaterial({
+            color: 0xf59e0b,
+            size: 0.030,
+            transparent: true,
+            opacity: 0.65,
+            blending: THREE.AdditiveBlending
+        });
+        const dustParticles = new THREE.Points(pGeo, pMat);
+        scene.add(dustParticles);
+
+        // 4. Model Loaders
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        const loadGLB = url => new Promise((resolve, reject) => {
+            gltfLoader.load(encodeURI(url), resolve, undefined, reject);
+        });
+
+        // Bone finder for Two-Bone IK
+        function findBones(root) {
+            const b = {
+                hips: null, head: null,
+                rightArm: null, rightForeArm: null, rightHand: null,
+                leftArm: null, leftForeArm: null, leftHand: null,
+                rightIndex: [], rightFingers: [], leftFingers: []
+            };
+            root.traverse(c => {
+                if (!c.isBone) return;
+                const n = c.name || '';
+                if (n.includes('Hips') && !b.hips) b.hips = c;
+                if (/Head$/.test(n) && !b.head) b.head = c;
+                if (n.includes('RightArm') && !n.includes('Fore')) b.rightArm = c;
+                if (n.includes('RightForeArm')) b.rightForeArm = c;
+                if (n.includes('RightHand') && !/Thumb|Index|Mid|Middle|Ring|Pinky/.test(n)) b.rightHand = c;
+                if (n.includes('LeftArm') && !n.includes('Fore')) b.leftArm = c;
+                if (n.includes('LeftForeArm')) b.leftForeArm = c;
+                if (n.includes('LeftHand') && !/Thumb|Index|Mid|Middle|Ring|Pinky/.test(n)) b.leftHand = c;
+                if (n.includes('RightHand') && n.includes('Index')) b.rightIndex.push(c);
+                if (/RightHand(Thumb|Mid|Middle|Ring|Pinky)/.test(n)) b.rightFingers.push(c);
+                if (/LeftHand(Thumb|Index|Mid|Middle|Ring|Pinky)/.test(n)) b.leftFingers.push(c);
+            });
+            return b;
+        }
+
+        // Two-Bone IK Solver
+        const _S = new THREE.Vector3(), _E = new THREE.Vector3(), _W = new THREE.Vector3();
+        const _axis = new THREE.Vector3(), _n2 = new THREE.Vector3(), _tmpQ = new THREE.Quaternion();
+
+        function twoBoneIK(upper, fore, end, target, pole, outQuats) {
+            upper.getWorldPosition(_S);
+            fore.getWorldPosition(_E);
+            end.getWorldPosition(_W);
+            const l1 = _S.distanceTo(_E);
+            const l2 = _E.distanceTo(_W);
+            let d = _S.distanceTo(target);
+            d = Math.min(Math.max(d, Math.abs(l1 - l2) + 0.005), l1 + l2 - 0.005);
+
+            _axis.copy(target).sub(_S).normalize();
+            _n2.copy(pole).addScaledVector(_axis, -pole.dot(_axis));
+            if (_n2.lengthSq() < 1e-6) {
+                _n2.set(0, 0, 1).addScaledVector(_axis, -_axis.z);
+                if (_n2.lengthSq() < 1e-6) _n2.set(1, 0, 0);
+            }
+            _n2.normalize();
+
+            const cosA = Math.min(1, Math.max(-1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)));
+            const a = Math.acos(cosA);
+            const E_des = new THREE.Vector3().copy(_S)
+                .addScaledVector(_axis, l1 * Math.cos(a))
+                .addScaledVector(_n2, l1 * Math.sin(a));
+            const W_des = new THREE.Vector3().copy(_S).addScaledVector(_axis, d);
+
+            const dirU_cur = _E.clone().sub(_S).normalize();
+            const dirU_des = E_des.clone().sub(_S).normalize();
+            const qDeltaU = new THREE.Quaternion().setFromUnitVectors(dirU_cur, dirU_des);
+            const qUpperCur = upper.getWorldQuaternion(new THREE.Quaternion());
+            const qUpperNewW = qDeltaU.clone().multiply(qUpperCur);
+            upper.parent.getWorldQuaternion(_tmpQ);
+            upper.quaternion.copy(_tmpQ.clone().invert().multiply(qUpperNewW));
+
+            const localBoneF = end.position.clone().normalize();
+            const qForeBaseW = qUpperNewW.clone().multiply(fore.quaternion);
+            const dirF_base = localBoneF.clone().applyQuaternion(qForeBaseW).normalize();
+            const dirF_des = W_des.clone().sub(E_des).normalize();
+            const qDeltaF = new THREE.Quaternion().setFromUnitVectors(dirF_base, dirF_des);
+            const qForeNewW = qDeltaF.clone().multiply(qForeBaseW);
+            fore.quaternion.copy(qUpperNewW.clone().invert().multiply(qForeNewW));
+
+            if (outQuats) {
+                outQuats.upperW.copy(qUpperNewW);
+                outQuats.foreW.copy(qForeNewW);
+            }
+            return W_des;
+        }
+
+        const aimConfig = {
+            pocketFwd: 0.07, pocketDown: 0.05, pocketInward: 0.03,
+            gunPitch: 0.02, gunInward: 0.035, gripFwd: 0.0, gripUp: 0.0,
+            lWristDrop: 0.01, lWristBack: 0.0,
+            rHandTwistX: -1.35, rHandTwistY: 0.15, rHandTwistZ: -0.45,
+            lHandTwistX: 1.45, lHandTwistY: -0.25, lHandTwistZ: 0.85
+        };
+
+        function solveAiming(rig) {
+            const b = rig.bones, c = aimConfig;
+            if (!b.rightArm || !b.leftArm || !b.head || !b.hips || !rig.gun) return;
+
+            rig.root.updateMatrixWorld(true);
+
+            const up = b.head.getWorldPosition(new THREE.Vector3()).sub(b.hips.getWorldPosition(new THREE.Vector3())).normalize();
+            const right = b.rightArm.getWorldPosition(new THREE.Vector3()).sub(b.leftArm.getWorldPosition(new THREE.Vector3())).normalize();
+            const fwdTilt = new THREE.Vector3().crossVectors(up, right).normalize();
+            const fwd = new THREE.Vector3(fwdTilt.x, 0, fwdTilt.z).normalize();
+
+            const shoulderR = b.rightArm.getWorldPosition(new THREE.Vector3());
+            const stockPocket = shoulderR.clone()
+                .addScaledVector(fwd, c.pocketFwd * rig.scaleFactor)
+                .addScaledVector(up, -c.pocketDown * rig.scaleFactor)
+                .addScaledVector(right, -c.pocketInward * rig.scaleFactor);
+
+            const gunDir = fwd.clone().addScaledVector(right, c.gunInward).addScaledVector(up, -c.gunPitch).normalize();
+            const gunUp = up.clone().addScaledVector(gunDir, -gunDir.y).normalize();
+            const gunBack = gunDir.clone().negate();
+            const gunSide = new THREE.Vector3().crossVectors(gunUp, gunBack);
+            rig.gun.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(gunSide, gunUp, gunBack));
+
+            rig.gun.position.copy(stockPocket)
+                .addScaledVector(gunDir, (0.245 + c.gripFwd) * rig.scaleFactor)
+                .addScaledVector(gunUp, (-0.045 + c.gripUp) * rig.scaleFactor);
+            rig.gun.updateMatrixWorld(true);
+
+            const gripPos = rig.gun.localToWorld(new THREE.Vector3(0, 0.005, -0.01));
+            const poleR = fwd.clone().multiplyScalar(-0.35).addScaledVector(up, -1).addScaledVector(right, 0.45);
+            const qR = { upperW: new THREE.Quaternion(), foreW: new THREE.Quaternion() };
+            twoBoneIK(b.rightArm, b.rightForeArm, b.rightHand, gripPos, poleR, qR);
+
+            const hgTarget = rig.gun.localToWorld(new THREE.Vector3(-0.02, 0.115 - c.lWristDrop, -0.36 + c.lWristBack));
+            const poleL = fwd.clone().multiplyScalar(-0.15).addScaledVector(up, -1).addScaledVector(right, -0.45);
+            const qL = { upperW: new THREE.Quaternion(), foreW: new THREE.Quaternion() };
+            twoBoneIK(b.leftArm, b.leftForeArm, b.leftHand, hgTarget, poleL, qL);
+
+            // Twist hands to hold gun
+            const qGunW = rig.gun.quaternion;
+            const qTr = qGunW.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(c.rHandTwistX, c.rHandTwistY, c.rHandTwistZ)));
+            b.rightHand.quaternion.copy(qR.foreW.clone().invert().multiply(qTr));
+
+            const qTl = qGunW.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(c.lHandTwistX, c.lHandTwistY, c.lHandTwistZ)));
+            b.leftHand.quaternion.copy(qL.foreW.clone().invert().multiply(qTl));
+
+            // Fingers
+            b.rightIndex.forEach(x => x.rotation.set(0.12, 0, -0.08));
+            b.rightFingers.forEach(x => { x.rotation.z = -0.75; x.rotation.x = -0.35; });
+            b.leftFingers.forEach(x => { x.rotation.z = 0.55; x.rotation.x = 0.25; });
+        }
+
+        // 5. Build and Populate Diorama
+        const mixers = [];
+        const sovietRigs = [];
+        const actors = {
+            tank: null,
+            soviet1: null,
+            soviet2: null,
+            japan1: null,
+            japan2: null
+        };
+
+        async function init() {
+            try {
+                const [gltfTank, gltfSov, gltfJap, gltfGun, gltfSandbag] = await Promise.all([
+                    loadGLB('assets/models/tram1/t34_tank.glb'),
+                    loadGLB('assets/models/tram1/soviet_soldier.glb'),
+                    loadGLB('assets/models/tram1/japan_soldier.glb'),
+                    loadGLB('assets/models/tram1/ak47_grip.glb'),
+                    loadGLB('assets/models/tram1/sandbag_wall.glb')
+                ]);
+
+                // A. Xe tăng T-34-85 (Đặt ở trung tâm phía sau Z = -0.65m, tỉ lệ 0.20)
+                const tank = gltfTank.scene;
+                tank.scale.set(0.20, 0.20, 0.20);
+                tank.position.set(0.0, 0.48, -0.65);
+                tank.rotation.y = Math.PI / 2; // Nòng pháo hướng thẳng +Z truy kích phía trước
+                tank.traverse(c => {
+                    if (c.isMesh) {
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+                    }
+                });
+                scene.add(tank);
+                actors.tank = tank;
+
+                // B. Bờ bao cát công sự (Thấp gọn gàng ở Z = +0.05m, tỉ lệ 0.38)
+                const sandbag = gltfSandbag.scene;
+                sandbag.scale.set(0.38, 0.38, 0.38);
+                sandbag.position.set(-0.06, 0.05, 0.05);
+                sandbag.rotation.y = -Math.PI * 0.06;
+                sandbag.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+                scene.add(sandbag);
+
+                // C. 2 Lính Hồng quân Liên Xô (Tiến bước bồng súng cùng chiều +Z)
+                function createSovietSoldier(cfg) {
+                    const root = cfg.isClone ? SkeletonUtils.clone(gltfSov.scene) : gltfSov.scene;
+                    const scaleVal = 0.42;
+                    root.scale.set(scaleVal, scaleVal, scaleVal);
+                    root.position.copy(cfg.pos);
+                    root.rotation.y = 0; // Hướng về +Z
+                    root.traverse(c => {
+                        if (c.isMesh) {
+                            c.castShadow = true;
+                            c.receiveShadow = true;
+                        }
+                    });
+                    scene.add(root);
+
+                    const mixer = new THREE.AnimationMixer(root);
+                    const clip = gltfSov.animations[0];
+                    if (clip) {
+                        const action = mixer.clipAction(clip);
+                        action.timeScale = cfg.timeScale || 1.0;
+                        action.play();
+                        mixers.push(mixer);
+                    }
+
+                    // Gun
+                    const gun = gltfGun.scene.clone(true);
+                    gun.scale.set(scaleVal, scaleVal, scaleVal);
+                    scene.add(gun);
+
+                    const rig = {
+                        root,
+                        gun,
+                        scaleFactor: scaleVal,
+                        bones: findBones(root)
+                    };
+                    sovietRigs.push(rig);
+                    return root;
+                }
+
+                actors.soviet1 = createSovietSoldier({
+                    pos: new THREE.Vector3(-0.55, 0.005, -0.50),
+                    timeScale: 1.0,
+                    isClone: false
+                });
+
+                actors.soviet2 = createSovietSoldier({
+                    pos: new THREE.Vector3(0.50, 0.005, -0.45),
+                    timeScale: 1.04,
+                    isClone: true
+                });
+
+                // D. 2 Lính Phát xít Nhật (Tháo chạy hoảng sợ về phía trước +Z: người trước, người sau)
+                function createJapanSoldier(cfg) {
+                    const root = cfg.isClone ? SkeletonUtils.clone(gltfJap.scene) : gltfJap.scene;
+                    const scaleVal = 0.40;
+                    root.scale.set(scaleVal, scaleVal, scaleVal);
+                    root.position.copy(cfg.pos);
+                    root.rotation.y = 0; // Tháo chạy về phía trước (+Z)
+                    root.traverse(c => {
+                        if (c.isMesh) {
+                            c.castShadow = true;
+                            c.receiveShadow = true;
+                        }
+                    });
+                    scene.add(root);
+
+                    const mixer = new THREE.AnimationMixer(root);
+                    const clip = gltfJap.animations[0];
+                    if (clip) {
+                        const action = mixer.clipAction(clip);
+                        action.timeScale = cfg.speed;
+                        action.play();
+                        mixers.push(mixer);
+                    }
+                    return root;
+                }
+
+                // Lính Nhật #1: Chạy trước, tốc độ nhanh hơn, dạt về bên trái tiền duyên
+                actors.japan1 = createJapanSoldier({
+                    pos: new THREE.Vector3(-0.35, 0.005, 0.72),
+                    speed: 1.20,
+                    isClone: false
+                });
+
+                // Lính Nhật #2: Chạy sau, hoảng hốt tụt lại gần bao cát, dạt bên phải
+                actors.japan2 = createJapanSoldier({
+                    pos: new THREE.Vector3(0.35, 0.005, 0.36),
+                    speed: 0.92,
+                    isClone: true
+                });
+
+                // Hide loader
+                const loaderEl = document.getElementById('loader');
+                loaderEl.style.opacity = '0';
+                setTimeout(() => loaderEl.style.display = 'none', 600);
+
+            } catch (err) {
+                console.error('Lỗi nạp sa bàn:', err);
+                document.getElementById('load-text').innerText = 'Lỗi nạp mô hình 3D: ' + err.message;
+            }
+        }
+
+        init();
+
+        // 6. Camera Presets
+        const camViews = {
+            overview: { pos: [3.4, 2.3, 3.2], target: [0, 0.65, -0.1] },
+            soviet: { pos: [0.3, 1.4, 2.1], target: [-0.1, 0.95, 0.5] },
+            tank: { pos: [2.3, 1.6, 1.8], target: [0.1, 0.8, 0.9] },
+            japan: { pos: [-1.8, 1.3, -1.8], target: [-0.2, 0.85, -1.0] }
+        };
+
+        function setCameraView(key, btnId) {
+            document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(btnId).classList.add('active');
+            const v = camViews[key];
+            if (!v) return;
+
+            const startPos = camera.position.clone();
+            const endPos = new THREE.Vector3(...v.pos);
+            const startTar = controls.target.clone();
+            const endTar = new THREE.Vector3(...v.target);
+
+            let t = 0;
+            const animateGlide = () => {
+                t += 0.04;
+                const ease = 0.5 - Math.cos(Math.min(t, 1) * Math.PI) / 2;
+                camera.position.lerpVectors(startPos, endPos, ease);
+                controls.target.lerpVectors(startTar, endTar, ease);
+                controls.update();
+                if (t < 1.0) requestAnimationFrame(animateGlide);
+            };
+            animateGlide();
+        }
+
+        document.getElementById('btnCamOverview').onclick = () => setCameraView('overview', 'btnCamOverview');
+        document.getElementById('btnCamSoviet').onclick = () => setCameraView('soviet', 'btnCamSoviet');
+        document.getElementById('btnCamTank').onclick = () => setCameraView('tank', 'btnCamTank');
+        document.getElementById('btnCamJapan').onclick = () => setCameraView('japan', 'btnCamJapan');
+
+        // 7. Animation Loop (60 FPS Treadmill Kinematics)
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.1);
+            const time = clock.getElapsedTime();
+
+            // Cập nhật hoạt ảnh khung xương chạy bộ
+            mixers.forEach(m => m.update(dt));
+
+            // Khóa trượt hips cục bộ cho sải chân tự nhiên
+            sovietRigs.forEach(rig => {
+                if (rig.bones.hips) {
+                    rig.bones.hips.position.x = 0;
+                    rig.bones.hips.position.y = 0;
+                }
+                solveAiming(rig);
+            });
+
+            // Cuộn texture mặt đất (Treadmill effect — tạo cảm giác đoàn quân đang băng qua chiến hào Mãn Châu)
+            if (groundTexture) {
+                groundTexture.offset.y = (-time * 0.45) % 1.0;
+            }
+
+            // Rung động cơ xe tăng T-34-85 & chớp lửa nhẹ
+            if (actors.tank) {
+                actors.tank.position.y = 0.48 + Math.sin(time * 26.0) * 0.002;
+            }
+            fireLight.intensity = 2.4 + Math.sin(time * 12.0) * 0.4 + Math.cos(time * 18.0) * 0.2;
+
+            // Bụi đất / tàn lửa trôi ngược về phía sau
+            const posAttr = dustParticles.geometry.attributes.position;
+            for (let i = 2; i < particleCount * 3; i += 3) {
+                posAttr.array[i] -= dt * 1.8;
+                if (posAttr.array[i] < -baseRadius) {
+                    posAttr.array[i] = baseRadius;
+                }
+            }
+            posAttr.needsUpdate = true;
+
+            // Chuyển động so le tự nhiên của 2 lính Nhật (người trước, người sau nhấp nhô nhịp chân)
+            if (actors.japan1) {
+                actors.japan1.position.x = -0.35 + Math.sin(time * 3.5) * 0.020;
+            }
+            if (actors.japan2) {
+                actors.japan2.position.x = 0.35 + Math.cos(time * 2.8) * 0.025;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

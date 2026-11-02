@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạm 2: Lán Nà Nưa & Quân Lệnh Số 1 — Sa bàn 3D Loci</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #08100a;
+            --primary-forest: #10b981;
+            --accent-gold: #f59e0b;
+            --accent-red: #ef4444;
+            --glass-bg: rgba(10, 25, 15, 0.88);
+            --glass-border: rgba(52, 211, 153, 0.25);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Top Header Bar */
+        .header-bar {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            max-width: calc(100vw - 40px);
+        }
+
+        .station-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            flex-shrink: 0;
+        }
+
+        .station-title h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 19px;
+            font-weight: 700;
+            color: #ecfdf5;
+            letter-spacing: -0.2px;
+            line-height: 1.25;
+        }
+
+        .station-title p {
+            font-size: 11px;
+            color: var(--primary-forest);
+            font-weight: 600;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Camera Control Floating Pill */
+        .camera-bar {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 8px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .cam-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cam-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--primary-forest);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .cam-btn.active {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #060d07;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            transition: opacity 0.8s ease;
+        }
+
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(52, 211, 153, 0.15);
+            border-top: 4px solid var(--primary-forest);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a7f3d0;
+            letter-spacing: 0.5px;
+        }
+
+        /* Detail Modal */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: #09170e;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px 28px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            position: relative;
+            animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.92) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+        }
+
+        .modal-tag {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .tag-gold { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .tag-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ecfdf5;
+            margin-top: 4px;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: #94a3b8;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .modal-body {
+            font-size: 13px;
+            line-height: 1.65;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .modal-quote {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid #f59e0b;
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: #fef3c7;
+            margin: 12px 0;
+            font-size: 12.5px;
+        }
+
+        .mnemonic-pill {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px dashed rgba(52, 211, 153, 0.4);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #6ee7b7;
+            margin-top: 12px;
+        }
+
+        /* Fine-tuning Toggle & Drawer */
+        .toggle-tune-btn {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            z-index: 20;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: #cbd5e1;
+            padding: 9px 15px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s;
+        }
+
+        .toggle-tune-btn:hover {
+            color: #fff;
+            border-color: var(--primary-forest);
+        }
+
+        .tune-panel {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            z-index: 20;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 16px;
+            width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+            display: none;
+        }
+
+        .tune-group {
+            margin-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+        }
+
+        .tune-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-forest);
+            margin-bottom: 8px;
+        }
+
+        .tune-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .tune-row input[type="range"] {
+            width: 120px;
+        }
+
+        .tune-row span {
+            width: 38px;
+            text-align: right;
+            font-family: monospace;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="loader-spinner"></div>
+        <div id="loading-text">Đang tải Sa bàn 3D Trạm 2 (Nà Nưa & Quân lệnh số 1)...</div>
+    </div>
+
+    <div class="header-bar">
+        <div class="station-badge">🌿</div>
+        <div class="station-title">
+            <h1>TRẠM 2: LÁN NÀ NƯA — PHÁT LỆNH TỔNG KHỞI NGHĨA</h1>
+            <p>
+                <span>📅 Tháng 3 ➔ 13/8/1945</span>
+                <span>•</span>
+                <span>🏛️ Căn cứ Tân Trào, Tuyên Quang</span>
+            </p>
+        </div>
+    </div>
+
+    <button class="toggle-tune-btn" id="toggleTuneBtn">⚙️ Tinh chỉnh vị trí</button>
+
+    <div class="tune-panel" id="tunePanel">
+        <h4 style="font-size:13px;font-weight:700;color:#f8fafc;margin-bottom:12px;">Tinh chỉnh Sa bàn Tam giác</h4>
+        
+        <div class="tune-group">
+            <div class="tune-title">1. Lán Nà Nưa (Trung tâm)</div>
+            <div class="tune-row">
+                <label>Vị trí X:</label>
+                <input type="range" id="hut_x" min="-2" max="2" step="0.05" value="0">
+                <span id="hut_x_val">0.00</span>
+            </div>
+            <div class="tune-row">
+                <label>Vị trí Z:</label>
+                <input type="range" id="hut_z" min="-3" max="1" step="0.05" value="-0.65">
+                <span id="hut_z_val">-0.65</span>
+            </div>
+            <div class="tune-row">
+                <label>Tỷ lệ:</label>
+                <input type="range" id="hut_scale" min="0.5" max="2.0" step="0.02" value="0.88">
+                <span id="hut_scale_val">0.88</span>
+            </div>
+        </div>
+
+        <div class="tune-group">
+            <div class="tune-title">2. Phong trào Kháng Nhật (Cánh Trái)</div>
+            <div class="tune-row">
+                <label>Vị trí X:</label>
+                <input type="range" id="star_x" min="-3" max="0" step="0.05" value="-1.65">
+                <span id="star_x_val">-1.65</span>
+            </div>
+            <div class="tune-row">
+                <label>Vị trí Z:</label>
+                <input type="range" id="star_z" min="-1" max="2" step="0.05" value="0.55">
+                <span id="star_z_val">0.55</span>
+            </div>
+            <div class="tune-row">
+                <label>Tỷ lệ:</label>
+                <input type="range" id="star_scale" min="0.5" max="2.2" step="0.02" value="1.52">
+                <span id="star_scale_val">1.52</span>
+            </div>
+        </div>
+
+        <div class="tune-group">
+            <div class="tune-title">3. Ủy ban & Quân lệnh 1 (Cánh Phải)</div>
+            <div class="tune-row">
+                <label>Vị trí X:</label>
+                <input type="range" id="order_x" min="0" max="3" step="0.05" value="1.65">
+                <span id="order_x_val">1.65</span>
+            </div>
+            <div class="tune-row">
+                <label>Vị trí Z:</label>
+                <input type="range" id="order_z" min="-1" max="2" step="0.05" value="0.55">
+                <span id="order_z_val">0.55</span>
+            </div>
+            <div class="tune-row">
+                <label>Tỷ lệ:</label>
+                <input type="range" id="order_scale" min="0.5" max="2.2" step="0.02" value="1.52">
+                <span id="order_scale_val">1.52</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Navigation Pill -->
+    <div class="camera-bar">
+        <button class="cam-btn active" id="btnCamOverview">👁️ Toàn cảnh Sa bàn</button>
+        <button class="cam-btn" id="btnCamHut">🌿 Lán Nà Nưa</button>
+        <button class="cam-btn" id="btnCamStar">🚩 Kháng Nhật cứu nước</button>
+        <button class="cam-btn" id="btnCamOrder">📜 Quân lệnh số 1</button>
+    </div>
+
+    <!-- Modal Popup for Interactive Loci Knowledge -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-tag" id="modalTag">TRỌNG TÂM LỊCH SỬ</span>
+                    <h3 class="modal-title" id="modalTitle">Lán Nà Nưa</h3>
+                </div>
+                <button class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic Content -->
+            </div>
+            <div class="mnemonic-pill" id="modalMnemonic">
+                💡 <b>Mẹo nhớ Loci:</b> KHÁNG NHẬT 5 THÁNG ➔ QUÂN LỆNH 13/8 ➔ CẢ NƯỚC VÙNG LÊN!
+            </div>
+        </div>
+    </div>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+        // 1. Scene, Camera, Renderer
+        const canvas = document.getElementById('webgl-canvas');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x08100a);
+        scene.fog = new THREE.FogExp2(0x08100a, 0.055);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 2.5, 4.6);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 0.45, 0);
+        controls.maxPolarAngle = Math.PI / 2 - 0.04; // Don't go below ground
+        controls.minDistance = 1.2;
+        controls.maxDistance = 12.0;
+
+        // 2. Lighting Setup - Rừng Tân Trào (Warm Canopy Sun & Lantern)
+        const ambientLight = new THREE.AmbientLight(0x86efac, 1.1);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xfffaed, 2.4);
+        sunLight.position.set(4, 7, 3);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.bias = -0.0005;
+        scene.add(sunLight);
+
+        // Fill Light from side
+        const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
+        fillLight.position.set(-5, 4, -2);
+        scene.add(fillLight);
+
+        // Warm Hearth/Lantern Point Light inside Lán Nà Nưa
+        const lanternLight = new THREE.PointLight(0xf59e0b, 2.5, 3.2);
+        lanternLight.position.set(0, 0.5, -0.65);
+        scene.add(lanternLight);
+
+        // 3. Diorama Pedestal Base (Mặt đế sa bàn rừng núi Tân Trào)
+        const baseRadius = 3.6;
+        const baseGeo = new THREE.CylinderGeometry(baseRadius, baseRadius + 0.35, 0.35, 64);
+        const baseMat = new THREE.MeshStandardMaterial({
+            color: 0x142817,
+            roughness: 0.85,
+            metalness: 0.1
+        });
+        const dioramaBase = new THREE.Mesh(baseGeo, baseMat);
+        dioramaBase.position.y = -0.175;
+        dioramaBase.receiveShadow = true;
+        scene.add(dioramaBase);
+
+        // Thin decorative bronze rim around base
+        const rimGeo = new THREE.TorusGeometry(baseRadius + 0.02, 0.025, 16, 64);
+        const rimMat = new THREE.MeshStandardMaterial({
+            color: 0xd97706,
+            roughness: 0.3,
+            metalness: 0.8
+        });
+        const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+        rimMesh.rotation.x = Math.PI / 2;
+        rimMesh.position.y = 0.005;
+        scene.add(rimMesh);
+
+        // Subtle forest floor grid
+        const grid = new THREE.GridHelper(10, 20, 0x10b981, 0x164e28);
+        grid.position.y = 0.002;
+        scene.add(grid);
+
+        // Floating forest fireflies / spores particle system
+        const particleCount = 120;
+        const particleGeo = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 6;
+            particlePositions[i + 1] = Math.random() * 2.5 + 0.1;
+            particlePositions[i + 2] = (Math.random() - 0.5) * 6;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xfef08a,
+            size: 0.035,
+            transparent: true,
+            opacity: 0.7,
+            blending: THREE.AdditiveBlending
+        });
+        const particles = new THREE.Points(particleGeo, particleMat);
+        scene.add(particles);
+
+        // 4. Model Loaders with Draco
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+        const gltfLoader = new GLTFLoader();
+        gltfLoader.setDRACOLoader(dracoLoader);
+
+        const loadModel = url => new Promise((resolve, reject) => {
+            gltfLoader.load(encodeURI(url), resolve, undefined, reject);
+        });
+
+        // Models References & Hotspot Markers
+        const models = {
+            hut: null,
+            star: null,
+            order: null
+        };
+        const hotspots = [];
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        // Helper to create glowing pulsing hotspot ring
+        function createHotspot(label, icon, colorHex, position, onClick) {
+            const group = new THREE.Group();
+            group.position.copy(position);
+
+            const ringGeo = new THREE.RingGeometry(0.12, 0.16, 32);
+            const ringMat = new THREE.MeshBasicMaterial({
+                color: colorHex,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.85
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;
+            group.add(ring);
+
+            // Core sphere
+            const coreGeo = new THREE.SphereGeometry(0.06, 16, 16);
+            const coreMat = new THREE.MeshStandardMaterial({
+                color: colorHex,
+                emissive: colorHex,
+                emissiveIntensity: 1.5
+            });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            core.position.y = 0.05;
+            group.add(core);
+
+            // Hitbox for raycasting
+            const hitGeo = new THREE.SphereGeometry(0.3, 12, 12);
+            const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+            const hitBox = new THREE.Mesh(hitGeo, hitMat);
+            hitBox.userData = { label, onClick };
+            group.add(hitBox);
+            hotspots.push(hitBox);
+
+            scene.add(group);
+            return group;
+        }
+
+        // Loci Knowledge Data for Trạm 2
+        const lociData = {
+            hut: {
+                tag: '🌿 TRÁI TIM TỔNG KHỞI NGHĨA',
+                tagClass: 'tag-green',
+                title: 'Lán Nà Nưa (Căn cứ Tân Trào)',
+                body: `
+                    <p>Giữa đại ngàn Tân Trào (Tuyên Quang), căn lán nứa đơn sơ chỉ rộng chừng 10m² là nơi Bác Hồ đã sống và làm việc từ cuối tháng 5 đến ngày 22/8/1945.</p>
+                    <div class="modal-quote">
+                        "Lúc này thời cơ đã đến, dù hy sinh tới đâu, dù phải đốt cháy cả dãy Trường Sơn cũng phải kiên quyết giành cho được độc lập!"
+                        <div style="text-align:right;font-size:11px;margin-top:4px;font-weight:600;">— Lời căn dặn của Bác Hồ với đồng chí Võ Nguyên Giáp</div>
+                    </div>
+                    <p>Dù đang trong cơn sốt rét rừng hiểm nghèo, Bác vẫn nắm chắc từng biến chuyển mau lẹ của tình hình thế giới, chỉ đạo thành lập Khu giải phóng và phát lệnh Tổng khởi nghĩa kịp thời.</p>
+                `,
+                mnemonic: '💡 Mẹo nhớ: Căn lán nứa Bác Hồ giữa rừng Nà Nưa — Trái tim phát lệnh Tổng khởi nghĩa cứu nước!'
+            },
+            star: {
+                tag: '🚩 TIỀN ĐỀ LỰC LƯỢNG (3 - 8/1945)',
+                tagClass: 'tag-red',
+                title: 'Cao trào Kháng Nhật cứu nước',
+                body: `
+                    <p>Ngay sau khi Nhật đảo chính Pháp (9/3/1945), Đảng ta ra Chỉ thị lịch sử <i>"Nhật - Pháp bắn nhau và hành động của chúng ta"</i>, phát động Cao trào Kháng Nhật cứu nước làm tiền đề cho Tổng khởi nghĩa.</p>
+                    <p>Suốt 5 tháng ròng (3/1945 ➔ 8/1945), phong trào bùng nổ mạnh mẽ: phá kho thóc Nhật cứu đói cho hàng triệu đồng bào, phát triển lực lượng vũ trang (Việt Nam Giải phóng quân) và mở rộng 6 tỉnh chiến khu Việt Bắc.</p>
+                `,
+                mnemonic: '💡 Mẹo nhớ: Bàn tay 5 ngón xòe rộng = 5 tháng Cao trào Kháng Nhật (tháng 3 đến tháng 8/1945) chuẩn bị toàn diện lực lượng!'
+            },
+            order: {
+                tag: '📜 PHÁT LỆNH TOÀN DÂN (13/8/1945)',
+                tagClass: 'tag-gold',
+                title: 'Ủy ban Khởi nghĩa & Quân lệnh số 1',
+                body: `
+                    <p>Nhận định thời cơ ngàn năm có một đã chín muồi khi Nhật Bản đầu hàng Đồng minh, ngày <b>13/8/1945</b>, Trung ương Đảng và Tổng bộ Việt Minh quyết định thành lập <b>Ủy ban Khởi nghĩa Toàn quốc</b>.</p>
+                    <div class="modal-quote">
+                        "Hỡi quân dân toàn quốc!... Giờ tổng khởi nghĩa đã đánh! Cơ hội có một cho quân dân Việt Nam vùng dậy giành lấy quyền độc lập của nước nhà!... Chúng ta phải hành động cho mau, với một tinh thần vô cùng quả cảm..."
+                        <div style="text-align:right;font-size:11px;margin-top:4px;font-weight:600;">— Trích Quân lệnh số 1 (Đêm 13/8/1945)</div>
+                    </div>
+                    <p>Quân lệnh số 1 ban bố lúc 23h đêm 13/8 chính là phát pháo lệnh mở đường cho Cách mạng Tháng Tám toàn thắng!</p>
+                `,
+                mnemonic: '💡 Mẹo nhớ thần chú: ĐÊM MƯỜI BA NÀ NƯA: Quân lệnh số 1 phát động toàn quốc vùng lên!'
+            }
+        };
+
+        function showInfo(key) {
+            const data = lociData[key];
+            if (!data) return;
+            const tagEl = document.getElementById('modalTag');
+            tagEl.className = 'modal-tag ' + data.tagClass;
+            tagEl.innerText = data.tag;
+            document.getElementById('modalTitle').innerText = data.title;
+            document.getElementById('modalBody').innerHTML = data.body;
+            document.getElementById('modalMnemonic').innerHTML = data.mnemonic;
+            document.getElementById('infoModal').style.display = 'flex';
+        }
+
+        document.getElementById('modalCloseBtn').onclick = () => {
+            document.getElementById('infoModal').style.display = 'none';
+        };
+        document.getElementById('infoModal').onclick = e => {
+            if (e.target.id === 'infoModal') document.getElementById('infoModal').style.display = 'none';
+        };
+
+        // 5. Load and Place the 3 Optimized Models
+        async function initDiorama() {
+            try {
+                const [gltfHut, gltfStar, gltfOrder] = await Promise.all([
+                    loadModel('Chủ đề 3/Bài 6/Trạm 2/lan_na_nua_opt.glb'),
+                    loadModel('Chủ đề 3/Bài 6/Trạm 2/phong_trao_khang_nhat_opt.glb'),
+                    loadModel('Chủ đề 3/Bài 6/Trạm 2/uy_ban_quan_lenh_1_opt.glb')
+                ]);
+
+                // 1. Lán Nà Nưa (Trung tâm phía sau) - tỷ lệ hài hòa ~1.32m
+                models.hut = gltfHut.scene;
+                models.hut.position.set(0, 0, -0.65);
+                models.hut.scale.set(0.88, 0.88, 0.88);
+                models.hut.rotation.y = 0;
+                models.hut.traverse(c => {
+                    if (c.isMesh) {
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+                    }
+                });
+                scene.add(models.hut);
+
+                // 2. Phong trào Kháng Nhật (Cánh Trái) - phóng to 1.52x (~1.30m), dãn X = -1.65
+                models.star = gltfStar.scene;
+                models.star.position.set(-1.65, 0, 0.55);
+                models.star.scale.set(1.52, 1.52, 1.52);
+                models.star.rotation.y = Math.PI * 0.12; // Nhìn chếch vào tâm
+                models.star.traverse(c => {
+                    if (c.isMesh) {
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+                    }
+                });
+                scene.add(models.star);
+
+                // 3. Ủy ban & Quân lệnh số 1 (Cánh Phải) - phóng to 1.52x (~1.30m), dãn X = 1.65
+                models.order = gltfOrder.scene;
+                models.order.position.set(1.65, 0, 0.55);
+                models.order.scale.set(1.52, 1.52, 1.52);
+                models.order.rotation.y = -Math.PI * 0.12; // Nhìn chếch vào tâm
+                models.order.traverse(c => {
+                    if (c.isMesh) {
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+                    }
+                });
+                scene.add(models.order);
+
+                // Add 3 Hotspots over models
+                createHotspot('Lán Nà Nưa', '🌿', 0x10b981, new THREE.Vector3(0, 1.15, -0.65), () => showInfo('hut'));
+                createHotspot('Kháng Nhật', '🚩', 0xef4444, new THREE.Vector3(-1.65, 1.15, 0.55), () => showInfo('star'));
+                createHotspot('Quân lệnh 1', '📜', 0xf59e0b, new THREE.Vector3(1.65, 1.05, 0.55), () => showInfo('order'));
+
+                // Hide loader
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 800);
+
+            } catch (err) {
+                console.error("Lỗi tải models Trạm 2:", err);
+                document.getElementById('loading-text').innerText = "Lỗi tải model: " + err.message;
+            }
+        }
+        initDiorama();
+
+        // 6. Smooth Camera Transition
+        let camTargetPos = camera.position.clone();
+        let camTargetLook = controls.target.clone();
+        let isTransitioning = false;
+
+        function tweenCamera(pos, look) {
+            camTargetPos.copy(pos);
+            camTargetLook.copy(look);
+            isTransitioning = true;
+        }
+
+        const camButtons = {
+            btnCamOverview: { pos: new THREE.Vector3(0, 2.7, 5.0), look: new THREE.Vector3(0, 0.45, 0) },
+            btnCamHut: { pos: new THREE.Vector3(0, 1.25, 1.5), look: new THREE.Vector3(0, 0.65, -0.65) },
+            btnCamStar: { pos: new THREE.Vector3(-1.3, 1.35, 2.3), look: new THREE.Vector3(-1.65, 0.55, 0.55) },
+            btnCamOrder: { pos: new THREE.Vector3(1.3, 1.35, 2.3), look: new THREE.Vector3(1.65, 0.55, 0.55) }
+        };
+
+        Object.keys(camButtons).forEach(id => {
+            const btn = document.getElementById(id);
+            btn.onclick = () => {
+                document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                tweenCamera(camButtons[id].pos, camButtons[id].look);
+            };
+        });
+
+        // Click on 3D Hotspot interaction
+        window.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('#tunePanel') || e.target.closest('.header-bar')) return;
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(hotspots);
+            if (intersects.length > 0) {
+                const target = intersects[0].object;
+                if (target.userData && target.userData.onClick) {
+                    target.userData.onClick();
+                }
+            }
+        });
+
+        // 7. Tune Panel Controls
+        const toggleBtn = document.getElementById('toggleTuneBtn');
+        const tunePanel = document.getElementById('tunePanel');
+        toggleBtn.onclick = () => {
+            const isVisible = tunePanel.style.display === 'block';
+            tunePanel.style.display = isVisible ? 'none' : 'block';
+        };
+
+        function bindSlider(sliderId, valId, onChange) {
+            const slider = document.getElementById(sliderId);
+            const val = document.getElementById(valId);
+            slider.addEventListener('input', e => {
+                const num = parseFloat(e.target.value);
+                val.innerText = num.toFixed(2);
+                onChange(num);
+            });
+        }
+
+        bindSlider('hut_x', 'hut_x_val', v => { if (models.hut) models.hut.position.x = v; });
+        bindSlider('hut_z', 'hut_z_val', v => { if (models.hut) models.hut.position.z = v; lanternLight.position.z = v; });
+        bindSlider('hut_scale', 'hut_scale_val', v => { if (models.hut) models.hut.scale.set(v, v, v); });
+
+        bindSlider('star_x', 'star_x_val', v => { if (models.star) models.star.position.x = v; });
+        bindSlider('star_z', 'star_z_val', v => { if (models.star) models.star.position.z = v; });
+        bindSlider('star_scale', 'star_scale_val', v => { if (models.star) models.star.scale.set(v, v, v); });
+
+        bindSlider('order_x', 'order_x_val', v => { if (models.order) models.order.position.x = v; });
+        bindSlider('order_z', 'order_z_val', v => { if (models.order) models.order.position.z = v; });
+        bindSlider('order_scale', 'order_scale_val', v => { if (models.order) models.order.scale.set(v, v, v); });
+
+        // 8. Animation Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
+
+            // Firefly particle gentle waving
+            const posAttr = particleGeo.attributes.position;
+            for (let i = 0; i < particleCount; i++) {
+                let y = posAttr.getY(i);
+                y += Math.sin(elapsed * 1.5 + i) * 0.002;
+                posAttr.setY(i, y);
+            }
+            posAttr.needsUpdate = true;
+
+            // Camera transition easing
+            if (isTransitioning) {
+                camera.position.lerp(camTargetPos, 0.08);
+                controls.target.lerp(camTargetLook, 0.08);
+                if (camera.position.distanceTo(camTargetPos) < 0.02 && controls.target.distanceTo(camTargetLook) < 0.02) {
+                    camera.position.copy(camTargetPos);
+                    controls.target.copy(camTargetLook);
+                    isTransitioning = false;
+                }
+            }
+
+            // Pulsing lantern light inside Nà Nưa
+            lanternLight.intensity = 2.4 + Math.sin(elapsed * 4.0) * 0.35;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+name = "loci-moderator"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+# Cron mỗi 1 phút (gói free của Cloudflare vẫn cho phép).
+# Nếu tài khoản của bạn không bật được cron: dùng cron-job.org gọi /cron?key=<CRON_SECRET> mỗi phút.
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+FIREBASE_PROJECT_ID = "loci-b04a7"
+GEMINI_MODEL = "gemini-3.5-flash"
+AI_THRESHOLD = "0.75"
+# Để "1" nếu muốn AI xét cả ảnh (tốn CPU hơn, có thể vượt 10ms CPU của gói free với ảnh lớn).
+AI_IMAGES = "0"

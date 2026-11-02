@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng thi Lịch sử · Loci.Edu</title>
+    <meta name="description"
+        content="Kiểm tra Lịch sử lớp 12 theo cấu trúc đề THPT: 24 câu trắc nghiệm và 4 câu đúng/sai, chấm điểm tự động.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-soft: #eef2ff;
+            --accent: #0ea5e9;
+            --ink: #0f172a;
+            --ink-2: #334155;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --bg: #f4f6fb;
+            --ok: #059669;
+            --ok-soft: #ecfdf5;
+            --bad: #dc2626;
+            --bad-soft: #fef2f2;
+            --warn: #d97706;
+            --radius: 18px;
+            --ease: cubic-bezier(.16, 1, .3, 1);
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .04);
+            --shadow-md: 0 10px 30px -12px rgba(15, 23, 42, .18);
+            --shadow-lg: 0 24px 60px -24px rgba(15, 23, 42, .28);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.62;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(900px 500px at 12% -10%, rgba(79, 70, 229, .12), transparent 60%),
+                radial-gradient(700px 420px at 95% 0%, rgba(14, 165, 233, .10), transparent 55%),
+                linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+        }
+
+        h1, h2, h3, .ui-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            letter-spacing: -.6px;
+            line-height: 1.25;
+        }
+
+        button { font-family: inherit; }
+
+        /* ============ HEADER ============ */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 80;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px clamp(16px, 4vw, 40px);
+            background: rgba(255, 255, 255, .78);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(226, 232, 240, .9);
+        }
+
+        .brand {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 19px;
+            text-decoration: none;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            white-space: nowrap;
+        }
+
+        .brand-mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #fff;
+            display: grid;
+            place-items: center;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+        }
+
+        .brand small {
+            display: block;
+            font-family: 'Outfit', sans-serif;
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .topbar-spacer { flex: 1; }
+
+        .mode-chip {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 13px;
+            border-radius: 99px;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            max-width: 40vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mode-chip.show { display: inline-flex; }
+
+        .timer {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 99px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--ink-2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .timer.show { display: inline-flex; }
+
+        .timer .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--ok);
+        }
+
+        .timer.warn { color: var(--warn); border-color: #fcd9a4; }
+        .timer.warn .dot { background: var(--warn); }
+        .timer.danger { color: var(--bad); border-color: #fecaca; background: #fff5f5; }
+        .timer.danger .dot { background: var(--bad); animation: blink 1s infinite; }
+
+        @keyframes blink { 50% { opacity: .25; } }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 11px 20px;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .18s var(--ease), box-shadow .18s var(--ease), background .18s, border-color .18s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:active { transform: translateY(1px) scale(.99); }
+
+        .btn.primary {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: #fff;
+            box-shadow: 0 10px 20px -10px rgba(79, 70, 229, .65);
+        }
+
+        .btn.primary:hover { box-shadow: 0 14px 26px -10px rgba(79, 70, 229, .7); }
+
+        .btn.ghost {
+            background: #fff;
+            border-color: var(--line);
+            color: var(--ink-2);
+        }
+
+        .btn.ghost:hover { border-color: #cbd5e1; background: #f8fafc; }
+
+        .btn.danger { background: var(--bad); color: #fff; }
+
+        .btn[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+        #btn-submit { display: none; }
+        #btn-submit.show { display: inline-flex; }
+
+        /* ============ LAYOUT ============ */
+        main {
+            width: min(1180px, 100% - 32px);
+            margin: 0 auto;
+            padding: 28px 0 80px;
+        }
+
+        .screen { display: none; animation: rise .45s var(--ease); }
+        .screen.on { display: block; }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        /* ============ SETUP ============ */
+        .hero {
+            background: linear-gradient(135deg, #12172b 0%, #1e1b4b 55%, #0c4a6e 100%);
+            color: #fff;
+            border-radius: 26px;
+            padding: clamp(26px, 4vw, 44px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 520px;
+            height: 520px;
+            right: -180px;
+            top: -260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, .5), transparent 65%);
+            pointer-events: none;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: #a5b4fc;
+            margin-bottom: 14px;
+        }
+
+        .eyebrow::before {
+            content: '';
+            width: 26px;
+            height: 1px;
+            background: #818cf8;
+        }
+
+        .hero h1 {
+            font-size: clamp(27px, 4vw, 40px);
+            margin-bottom: 10px;
+            max-width: 18ch;
+        }
+
+        .hero p {
+            color: #c7d2fe;
+            font-size: 15px;
+            max-width: 62ch;
+        }
+
+        .hero-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: baseline;
+            gap: 7px;
+            padding: 9px 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .14);
+            font-size: 13px;
+            color: #e0e7ff;
+        }
+
+        .stat b { font-size: 16px; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .modes {
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 18px;
+            margin-top: 22px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-kicker {
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .card h2 { font-size: 21px; margin-bottom: 6px; }
+
+        .card > p { color: var(--muted); font-size: 14px; }
+
+        .lesson-list { display: grid; gap: 9px; margin-top: 16px; }
+
+        .lesson-btn {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            width: 100%;
+            text-align: left;
+            padding: 13px 15px;
+            background: #fff;
+            border: 1.5px solid var(--line);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all .18s var(--ease);
+        }
+
+        .lesson-btn:hover { border-color: #c7d2fe; background: #fafaff; }
+
+        .lesson-btn .no {
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            border-radius: 10px;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            display: grid;
+            place-items: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .lesson-btn .txt { flex: 1; min-width: 0; }
+        .lesson-btn .txt b { display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+        .lesson-btn .txt span { display: block; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lesson-btn .pool { font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+        .lesson-btn.sel { border-color: var(--primary); background: #f5f4ff; box-shadow: 0 0 0 4px rgba(79, 70, 229, .08); }
+        .lesson-btn.sel .no { background: var(--primary); color: #fff; }
+
+        .start-row { display: flex; gap: 10px; margin-top: 16px; }
+
+        .start-row .btn { flex: 1; }
+
+        .deck-wrap { margin-top: 18px; padding-top: 15px; border-top: 1px dashed var(--line); }
+        .deck-label { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+        .deck-label span { color: var(--primary-dark); }
+        .deck-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+        .deck-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            padding: 9px 6px; border: 1px solid var(--line); border-radius: 12px;
+            background: #fff; color: var(--ink); font: inherit; cursor: pointer;
+            transition: border-color .18s, background .18s, transform .18s;
+        }
+        .deck-btn b { font-size: 13.5px; font-weight: 800; letter-spacing: -.01em; }
+        .deck-btn span { font-size: 10.5px; font-weight: 600; color: var(--muted); letter-spacing: .04em; }
+        .deck-btn:hover { border-color: #c7d2fe; background: #fafaff; transform: translateY(-1px); }
+        .deck-btn:active { transform: translateY(0); }
+        .deck-random { width: 100%; margin-top: 10px; }
+
+        .combo-body { margin-top: 16px; display: grid; gap: 10px; }
+
+        .combo-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            color: var(--ink-2);
+        }
+
+        .combo-line .k {
+            width: 22px;
+            height: 22px;
+            flex: 0 0 22px;
+            border-radius: 7px;
+            background: #f1f5f9;
+            color: var(--muted);
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .rules {
+            margin-top: 18px;
+            padding: 16px 18px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .rules b { color: var(--ink-2); }
+
+        .rules ul { list-style: none; display: grid; gap: 6px; margin-top: 8px; }
+
+        .rules li { display: flex; gap: 8px; }
+        .rules li::before { content: '·'; color: var(--primary); font-weight: 800; }
+
+        .history { margin-top: 22px; }
+
+        .history h3 {
+            font-size: 13px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .hist-list { display: grid; gap: 8px; }
+
+        .hist-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            font-size: 13.5px;
+        }
+
+        .hist-item .score {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 17px;
+            color: var(--primary);
+            min-width: 46px;
+        }
+
+        .hist-item .meta { flex: 1; min-width: 0; color: var(--muted); font-size: 12.5px; }
+        .hist-item .meta b { display: block; color: var(--ink-2); font-size: 13.5px; font-weight: 600; }
+
+        .history-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .history-head h3 { margin-bottom: 0; }
+
+        .mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+        .mini-stat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; }
+        .mini-stat b { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+        .mini-stat span { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
+        /* ============ ARCHIVE ============ */
+        .archive-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+        .archive-head h1 { font-size: 30px; letter-spacing: -.03em; }
+        .archive-head p { color: var(--muted); font-size: 14px; margin-top: 6px; max-width: 620px; }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 20px 0; }
+        .sum-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-sm); }
+        .sum-card b { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -.02em; }
+        .sum-card span { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
+        .archive-note { font-size: 12.5px; font-weight: 600; color: var(--muted); margin: -8px 0 14px; min-height: 1px; }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .filter-btn {
+            border: 1px solid var(--line); background: #fff; border-radius: 999px;
+            padding: 7px 14px; font: inherit; font-size: 12.5px; font-weight: 700;
+            color: var(--muted); cursor: pointer; transition: .18s;
+        }
+        .filter-btn:hover { border-color: #c7d2fe; color: var(--ink-2); }
+        .filter-btn.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        .archive-table-wrap { background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: auto; box-shadow: var(--shadow-sm); }
+        .archive-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 860px; }
+        .archive-table th {
+            position: sticky; top: 0; z-index: 1; background: #f8fafc; text-align: left;
+            font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted);
+            padding: 11px 12px; border-bottom: 1px solid var(--line); white-space: nowrap;
+        }
+        .archive-table td { padding: 11px 12px; border-bottom: 1px solid #f1f5f9; color: var(--ink-2); white-space: nowrap; }
+        .archive-table tbody tr:last-child td { border-bottom: 0; }
+        .archive-table tbody tr:hover { background: #fafbff; }
+        .archive-table .idx { color: var(--muted); font-variant-numeric: tabular-nums; }
+        .archive-table .code { font-weight: 700; color: var(--ink); }
+        .archive-table .tot { font-weight: 800; color: var(--primary-dark); font-size: 14px; }
+        .archive-empty { padding: 34px 20px; text-align: center; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; }
+        .archive-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+        .btn.danger-ghost { color: var(--bad); border-color: #fecaca; background: #fff; }
+        .btn.danger-ghost:hover { background: var(--bad-soft); border-color: #fca5a5; }
+
+        /* ============ EXAM ============ */
+        .exam-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 246px;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .paper {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .paper-head {
+            padding: 22px 28px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, #fbfcff, #fff);
+        }
+
+        .paper-head .exam-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 16.5px;
+            letter-spacing: -.2px;
+        }
+
+        .paper-head .exam-sub {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .part-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 20px 28px 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .part-head:first-of-type { border-top: 0; }
+
+        .part-head h3 {
+            font-size: 12.5px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--ink-2);
+        }
+
+        .part-head span { font-size: 12px; color: var(--muted); }
+
+        .q { padding: 16px 28px 6px; }
+
+        .q + .q { border-top: 1px dashed #eef2f7; }
+
+        .q-head {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .q-no {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 13px;
+            color: var(--primary-dark);
+            background: var(--primary-soft);
+            padding: 3px 10px;
+            border-radius: 7px;
+            letter-spacing: .02em;
+        }
+
+        .q-tag { font-size: 11.5px; color: var(--muted); }
+
+        .q-stem { font-size: 15.2px; color: var(--ink); line-height: 1.6; }
+
+        .opts { display: grid; gap: 8px; margin: 12px 0 6px; }
+
+        .opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            width: 100%;
+            text-align: left;
+            padding: 11px 14px;
+            background: #fff;
+            border: 1.5px solid var(--line);
+            border-radius: 11px;
+            cursor: pointer;
+            font-size: 14.2px;
+            color: var(--ink-2);
+            transition: all .15s var(--ease);
+        }
+
+        .opt:hover { border-color: #c7d2fe; background: #fbfbff; }
+
+        .opt-key {
+            width: 24px;
+            height: 24px;
+            flex: 0 0 24px;
+            border-radius: 7px;
+            border: 1.5px solid #cbd5e1;
+            display: grid;
+            place-items: center;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--muted);
+            transition: all .15s;
+            margin-top: 1px;
+        }
+
+        .opt.on {
+            border-color: var(--primary);
+            background: #f5f4ff;
+            color: var(--ink);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, .07);
+        }
+
+        .opt.on .opt-key { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        /* TF */
+        .q-lead {
+            font-size: 13.6px;
+            color: var(--ink-2);
+            background: #f8fafc;
+            border-left: 3px solid var(--accent);
+            border-radius: 0 10px 10px 0;
+            padding: 12px 14px;
+            margin: 4px 0 12px;
+        }
+
+        .tf-rows { display: grid; gap: 8px; margin-bottom: 8px; }
+
+        .tf-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            background: #fff;
+        }
+
+        .tf-key {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: 12.5px;
+            color: var(--muted);
+            width: 20px;
+            flex: 0 0 20px;
+        }
+
+        .tf-text { flex: 1; font-size: 14px; color: var(--ink-2); min-width: 0; }
+
+        .tf-btns { display: flex; gap: 6px; flex: 0 0 auto; }
+
+        .tf-btns button {
+            border: 1.5px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+            font-size: 12.5px;
+            font-weight: 700;
+            padding: 6px 13px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .15s var(--ease);
+        }
+
+        .tf-btns button:hover { border-color: #cbd5e1; color: var(--ink-2); }
+
+        .tf-btns button[data-val="true"].on {
+            background: var(--ok-soft);
+            border-color: #6ee7b7;
+            color: #047857;
+        }
+
+        .tf-btns button[data-val="false"].on {
+            background: var(--bad-soft);
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+
+        .paper-foot {
+            padding: 22px 28px 28px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fbfcff;
+            flex-wrap: wrap;
+        }
+
+        /* palette */
+        .palette {
+            position: sticky;
+            top: 86px;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .palette h4 {
+            font-size: 11px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .pchip {
+            aspect-ratio: 1;
+            border: 1.5px solid var(--line);
+            background: #fff;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: all .15s;
+        }
+
+        .pchip:hover { border-color: var(--primary); color: var(--primary); }
+
+        .pchip.done { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .pchip.part { border-style: dashed; border-color: var(--primary); color: var(--primary); }
+
+        .pchip.current { box-shadow: 0 0 0 3px rgba(79, 70, 229, .18); }
+
+        .palette-legend {
+            margin-top: 14px;
+            display: grid;
+            gap: 6px;
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
+        .palette-legend span { display: flex; align-items: center; gap: 7px; }
+
+        .sw { width: 11px; height: 11px; border-radius: 4px; border: 1.5px solid var(--line); }
+        .sw.done { background: var(--primary); border-color: var(--primary); }
+        .sw.part { border-style: dashed; border-color: var(--primary); }
+
+        .palette .progress-bar {
+            height: 6px;
+            border-radius: 99px;
+            background: #eef2f7;
+            margin-top: 14px;
+            overflow: hidden;
+        }
+
+        .palette .progress-bar i {
+            display: block;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 99px;
+            transition: width .3s var(--ease);
+        }
+
+        .palette .progress-txt {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-top: 7px;
+        }
+
+        .fab-palette {
+            display: none;
+            position: fixed;
+            right: 16px;
+            bottom: calc(18px + env(safe-area-inset-bottom));
+            z-index: 70;
+            border: 0;
+            border-radius: 99px;
+            padding: 13px 18px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 700;
+            font-size: 13.5px;
+            box-shadow: 0 14px 30px -10px rgba(15, 23, 42, .5);
+        }
+
+        /* ============ RESULT ============ */
+        .result-hero {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 0;
+            background: linear-gradient(135deg, #12172b, #1e1b4b 60%, #0c4a6e);
+            color: #fff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .score-box {
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, .05);
+            border-right: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .score-num {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 62px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -2px;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-num small { font-size: 20px; -webkit-text-fill-color: #a5b4fc; letter-spacing: 0; }
+
+        .score-label {
+            margin-top: 8px;
+            font-size: 11px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #a5b4fc;
+            font-weight: 700;
+        }
+
+        .result-info { padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+
+        .result-info h2 { font-size: 24px; }
+
+        .result-info p { color: #c7d2fe; font-size: 14px; }
+
+        .result-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+
+        .pill {
+            padding: 6px 13px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .1);
+            border: 1px solid rgba(255, 255, 255, .14);
+            font-size: 12.5px;
+            color: #e0e7ff;
+        }
+
+        .breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .bd-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .bd-card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+        .bd-card h4 { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+        .bd-card .pts { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; color: var(--ink); }
+        .bd-card .pts small { font-size: 12px; color: var(--muted); font-weight: 600; }
+        .bd-card .sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+
+        .tf-score-list { margin-top: 10px; display: grid; gap: 6px; }
+
+        .tf-score-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--ink-2);
+        }
+
+        .tf-score-row .n { font-weight: 700; color: var(--muted); width: 64px; flex: 0 0 64px; }
+        .tf-score-row .bar { flex: 1; height: 6px; border-radius: 99px; background: #eef2f7; overflow: hidden; }
+        .tf-score-row .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+        .tf-score-row .v { width: 44px; text-align: right; font-weight: 700; color: var(--primary-dark); }
+
+        .review-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 30px 0 14px;
+        }
+
+        .review-head h3 { font-size: 19px; }
+        .review-head .sub { font-size: 13px; color: var(--muted); }
+
+        .review-list { display: grid; gap: 12px; }
+
+        .rv {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .rv.wrong { border-color: #fecaca; }
+        .rv.right { border-color: #bbf7d0; }
+
+        .rv-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .05em;
+            padding: 3px 9px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .badge.ok { background: var(--ok-soft); color: #047857; }
+        .badge.no { background: var(--bad-soft); color: #b91c1c; }
+        .badge.neutral { background: #f1f5f9; color: var(--muted); }
+
+        .rv .q-stem { font-size: 14.6px; }
+
+        .rv-opts { display: grid; gap: 6px; margin: 10px 0 4px; }
+
+        .rv-opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            font-size: 13.8px;
+            color: var(--ink-2);
+        }
+
+        .rv-opt .opt-key { margin-top: 0; }
+
+        .rv-opt.correct { background: var(--ok-soft); border-color: #a7f3d0; color: #065f46; }
+        .rv-opt.correct .opt-key { background: var(--ok); border-color: var(--ok); color: #fff; }
+        .rv-opt.chosen-wrong { background: var(--bad-soft); border-color: #fecaca; color: #991b1b; }
+        .rv-opt.chosen-wrong .opt-key { background: var(--bad); border-color: var(--bad); color: #fff; }
+
+        .rv-tf { display: grid; gap: 6px; margin-top: 10px; }
+
+        .rv-tf-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 9px;
+            background: #f8fafc;
+            font-size: 13.6px;
+            color: var(--ink-2);
+        }
+
+        .rv-tf-row .mark {
+            flex: 0 0 auto;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 5px;
+            margin-top: 2px;
+        }
+
+        .rv-tf-row .mark.ok { background: #d1fae5; color: #047857; }
+        .rv-tf-row .mark.no { background: #fee2e2; color: #b91c1c; }
+
+        .explain {
+            margin-top: 10px;
+            padding: 10px 13px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border-left: 3px solid var(--primary);
+            font-size: 13.2px;
+            color: var(--ink-2);
+        }
+
+        .explain b { color: var(--primary-dark); }
+
+        .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+
+        /* ============ MODAL ============ */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 120;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(15, 23, 42, .5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.on { display: flex; }
+
+        .modal-card {
+            width: min(440px, 100%);
+            background: #fff;
+            border-radius: 20px;
+            padding: 26px;
+            box-shadow: 0 30px 70px -20px rgba(15, 23, 42, .5);
+            animation: pop .3s var(--ease);
+        }
+
+        @keyframes pop {
+            from { opacity: 0; transform: scale(.96) translateY(8px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .modal-card h3 { font-size: 19px; margin-bottom: 8px; }
+        .modal-card p { font-size: 14px; color: var(--muted); }
+        .modal-card .warn-line { margin-top: 12px; padding: 10px 13px; border-radius: 10px; background: #fffbeb; color: #92400e; font-size: 13.2px; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap; }
+
+        .palette-sheet { display: none; }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 1020px) {
+            .modes { grid-template-columns: 1fr; }
+            .exam-layout { grid-template-columns: 1fr; }
+            .palette { display: none; }
+            .fab-palette { display: inline-flex; align-items: center; gap: 8px; }
+            .palette-sheet.on { display: block; }
+            .palette-sheet {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 110;
+                background: #fff;
+                border-radius: 22px 22px 0 0;
+                padding: 18px 18px calc(24px + env(safe-area-inset-bottom));
+                box-shadow: 0 -20px 50px -10px rgba(15, 23, 42, .3);
+                max-height: 72vh;
+                overflow-y: auto;
+            }
+            .palette-sheet .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+            .palette-sheet .sheet-head h4 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+            .palette-sheet .close-x { border: 0; background: #f1f5f9; width: 34px; height: 34px; border-radius: 50%; font-size: 15px; cursor: pointer; color: var(--ink-2); }
+            .palette-sheet .palette-grid { grid-template-columns: repeat(7, 1fr); }
+        }
+
+        @media (max-width: 760px) {
+            main { width: calc(100% - 24px); padding-top: 18px; }
+            .brand small { display: none; }
+            .brand { font-size: 17px; }
+            .mode-chip { display: none !important; }
+            .timer { font-size: 14px; padding: 7px 12px; }
+            .btn { padding: 10px 16px; font-size: 14px; }
+            .paper-head, .part-head, .q, .paper-foot { padding-left: 16px; padding-right: 16px; }
+            .result-hero { grid-template-columns: 1fr; }
+            .score-box { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, .1); flex-direction: row; gap: 14px; padding: 22px; }
+            .score-num { font-size: 48px; }
+            .score-label { margin-top: 0; }
+            .breakdown { grid-template-columns: 1fr; }
+            .tf-row { flex-wrap: wrap; }
+            .tf-btns { margin-left: 32px; }
+            .tf-text { flex-basis: calc(100% - 34px); }
+            .result-actions .btn { flex: 1 1 140px; }
+            .topbar { padding: 10px 12px; gap: 8px; }
+            .hist-item { flex-wrap: wrap; }
+            .deck-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .archive-head h1 { font-size: 25px; }
+        }
+
+        @media print {
+            body::before, .topbar, .palette, .fab-palette, .result-actions, .review-head .btn { display: none !important; }
+            main { width: 100%; padding: 0; }
+            .review-list { gap: 8px; }
+            .rv { break-inside: avoid; box-shadow: none; }
+        }
+    </style>
+    <script>
+        // Nhận diện khi nhúng iframe trong Portal v2
+        if (window.self !== window.top || location.search.includes('embed=1')) {
+            document.documentElement.classList.add('is-embedded');
+            window.addEventListener('DOMContentLoaded', () => {
+                document.body.classList.add('is-embedded');
+                const btnBrand = document.getElementById('btn-topbar-brand');
+                if (btnBrand) {
+                    btnBrand.onclick = (e) => {
+                        if (window.parent && window.parent.switchPortalTab) {
+                            e.preventDefault();
+                            window.parent.switchPortalTab('overview');
+                        }
+                    };
+                }
+                const btnBackRev = document.getElementById('btn-back-review');
+                if (btnBackRev) {
+                    btnBackRev.onclick = (e) => {
+                        if (window.parent && window.parent.switchPortalTab) {
+                            e.preventDefault();
+                            window.parent.switchPortalTab('review');
+                        }
+                    };
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="portal_v2.html" id="btn-topbar-brand">
+            <span class="brand-mark">Lo</span>
+            <span>Loci EDU<small>Phòng thi Lịch sử</small></span>
+        </a>
+        <div class="topbar-spacer"></div>
+        <a href="review.html" id="btn-back-review" class="btn ghost" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:13px; padding:7px 14px; border-radius:99px;" title="Về Trung tâm Thẻ ôn tập Đa dạng">
+            <span>🃏</span> <span>Thẻ ôn tập</span>
+        </a>
+        <span class="mode-chip" id="mode-chip"></span>
+        <div class="timer" id="timer"><span class="dot"></span><span id="timer-txt">50:00</span></div>
+        <button class="btn primary" id="btn-submit" type="button">Nộp bài</button>
+    </header>
+
+    <main>
+        <!-- ================= SETUP ================= -->
+        <section class="screen on" id="screen-setup">
+            <div class="hero">
+                <div class="eyebrow">Kiểm tra · Lịch sử 12 · Chủ đề 3</div>
+                <h1>Phòng thi Chủ đề 3</h1>
+                <p>Cấu trúc bám theo đề thi tốt nghiệp THPT: 24 câu trắc nghiệm và 4 câu đúng/sai. Mỗi bài có 12 đề
+                    cố định để cả lớp làm giống nhau, kèm lựa chọn đề ngẫu nhiên mỗi lượt một khác.</p>
+                <div class="hero-stats">
+                    <div class="stat"><b>24</b> trắc nghiệm · 0,25đ/câu</div>
+                    <div class="stat"><b>4</b> đúng/sai · tối đa 1đ/câu</div>
+                    <div class="stat"><b>50</b> phút</div>
+                    <div class="stat"><b>10</b> điểm tối đa</div>
+                </div>
+            </div>
+
+            <div class="modes">
+                <div class="card">
+                    <div class="card-kicker">Chế độ 01</div>
+                    <h2>Kiểm tra theo bài</h2>
+                    <p>Chọn một bài để ôn sâu. Đề gồm 24 trắc nghiệm và 4 câu đúng/sai của riêng bài đó.</p>
+                    <div class="lesson-list" id="lesson-list"></div>
+                    <div class="deck-wrap" id="lesson-decks" hidden>
+                        <div class="deck-label">Chọn đề của Bài <span id="deck-lesson-no"></span> · 12 đề cố định</div>
+                        <div class="deck-grid" id="lesson-deck-grid"></div>
+                        <button class="btn ghost deck-random" id="btn-random-lesson" type="button">Đề ngẫu nhiên</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-kicker">Chế độ 02</div>
+                    <h2>Tổng hợp 3 bài</h2>
+                    <p>Đề trải đều bài 6, 7, 8 — mô phỏng đề thi tốt nghiệp có phổ kiến thức rộng.</p>
+                    <div class="combo-body">
+                        <div class="combo-line"><span class="k">I</span><span>24 câu trắc nghiệm: 8 câu mỗi bài, trộn thứ tự</span></div>
+                        <div class="combo-line"><span class="k">II</span><span>4 câu đúng/sai: phủ cả 3 bài, bốc ngẫu nhiên</span></div>
+                        <div class="combo-line"><span class="k">III</span><span>Chấm điểm và giải thích ngay sau khi nộp</span></div>
+                    </div>
+                    <div class="deck-wrap">
+                        <div class="deck-label">Chọn đề tổng hợp · 12 đề cố định</div>
+                        <div class="deck-grid" id="combo-deck-grid"></div>
+                        <button class="btn ghost deck-random" id="btn-random-combo" type="button">Đề ngẫu nhiên</button>
+                    </div>
+                    <div class="rules">
+                        <b>Cách tính điểm phần đúng/sai</b>
+                        <ul>
+                            <li>1 mệnh đề đúng: 0,1 điểm</li>
+                            <li>2 mệnh đề đúng: 0,25 điểm</li>
+                            <li>3 mệnh đề đúng: 0,5 điểm</li>
+                            <li>4 mệnh đề đúng: 1,0 điểm</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history" id="history-wrap" hidden>
+                <div class="history-head">
+                    <h3>Quá trình ôn tập</h3>
+                    <button class="btn ghost" type="button" id="btn-open-archive">Bảng lưu trữ kết quả</button>
+                </div>
+                <div class="mini-stats" id="home-stats"></div>
+                <div class="hist-list" id="hist-list"></div>
+            </div>
+        </section>
+
+        <!-- ================= ARCHIVE ================= -->
+        <section class="screen" id="screen-archive">
+            <div class="archive-head">
+                <div>
+                    <div class="eyebrow">Lịch sử thi · Lưu trên thiết bị này</div>
+                    <h1>Quá trình ôn tập</h1>
+                    <p>Toàn bộ các lượt thi đã hoàn thành, kèm điểm từng phần, thời gian làm bài và mã đề để đối chiếu.</p>
+                </div>
+                <button class="btn ghost" type="button" id="btn-archive-back">← Về trang chọn đề</button>
+            </div>
+
+            <div class="summary-grid" id="archive-summary"></div>
+            <div class="archive-note" id="archive-note"></div>
+            <div class="filter-row" id="archive-filters"></div>
+            <div class="archive-table-wrap" id="archive-table-wrap">
+                <table class="archive-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Thời điểm</th>
+                            <th>Mã đề</th>
+                            <th>Chế độ</th>
+                            <th>TN đúng</th>
+                            <th>Điểm TN</th>
+                            <th>Điểm ĐS</th>
+                            <th>Tổng điểm</th>
+                            <th>Thời gian</th>
+                            <th>Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archive-body"></tbody>
+                </table>
+            </div>
+            <div class="archive-empty" id="archive-empty" hidden>Chưa có lượt thi nào trong mục này.</div>
+            <div class="archive-actions">
+                <button class="btn danger-ghost" type="button" id="btn-clear-history">Xoá toàn bộ lịch sử</button>
+            </div>
+        </section>
+
+        <!-- ================= EXAM ================= -->
+        <section class="screen" id="screen-exam">
+            <div class="exam-layout">
+                <div class="paper">
+                    <div class="paper-head">
+                        <div class="exam-name" id="paper-name">Đề kiểm tra</div>
+                        <div class="exam-sub" id="paper-sub"></div>
+                    </div>
+                    <div id="paper-body"></div>
+                    <div class="paper-foot">
+                        <button class="btn ghost" type="button" id="btn-exit">Thoát</button>
+                        <button class="btn primary" type="button" id="btn-submit-2">Nộp bài</button>
+                    </div>
+                </div>
+
+                <aside class="palette" id="palette">
+                    <h4>Bảng câu hỏi</h4>
+                    <div class="palette-grid" id="palette-grid"></div>
+                    <div class="palette-legend">
+                        <span><i class="sw done"></i> Đã trả lời</span>
+                        <span><i class="sw part"></i> Trả lời một phần</span>
+                        <span><i class="sw"></i> Chưa trả lời</span>
+                    </div>
+                    <div class="progress-bar"><i id="progress-fill"></i></div>
+                    <div class="progress-txt" id="progress-txt">0 / 28 câu</div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- ================= RESULT ================= -->
+        <section class="screen" id="screen-result">
+            <div class="result-hero">
+                <div class="score-box">
+                    <div class="score-num" id="score-num">0<small>/10</small></div>
+                    <div class="score-label">Điểm bài thi</div>
+                </div>
+                <div class="result-info">
+                    <h2 id="result-title">Hoàn thành bài thi</h2>
+                    <p id="result-desc"></p>
+                    <div class="result-meta" id="result-meta"></div>
+                </div>
+            </div>
+
+            <div class="breakdown">
+                <div class="bd-card">
+                    <div class="top">
+                        <h4>Phần I · Trắc nghiệm</h4>
+                        <div class="pts"><span id="p1-pts">0</span><small>/6</small></div>
+                    </div>
+                    <div class="sub" id="p1-sub"></div>
+                </div>
+                <div class="bd-card">
+                    <div class="top">
+                        <h4>Phần II · Đúng / Sai</h4>
+                        <div class="pts"><span id="p2-pts">0</span><small>/4</small></div>
+                    </div>
+                    <div class="sub" id="p2-sub"></div>
+                    <div class="tf-score-list" id="tf-score-list"></div>
+                </div>
+            </div>
+
+            <div class="review-head">
+                <div>
+                    <h3>Xem lại bài làm</h3>
+                    <div class="sub">Đáp án đúng, lựa chọn của bạn và giải thích chi tiết.</div>
+                </div>
+                <button class="btn ghost" type="button" id="btn-print">In kết quả</button>
+            </div>
+            <div class="review-list" id="review-list"></div>
+
+            <div class="result-actions">
+                <button class="btn primary" type="button" id="btn-again">Làm đề mới cùng chế độ</button>
+                <button class="btn ghost" type="button" id="btn-review-flashcards" style="background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; font-weight:700;">🃏 Ôn dạng Thẻ Flashcard</button>
+                <button class="btn ghost" type="button" id="btn-archive-result">Quá trình ôn tập</button>
+                <button class="btn ghost" type="button" id="btn-home">Về trang chọn đề</button>
+            </div>
+        </section>
+    </main>
+
+    <button class="fab-palette" id="fab-palette" type="button">Bảng câu · <span id="fab-count">0</span>/28</button>
+
+    <div class="palette-sheet" id="palette-sheet">
+        <div class="sheet-head">
+            <h4>Bảng câu hỏi</h4>
+            <button class="close-x" type="button" id="sheet-close">✕</button>
+        </div>
+        <div class="palette-grid" id="palette-grid-mobile"></div>
+    </div>
+
+    <div class="modal" id="modal-submit">
+        <div class="modal-card">
+            <h3>Nộp bài?</h3>
+            <p id="modal-submit-desc">Bạn sẽ không thể sửa đáp án sau khi nộp.</p>
+            <div id="modal-submit-warn"></div>
+            <div class="modal-actions">
+                <button class="btn ghost" type="button" id="modal-cancel">Tiếp tục làm</button>
+                <button class="btn primary" type="button" id="modal-ok">Nộp bài</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="de_thi_data.js?v=1.1"></script>
+    <script>
+        (() => {
+            'use strict';
+
+            const $ = (id) => document.getElementById(id);
+            const BANK = window.EXAM_BANK;
+            const LESSON_IDS = ['bai_6', 'bai_7', 'bai_8'];
+            const STATE_KEY = 'loci_de_thi_state_v1';
+            const HIST_KEY = 'loci_de_thi_history_v1';
+            const HIST_LIMIT = 500;
+            const TF_POINTS = [0, 0.1, 0.25, 0.5, 1];
+            const LETTERS = ['A', 'B', 'C', 'D'];
+            const TF_KEYS = ['a', 'b', 'c', 'd'];
+            const DECK_COUNT = 12;
+            const pad2 = (n) => String(n).padStart(2, '0');
+
+            let exam = null;          // đề đang làm
+            let answers = {};         // uid -> 0..3 | uid:0..3 -> true/false
+            let deadline = 0;         // timestamp
+            let tick = null;
+            let selectedLesson = null;
+            let lastMode = null;
+
+            /* ---------- helpers ---------- */
+            const shuffle = (arr) => {
+                const a = arr.slice();
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            };
+            const sample = (arr, n) => shuffle(arr).slice(0, n);
+            const hashSeed = (str) => {
+                let h = 2166136261 >>> 0;
+                for (let i = 0; i < str.length; i++) {
+                    h ^= str.charCodeAt(i);
+                    h = Math.imul(h, 16777619) >>> 0;
+                }
+                return h >>> 0;
+            };
+            const mulberry32 = (seed) => {
+                let a = seed >>> 0;
+                return () => {
+                    a = (a + 0x6D2B79F5) | 0;
+                    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+                };
+            };
+            const shuffleWith = (rng, arr) => {
+                const a = arr.slice();
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(rng() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            };
+            const sampleWith = (rng, arr, n) => shuffleWith(rng, arr).slice(0, n);
+            const fmtPoint = (n) => {
+                const s = (Math.round(n * 100) / 100).toFixed(2).replace(/\.?0+$/, '');
+                return s.replace('.', ',');
+            };
+            const fmtDuration = (sec) => {
+                sec = Math.max(0, Math.round(sec));
+                if (sec < 60) return sec + ' giây';
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                const s = sec % 60;
+                if (h) return h + ' giờ' + (m ? ' ' + m + ' phút' : '');
+                return s ? m + ' phút ' + s + ' giây' : m + ' phút';
+            };
+            const fmtClock = (sec) => {
+                sec = Math.max(0, Math.ceil(sec));
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            };
+            const topicName = (lessonId, key) => (BANK[lessonId].topics && BANK[lessonId].topics[key]) || '';
+
+            /* ---------- build exam ---------- */
+            function normalizeMcq(src, lessonId, rng) {
+                const opts = shuffleWith(rng, src.o.map((text, i) => ({ text, ok: i === src.a })));
+                return {
+                    uid: src.id,
+                    lesson: lessonId,
+                    topic: topicName(lessonId, src.topic),
+                    q: src.q,
+                    opts,
+                    correct: opts.findIndex(o => o.ok),
+                    ex: src.ex
+                };
+            }
+
+            function normalizeTf(src, lessonId, rng) {
+                return {
+                    uid: src.id,
+                    lesson: lessonId,
+                    topic: topicName(lessonId, src.topic),
+                    lead: src.lead,
+                    statements: shuffleWith(rng, src.s.map(s => ({ t: s.t, ok: s.ok, ex: s.ex })))
+                };
+            }
+
+            function buildExamV2(mode, lessonId, deckNumber) {
+                const seeded = typeof deckNumber === 'number';
+                const rng = seeded
+                    ? mulberry32(hashSeed('loci-de-thi:' + mode + ':' + (lessonId || 'combo') + ':' + deckNumber))
+                    : Math.random;
+                const baseTitle = mode === 'lesson'
+                    ? BANK[lessonId].title
+                    : 'Đề tổng hợp: Bài 6 – Bài 7 – Bài 8';
+                const code = seeded
+                    ? (mode === 'lesson' ? 'B' + lessonId.split('_')[1] + '-' + pad2(deckNumber) : 'TH-' + pad2(deckNumber))
+                    : null;
+
+                const mcqPack = [];
+                const tfPack = [];
+                if (mode === 'lesson') {
+                    mcqPack.push(...sampleWith(rng, BANK[lessonId].mcq.map(q => ({ src: q, lesson: lessonId })), 24));
+                    tfPack.push(...sampleWith(rng, BANK[lessonId].tf.map(t => ({ src: t, lesson: lessonId })), 4));
+                } else {
+                    LESSON_IDS.forEach(id => {
+                        mcqPack.push(...sampleWith(rng, BANK[id].mcq.map(q => ({ src: q, lesson: id })), 8));
+                    });
+                    const extra = seeded
+                        ? (deckNumber % 2 === 0 ? 'bai_6' : 'bai_8')
+                        : (Math.random() < 0.5 ? 'bai_6' : 'bai_8');
+                    LESSON_IDS.forEach(id => {
+                        const need = id === extra ? 2 : 1;
+                        tfPack.push(...sampleWith(rng, BANK[id].tf.map(t => ({ src: t, lesson: id })), need));
+                    });
+                }
+
+                return {
+                    mode,
+                    lessonId: mode === 'lesson' ? lessonId : null,
+                    number: seeded ? deckNumber : null,
+                    code,
+                    title: baseTitle + (seeded ? ' · Đề ' + pad2(deckNumber) : ' · Đề ngẫu nhiên'),
+                    createdAt: Date.now(),
+                    part1: shuffleWith(rng, mcqPack).map(x => normalizeMcq(x.src, x.lesson, rng)),
+                    part2: shuffleWith(rng, tfPack).map(x => normalizeTf(x.src, x.lesson, rng))
+                };
+            }
+
+            /* ---------- persistence ---------- */
+            function saveState() {
+                try {
+                    localStorage.setItem(STATE_KEY, JSON.stringify({
+                        exam, answers, deadline
+                    }));
+                } catch (_) { }
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem(STATE_KEY);
+                    if (!raw) return null;
+                    const st = JSON.parse(raw);
+                    if (!st || !st.exam || !Array.isArray(st.exam.part1)) return null;
+                    return st;
+                } catch (_) { return null; }
+            }
+
+            function clearState() {
+                try { localStorage.removeItem(STATE_KEY); } catch (_) { }
+            }
+
+            function readHistory() {
+                try {
+                    const raw = localStorage.getItem(HIST_KEY);
+                    const arr = raw ? JSON.parse(raw) : [];
+                    return Array.isArray(arr) ? arr : [];
+                } catch (_) { return []; }
+            }
+
+            function pushHistory(rec) {
+                const list = readHistory();
+                list.unshift(rec);
+                try { localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0, HIST_LIMIT))); } catch (_) { }
+            }
+
+            function summarize(list) {
+                const n = list.length;
+                const sum = list.reduce((s, h) => s + (Number(h.total) || 0), 0);
+                const best = n ? Math.max(...list.map(h => Number(h.total) || 0)) : 0;
+                const time = list.reduce((s, h) => s + (Number(h.durationUsed) || 0), 0);
+                const passed = list.filter(h => Number(h.total) >= 5).length;
+                const codes = new Set(list.filter(h => h.code).map(h => h.code));
+                return {
+                    n, best, time, codes: codes.size,
+                    avg: n ? sum / n : 0,
+                    passRate: n ? Math.round(passed / n * 100) : 0
+                };
+            }
+
+            /* ---------- setup ---------- */
+            function renderSetup() {
+                const list = $('lesson-list');
+                list.innerHTML = LESSON_IDS.map(id => {
+                    const L = BANK[id];
+                    const no = id.split('_')[1];
+                    return `<button class="lesson-btn" type="button" data-lesson="${id}">
+                        <span class="no">${no}</span>
+                        <span class="txt">
+                            <b>${L.title.replace(/^Bài \d+:\s*/, '')}</b>
+                            <span>Bài ${no} · Lịch sử 12</span>
+                        </span>
+                        <span class="pool">${L.mcq.length} TN · ${L.tf.length} ĐS</span>
+                    </button>`;
+                }).join('');
+
+                list.querySelectorAll('.lesson-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        selectedLesson = btn.dataset.lesson;
+                        list.querySelectorAll('.lesson-btn').forEach(b => b.classList.toggle('sel', b === btn));
+                        renderLessonDecks(selectedLesson);
+                    });
+                });
+
+                renderComboDecks();
+                renderHistory();
+                refreshResumeHint();
+
+                // Tự động chọn bài nếu có tham số URL ?lesson=bai6 / bai7 / bai8
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const paramLesson = urlParams.get('lesson');
+                    if (paramLesson) {
+                        let normId = paramLesson.replace('bai', 'bai_').replace('bai__', 'bai_');
+                        if (!BANK[normId] && BANK['bai_' + paramLesson]) normId = 'bai_' + paramLesson;
+                        if (BANK[normId]) {
+                            selectedLesson = normId;
+                            const targetBtn = list.querySelector(`.lesson-btn[data-lesson="${normId}"]`);
+                            if (targetBtn) {
+                                list.querySelectorAll('.lesson-btn').forEach(b => b.classList.toggle('sel', b === targetBtn));
+                                renderLessonDecks(normId);
+                                targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            }
+                        }
+                    }
+                } catch (_) {}
+            }
+
+            function renderLessonDecks(lessonId) {
+                const no = lessonId.split('_')[1];
+                $('deck-lesson-no').textContent = no;
+                const grid = $('lesson-deck-grid');
+                let html = '';
+                for (let n = 1; n <= DECK_COUNT; n++) {
+                    html += `<button class="deck-btn" type="button" data-mode="lesson" data-deck="${n}">
+                        <b>Đề ${pad2(n)}</b><span>B${no}-${pad2(n)}</span>
+                    </button>`;
+                }
+                grid.innerHTML = html;
+                bindDeckButtons(grid);
+                $('lesson-decks').hidden = false;
+            }
+
+            function renderComboDecks() {
+                const grid = $('combo-deck-grid');
+                let html = '';
+                for (let n = 1; n <= DECK_COUNT; n++) {
+                    html += `<button class="deck-btn" type="button" data-mode="combo" data-deck="${n}">
+                        <b>Đề ${pad2(n)}</b><span>TH-${pad2(n)}</span>
+                    </button>`;
+                }
+                grid.innerHTML = html;
+                bindDeckButtons(grid);
+            }
+
+            function bindDeckButtons(grid) {
+                grid.querySelectorAll('.deck-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const mode = btn.dataset.mode;
+                        startExam(mode, mode === 'lesson' ? selectedLesson : null, Number(btn.dataset.deck));
+                    });
+                });
+            }
+
+            function refreshResumeHint() {
+                const st = loadState();
+                if (!st) return;
+                const left = st.deadline - Date.now();
+                if (left <= 0) { clearState(); return; }
+                const desc = st.exam.title || (st.exam.mode === 'lesson' && st.exam.lessonId
+                    ? BANK[st.exam.lessonId].title
+                    : 'Đề tổng hợp 3 bài');
+                const bar = document.createElement('div');
+                bar.className = 'hist-item';
+                bar.style.marginBottom = '8px';
+                bar.innerHTML = `<span class="score" style="color:#0f172a;font-size:14px">Đang dở</span>
+                    <span class="meta"><b>${desc}</b>Còn ${fmtClock(left / 1000)} để hoàn thành</span>
+                    <button class="btn ghost" type="button" id="btn-resume">Làm tiếp</button>`;
+                const wrap = $('history-wrap');
+                if (!document.getElementById('btn-resume')) {
+                    wrap.hidden = false;
+                    wrap.insertBefore(bar, $('hist-list'));
+                    $('btn-resume').addEventListener('click', () => {
+                        exam = st.exam;
+                        answers = st.answers || {};
+                        deadline = st.deadline;
+                        lastMode = { mode: exam.mode, lessonId: exam.lessonId, deckNumber: exam.number ?? null };
+                        showScreen('exam');
+                        renderExam();
+                        startTimer();
+                    });
+                }
+            }
+
+            function renderHistory() {
+                const list = readHistory();
+                const wrap = $('history-wrap');
+                if (!list.length) {
+                    $('home-stats').innerHTML = '';
+                    $('hist-list').innerHTML = '';
+                    if (!document.getElementById('btn-resume')) wrap.hidden = true;
+                    return;
+                }
+                wrap.hidden = false;
+                const s = summarize(list);
+                $('home-stats').innerHTML = `
+                    <div class="mini-stat"><b>${s.n}</b><span>lượt đã làm</span></div>
+                    <div class="mini-stat"><b>${fmtPoint(s.avg)}</b><span>điểm trung bình</span></div>
+                    <div class="mini-stat"><b>${fmtPoint(s.best)}</b><span>điểm cao nhất</span></div>`;
+                $('hist-list').innerHTML = list.slice(0, 5).map(h => {
+                    const d = new Date(h.at);
+                    const when = d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+                    const name = h.lesson ? BANK[h.lesson].title : 'Đề tổng hợp 3 bài';
+                    const tag = h.code ? h.code : 'Ngẫu nhiên';
+                    return `<div class="hist-item">
+                        <span class="score">${fmtPoint(h.total)}</span>
+                        <span class="meta"><b>${name} · ${tag}</b>${when} · ${h.durationUsed ? fmtDuration(h.durationUsed) : '—'} · TN đúng ${h.correct1}/24</span>
+                        <span class="badge ${h.total >= 5 ? 'ok' : 'no'}">${h.total >= 5 ? 'Đạt' : 'Chưa đạt'}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            /* ---------- archive ---------- */
+            let archiveFilter = 'all';
+            const ARCHIVE_FILTERS = [
+                { id: 'all', label: 'Tất cả' },
+                { id: 'bai_6', label: 'Bài 6' },
+                { id: 'bai_7', label: 'Bài 7' },
+                { id: 'bai_8', label: 'Bài 8' },
+                { id: 'combo', label: 'Tổng hợp' }
+            ];
+
+            function renderArchive() {
+                const all = readHistory();
+                const keys = ['bai_6', 'bai_7', 'bai_8', 'combo'];
+                const counts = { all: all.length, bai_6: 0, bai_7: 0, bai_8: 0, combo: 0 };
+                all.forEach(h => {
+                    const k = h.lesson || 'combo';
+                    if (keys.indexOf(k) !== -1) counts[k]++;
+                });
+
+                $('archive-filters').innerHTML = ARCHIVE_FILTERS.map(f =>
+                    `<button class="filter-btn ${archiveFilter === f.id ? 'on' : ''}" type="button" data-filter="${f.id}">${f.label} · ${counts[f.id]}</button>`
+                ).join('');
+                $('archive-filters').querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        archiveFilter = btn.dataset.filter;
+                        renderArchive();
+                    });
+                });
+
+                const list = archiveFilter === 'all'
+                    ? all
+                    : all.filter(h => (h.lesson || 'combo') === archiveFilter);
+                const s = summarize(list);
+
+                $('archive-summary').innerHTML = `
+                    <div class="sum-card"><b>${s.n}</b><span>lượt thi</span></div>
+                    <div class="sum-card"><b>${fmtPoint(s.avg)}</b><span>điểm trung bình</span></div>
+                    <div class="sum-card"><b>${fmtPoint(s.best)}</b><span>điểm cao nhất</span></div>
+                    <div class="sum-card"><b>${fmtDuration(s.time)}</b><span>tổng thời gian làm bài</span></div>`;
+                $('archive-note').textContent = s.n
+                    ? `Tỉ lệ đạt: ${s.passRate}% · Đề cố định đã làm: ${s.codes}`
+                    : '';
+
+                $('archive-body').innerHTML = list.map((h, i) => {
+                    const when = new Date(h.at).toLocaleString('vi-VN', {
+                        hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit'
+                    });
+                    const mode = h.lesson ? 'Bài ' + h.lesson.split('_')[1] : 'Tổng hợp';
+                    const code = h.code || 'Ngẫu nhiên';
+                    const p1 = typeof h.p1 === 'number' ? h.p1 : (Number(h.correct1) || 0) * 0.25;
+                    const p2 = typeof h.p2 === 'number' ? h.p2 : Math.max(0, (Number(h.total) || 0) - p1);
+                    return `<tr>
+                        <td class="idx">${i + 1}</td>
+                        <td>${when}</td>
+                        <td><span class="code">${code}</span></td>
+                        <td>${mode}</td>
+                        <td>${Number(h.correct1) || 0}/24</td>
+                        <td>${fmtPoint(p1)}</td>
+                        <td>${fmtPoint(p2)}</td>
+                        <td class="tot">${fmtPoint(Number(h.total) || 0)}</td>
+                        <td>${h.durationUsed ? fmtDuration(h.durationUsed) : '—'}</td>
+                        <td><span class="badge ${Number(h.total) >= 5 ? 'ok' : 'no'}">${Number(h.total) >= 5 ? 'Đạt' : 'Chưa đạt'}</span></td>
+                    </tr>`;
+                }).join('');
+
+                $('archive-empty').hidden = list.length > 0;
+                $('archive-table-wrap').hidden = list.length === 0;
+            }
+
+            /* ---------- screens ---------- */
+            function showScreen(name) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 'screen-' + name));
+                window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+                $('timer').classList.toggle('show', name === 'exam');
+                $('btn-submit').classList.toggle('show', name === 'exam');
+                $('mode-chip').classList.toggle('show', name === 'exam');
+                $('fab-palette').style.display = (name === 'exam' && window.matchMedia('(max-width: 1020px)').matches) ? 'inline-flex' : 'none';
+            }
+
+            /* ---------- start ---------- */
+            function startExam(mode, lessonId, deckNumber) {
+                if (!window.EXAM_BANK) { alert('Không tải được ngân hàng câu hỏi.'); return; }
+                exam = buildExamV2(mode, lessonId, typeof deckNumber === 'number' ? deckNumber : null);
+                answers = {};
+                lastMode = { mode, lessonId, deckNumber: exam.number };
+                deadline = Date.now() + BANK.meta.durationMin * 60 * 1000;
+                saveState();
+                const d = document.getElementById('btn-resume');
+                if (d) d.closest('.hist-item').remove();
+                showScreen('exam');
+                renderExam();
+                startTimer();
+            }
+
+            /* ---------- render exam ---------- */
+            function renderExam() {
+                const isLesson = exam.mode === 'lesson' && exam.lessonId;
+                $('paper-name').textContent = exam.title;
+                $('paper-sub').textContent = isLesson
+                    ? 'Hình thức: 24 trắc nghiệm + 4 đúng/sai · 50 phút · Thang điểm 10'
+                    : 'Hình thức: 24 trắc nghiệm (8 câu/bài) + 4 đúng/sai · 50 phút · Thang điểm 10';
+                const deckLabel = exam.number ? 'Đề ' + pad2(exam.number) : 'Ngẫu nhiên';
+                $('mode-chip').textContent = (isLesson ? 'Bài ' + exam.lessonId.split('_')[1] : 'Tổng hợp') + ' · ' + deckLabel;
+
+                let html = '';
+                html += `<div class="part-head">
+                    <h3>Phần I · Trắc nghiệm nhiều lựa chọn</h3>
+                    <span>Câu 1 – 24 · 6,0 điểm</span>
+                </div>`;
+
+                exam.part1.forEach((q, idx) => {
+                    html += `<article class="q" id="q-${idx + 1}">
+                        <div class="q-head">
+                            <span class="q-no">Câu ${idx + 1}</span>
+                            <span class="q-tag">${q.topic}</span>
+                        </div>
+                        <div class="q-stem">${q.q}</div>
+                        <div class="opts">${q.opts.map((o, i) => `
+                            <button class="opt" type="button" data-q="${q.uid}" data-i="${i}" aria-pressed="false">
+                                <span class="opt-key">${LETTERS[i]}</span>
+                                <span class="opt-text">${o.text}</span>
+                            </button>`).join('')}
+                        </div>
+                    </article>`;
+                });
+
+                html += `<div class="part-head">
+                    <h3>Phần II · Câu hỏi đúng / sai</h3>
+                    <span>Mỗi câu 4 mệnh đề · tối đa 1,0 điểm</span>
+                </div>`;
+
+                exam.part2.forEach((t, idx) => {
+                    const n = idx + 25;
+                    html += `<article class="q" id="q-${n}">
+                        <div class="q-head">
+                            <span class="q-no">Câu ${n}</span>
+                            <span class="q-tag">Đúng / Sai · ${t.topic}</span>
+                        </div>
+                        <div class="q-lead">${t.lead}</div>
+                        <div class="tf-rows">${t.statements.map((s, i) => `
+                            <div class="tf-row">
+                                <span class="tf-key">${TF_KEYS[i]})</span>
+                                <span class="tf-text">${s.t}</span>
+                                <span class="tf-btns">
+                                    <button type="button" data-q="${t.uid}" data-i="${i}" data-val="true">Đúng</button>
+                                    <button type="button" data-q="${t.uid}" data-i="${i}" data-val="false">Sai</button>
+                                </span>
+                            </div>`).join('')}
+                        </div>
+                    </article>`;
+                });
+
+                $('paper-body').innerHTML = html;
+                bindPaper();
+                paintAnswers();
+                renderPalette();
+                updateProgress();
+            }
+
+            function paintAnswers() {
+                exam.part1.forEach(q => {
+                    if (!answers.hasOwnProperty(q.uid)) return;
+                    document.querySelectorAll(`.opt[data-q="${q.uid}"]`).forEach(b => {
+                        const on = Number(b.dataset.i) === answers[q.uid];
+                        b.classList.toggle('on', on);
+                        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    });
+                });
+                exam.part2.forEach(t => {
+                    t.statements.forEach((s, i) => {
+                        const key = t.uid + ':' + i;
+                        if (!answers.hasOwnProperty(key)) return;
+                        const val = answers[key] ? 'true' : 'false';
+                        document.querySelectorAll(`.tf-btns button[data-q="${t.uid}"][data-i="${i}"]`).forEach(b => {
+                            b.classList.toggle('on', b.dataset.val === val);
+                        });
+                    });
+                });
+            }
+
+            let paperBound = false;
+            function bindPaper() {
+                if (paperBound) return;
+                paperBound = true;
+                $('paper-body').addEventListener('click', (e) => {
+                    const opt = e.target.closest('.opt');
+                    if (opt) {
+                        const uid = opt.dataset.q;
+                        answers[uid] = Number(opt.dataset.i);
+                        document.querySelectorAll(`.opt[data-q="${uid}"]`).forEach(b => {
+                            const on = b === opt;
+                            b.classList.toggle('on', on);
+                            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                        });
+                        afterAnswer();
+                        return;
+                    }
+                    const tfBtn = e.target.closest('.tf-btns button');
+                    if (tfBtn) {
+                        const key = tfBtn.dataset.q + ':' + tfBtn.dataset.i;
+                        answers[key] = tfBtn.dataset.val === 'true';
+                        const group = tfBtn.parentElement.querySelectorAll('button');
+                        group.forEach(b => b.classList.toggle('on', b === tfBtn));
+                        afterAnswer();
+                    }
+                });
+            }
+
+            function afterAnswer() {
+                saveState();
+                renderPalette();
+                updateProgress();
+            }
+
+            function isMcqAnswered(q) { return answers.hasOwnProperty(q.uid); }
+
+            function tfAnsweredCount(t) {
+                let c = 0;
+                for (let i = 0; i < t.statements.length; i++) {
+                    if (answers.hasOwnProperty(t.uid + ':' + i)) c++;
+                }
+                return c;
+            }
+
+            function renderPalette() {
+                const chips = [];
+                exam.part1.forEach((q, i) => {
+                    const done = isMcqAnswered(q);
+                    chips.push(`<button class="pchip ${done ? 'done' : ''}" type="button" data-go="${i + 1}">${i + 1}</button>`);
+                });
+                exam.part2.forEach((t, i) => {
+                    const n = i + 25;
+                    const c = tfAnsweredCount(t);
+                    const cls = c === 4 ? 'done' : (c > 0 ? 'part' : '');
+                    chips.push(`<button class="pchip ${cls}" type="button" data-go="${n}">${n}</button>`);
+                });
+                const joined = chips.join('');
+                $('palette-grid').innerHTML = joined;
+                $('palette-grid-mobile').innerHTML = joined;
+                document.querySelectorAll('.pchip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        closePaletteSheet();
+                        const el = document.getElementById('q-' + chip.dataset.go);
+                        if (el) {
+                            const y = el.getBoundingClientRect().top + window.scrollY - 78;
+                            window.scrollTo({ top: y, behavior: 'smooth' });
+                        }
+                    });
+                });
+            }
+
+            function updateProgress() {
+                let done = 0;
+                exam.part1.forEach(q => { if (isMcqAnswered(q)) done++; });
+                exam.part2.forEach(t => { if (tfAnsweredCount(t) === 4) done++; });
+                const total = exam.part1.length + exam.part2.length;
+                $('progress-txt').textContent = done + ' / ' + total + ' câu';
+                $('progress-fill').style.width = (done / total * 100) + '%';
+                $('fab-count').textContent = done;
+            }
+
+            /* ---------- timer ---------- */
+            function startTimer() {
+                stopTimer();
+                tick = setInterval(() => {
+                    const left = deadline - Date.now();
+                    const txt = $('timer-txt');
+                    const box = $('timer');
+                    txt.textContent = fmtClock(left / 1000);
+                    box.classList.toggle('warn', left <= 10 * 60 * 1000 && left > 5 * 60 * 1000);
+                    box.classList.toggle('danger', left <= 5 * 60 * 1000);
+                    if (left <= 0) {
+                        stopTimer();
+                        finishExam(true);
+                    }
+                }, 500);
+                $('timer-txt').textContent = fmtClock((deadline - Date.now()) / 1000);
+            }
+
+            function stopTimer() {
+                if (tick) { clearInterval(tick); tick = null; }
+            }
+
+            /* ---------- submit ---------- */
+            function openSubmitModal() {
+                let blank1 = 0, blank2 = 0, partial = 0;
+                exam.part1.forEach(q => { if (!isMcqAnswered(q)) blank1++; });
+                exam.part2.forEach(t => {
+                    const c = tfAnsweredCount(t);
+                    if (c === 0) blank2++;
+                    else if (c < 4) partial++;
+                });
+                $('modal-submit-desc').textContent = 'Bạn sẽ không thể sửa đáp án sau khi nộp.';
+                let warn = '';
+                if (blank1 || blank2 || partial) {
+                    const parts = [];
+                    if (blank1) parts.push(`${blank1} câu trắc nghiệm chưa trả lời`);
+                    if (blank2) parts.push(`${blank2} câu đúng/sai chưa trả lời`);
+                    if (partial) parts.push(`${partial} câu đúng/sai trả lời chưa đủ 4 mệnh đề`);
+                    warn = `<div class="warn-line">Còn ${parts.join(', ')}.</div>`;
+                }
+                $('modal-submit-warn').innerHTML = warn;
+                $('modal-submit').classList.add('on');
+            }
+
+            function closeSubmitModal() { $('modal-submit').classList.remove('on'); }
+
+            function finishExam(auto) {
+                stopTimer();
+                closeSubmitModal();
+                closePaletteSheet();
+                const total = BANK.meta.part1.count + BANK.meta.part2.count;
+
+                let correct1 = 0;
+                exam.part1.forEach(q => { if (answers[q.uid] === q.correct) correct1++; });
+                const p1 = Math.round(correct1 * 0.25 * 100) / 100;
+
+                let p2 = 0;
+                exam.part2.forEach(t => {
+                    let c = 0;
+                    t.statements.forEach((s, i) => {
+                        if (answers[t.uid + ':' + i] === s.ok) c++;
+                    });
+                    t._correctCount = c;
+                    t._points = TF_POINTS[c];
+                    p2 += t._points;
+                });
+                p2 = Math.round(p2 * 100) / 100;
+                const totalScore = Math.round((p1 + p2) * 100) / 100;
+
+                const used = Math.max(0, Math.min(BANK.meta.durationMin * 60, Math.round((Date.now() - (deadline - BANK.meta.durationMin * 60 * 1000)) / 1000)));
+                const rec = {
+                    at: Date.now(),
+                    mode: exam.mode,
+                    lesson: exam.lessonId,
+                    code: exam.code,
+                    total: totalScore,
+                    correct1,
+                    p1, p2,
+                    durationUsed: used
+                };
+                pushHistory(rec);
+                clearState();
+
+                renderResult({ correct1, p1, p2, totalScore, used, auto: !!auto });
+                showScreen('result');
+                $('timer').classList.remove('show', 'warn', 'danger');
+                $('btn-submit').classList.remove('show');
+                $('mode-chip').classList.remove('show');
+                $('fab-palette').style.display = 'none';
+            }
+
+            /* ---------- result ---------- */
+            function renderResult(r) {
+                const grade = r.totalScore >= 8 ? 'Xuất sắc' : r.totalScore >= 6.5 ? 'Khá' : r.totalScore >= 5 ? 'Trung bình' : 'Cần ôn lại';
+                $('score-num').innerHTML = fmtPoint(r.totalScore) + '<small>/10</small>';
+                $('result-title').textContent = r.auto ? 'Hết giờ — bài đã được nộp tự động' : 'Hoàn thành bài thi · ' + grade;
+                $('result-desc').textContent = r.totalScore >= 8
+                    ? 'Kết quả rất tốt. Hãy giữ nhịp ôn tập và thử đề tổng hợp để kiểm tra độ bền kiến thức.'
+                    : r.totalScore >= 6.5
+                        ? 'Nền tảng khá vững. Xem lại các câu sai bên dưới, đặc biệt phần đúng/sai cần đọc kỹ từng mệnh đề.'
+                        : r.totalScore >= 5
+                            ? 'Đã đạt mức trung bình. Nên ôn lại các mốc thời gian và nội dung chính của từng bài.'
+                            : 'Cần ôn lại kỹ hơn. Đọc phần giải thích bên dưới rồi làm lại một đề khác cùng bài.';
+
+                const name = exam.mode === 'lesson' ? BANK[exam.lessonId].title : 'Đề tổng hợp 3 bài';
+                $('result-meta').innerHTML = `
+                    <span class="pill">${name}${exam.code ? ' · ' + exam.code : ' · Đề ngẫu nhiên'}</span>
+                    <span class="pill">${fmtDuration(r.used)} / 50 phút</span>
+                    <span class="pill">${new Date().toLocaleDateString('vi-VN')}</span>`;
+
+                $('p1-pts').textContent = fmtPoint(r.p1);
+                $('p1-sub').textContent = `Trả lời đúng ${r.correct1}/24 câu trắc nghiệm.`;
+
+                $('p2-pts').textContent = fmtPoint(r.p2);
+                $('p2-sub').textContent = 'Điểm từng câu theo số mệnh đề đúng.';
+                $('tf-score-list').innerHTML = exam.part2.map((t, i) => `
+                    <div class="tf-score-row">
+                        <span class="n">Câu ${i + 25}</span>
+                        <span class="bar"><i style="width:${t._correctCount / 4 * 100}%"></i></span>
+                        <span class="v">${t._correctCount}/4 · ${fmtPoint(t._points)}đ</span>
+                    </div>`).join('');
+
+                let html = '';
+                exam.part1.forEach((q, i) => {
+                    const chosen = answers.hasOwnProperty(q.uid) ? answers[q.uid] : null;
+                    const ok = chosen === q.correct;
+                    html += `<div class="rv ${ok ? 'right' : 'wrong'}">
+                        <div class="rv-head">
+                            <span class="q-no">Câu ${i + 1}</span>
+                            <span class="badge ${ok ? 'ok' : 'no'}">${ok ? 'Đúng' : (chosen === null ? 'Chưa trả lời' : 'Sai')}</span>
+                            <span class="q-tag">${q.topic}</span>
+                        </div>
+                        <div class="q-stem">${q.q}</div>
+                        <div class="rv-opts">${q.opts.map((o, k) => {
+                            const isCorrect = k === q.correct;
+                            const isChosen = chosen === k;
+                            const cls = isCorrect ? 'correct' : (isChosen ? 'chosen-wrong' : '');
+                            return `<div class="rv-opt ${cls}">
+                                <span class="opt-key">${LETTERS[k]}</span>
+                                <span>${o.text}${isChosen && !isCorrect ? ' <em style="font-style:normal;font-weight:700">(bạn chọn)</em>' : ''}</span>
+                            </div>`;
+                        }).join('')}</div>
+                        <div class="explain"><b>Giải thích:</b> ${q.ex}</div>
+                    </div>`;
+                });
+
+                exam.part2.forEach((t, i) => {
+                    const allCorrect = t._correctCount === 4;
+                    html += `<div class="rv ${allCorrect ? 'right' : 'wrong'}">
+                        <div class="rv-head">
+                            <span class="q-no">Câu ${i + 25}</span>
+                            <span class="badge ${allCorrect ? 'ok' : 'neutral'}">${t._correctCount}/4 mệnh đề · ${fmtPoint(t._points)} điểm</span>
+                            <span class="q-tag">${t.topic}</span>
+                        </div>
+                        <div class="q-lead">${t.lead}</div>
+                        <div class="rv-tf">${t.statements.map((s, k) => {
+                            const v = answers[t.uid + ':' + k];
+                            const right = v === s.ok;
+                            const yours = v === undefined ? 'chưa chọn' : (v ? 'Đúng' : 'Sai');
+                            return `<div class="rv-tf-row">
+                                <span class="mark ${right ? 'ok' : 'no'}">${right ? '✓' : '✗'}</span>
+                                <span><b>${TF_KEYS[k]})</b> ${s.t}<br>
+                                <span style="font-size:12.4px;color:#64748b">Đáp án: <b>${s.ok ? 'Đúng' : 'Sai'}</b> · Bạn chọn: ${yours}</span><br>
+                                <span style="font-size:12.6px;color:#334155">${s.ex}</span></span>
+                            </div>`;
+                        }).join('')}</div>
+                    </div>`;
+                });
+
+                $('review-list').innerHTML = html;
+            }
+
+            /* ---------- palette sheet ---------- */
+            function openPaletteSheet() { $('palette-sheet').classList.add('on'); }
+            function closePaletteSheet() { $('palette-sheet').classList.remove('on'); }
+
+            /* ---------- events ---------- */
+            $('btn-random-lesson').addEventListener('click', () => {
+                if (selectedLesson) startExam('lesson', selectedLesson, null);
+            });
+            $('btn-random-combo').addEventListener('click', () => startExam('combo', null, null));
+
+            $('btn-submit').addEventListener('click', openSubmitModal);
+            $('btn-submit-2').addEventListener('click', openSubmitModal);
+            $('modal-cancel').addEventListener('click', closeSubmitModal);
+            $('modal-ok').addEventListener('click', () => finishExam(false));
+            $('modal-submit').addEventListener('click', (e) => {
+                if (e.target === $('modal-submit')) closeSubmitModal();
+            });
+
+            $('btn-exit').addEventListener('click', () => {
+                if (!confirm('Thoát bài thi? Tiến độ vẫn được lưu và có thể làm tiếp.')) return;
+                stopTimer();
+                showScreen('setup');
+                renderSetup();
+            });
+
+            $('btn-again').addEventListener('click', () => {
+                const m = lastMode || (exam && { mode: exam.mode, lessonId: exam.lessonId });
+                if (m) startExam(m.mode, m.lessonId, null);
+            });
+
+            const btnRevFlashcard = $('btn-review-flashcards');
+            if (btnRevFlashcard) {
+                btnRevFlashcard.addEventListener('click', () => {
+                    const lId = exam && exam.lessonId ? exam.lessonId.replace('_', '') : '';
+                    if (window.parent && window.parent.switchPortalTab) {
+                        window.parent.switchPortalTab('review');
+                    } else {
+                        window.location.href = `review.html${lId ? '?lesson=' + encodeURIComponent(lId) : ''}`;
+                    }
+                });
+            }
+
+            $('btn-home').addEventListener('click', () => {
+                showScreen('setup');
+                renderSetup();
+            });
+
+            $('btn-open-archive').addEventListener('click', () => {
+                showScreen('archive');
+                renderArchive();
+            });
+            $('btn-archive-result').addEventListener('click', () => {
+                showScreen('archive');
+                renderArchive();
+            });
+            $('btn-archive-back').addEventListener('click', () => {
+                showScreen('setup');
+                renderSetup();
+            });
+            $('btn-clear-history').addEventListener('click', () => {
+                if (!readHistory().length) return;
+                if (!confirm('Xoá toàn bộ lịch sử kết quả? Hành động này không thể hoàn tác.')) return;
+                try { localStorage.removeItem(HIST_KEY); } catch (_) { }
+                renderArchive();
+                renderHistory();
+            });
+
+            $('btn-print').addEventListener('click', () => window.print());
+
+            $('fab-palette').addEventListener('click', openPaletteSheet);
+            $('sheet-close').addEventListener('click', closePaletteSheet);
+            $('palette-sheet').addEventListener('click', (e) => {
+                if (e.target === $('palette-sheet')) closePaletteSheet();
+            });
+
+            window.addEventListener('beforeunload', (e) => {
+                if (exam && document.getElementById('screen-exam').classList.contains('on')) {
+                    saveState();
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            /* ---------- boot ---------- */
+            function boot() {
+                if (!BANK) {
+                    document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Không tải được ngân hàng câu hỏi (de_thi_data.js).</p>';
+                    return;
+                }
+                showScreen('setup');
+                renderSetup();
+            }
+
+            boot();
+        })();
+    </script>
+</body>
+
+</html>

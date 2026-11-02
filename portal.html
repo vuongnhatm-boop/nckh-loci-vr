@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cung Điện Kí Ức — Mê Cung Tri Thức 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Thư viện Three.js WebGL Engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body,
+    html {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #060408;
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Khung Viewport chính */
+    .viewport {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Canvas 3D chứa Cung điện Mê cung thời gian thực */
+    #palaceCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* Cổng vòm thư viện tiền cảnh với cửa sổ trong suốt nhìn xuyên vào 3D */
+    .foreground-portal {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('portal_arch.png');
+      background-size: cover;
+      background-position: center;
+      z-index: 10;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      cursor: pointer;
+    }
+
+    /* Thanh Navigation tối giản trên cùng */
+    .nav-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 22px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      pointer-events: auto;
+    }
+
+    .nav-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #2c1a12 0%, #190e09 100%);
+      border: 1px solid #7a4f29;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      color: #ebdcc2;
+    }
+
+    .nav-btn:hover {
+      background: linear-gradient(180deg, #3d2419 0%, #24140d 100%);
+      border-color: #d4a753;
+      transform: scale(1.06);
+      color: #fff;
+    }
+
+    .nav-center-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cam-mode-indicator {
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ebdcc2;
+      background: linear-gradient(180deg, rgba(42, 26, 18, 0.88) 0%, rgba(22, 13, 9, 0.92) 100%);
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid #845a33;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+
+    .cam-mode-indicator.pulse {
+      border-color: #e5b958;
+      box-shadow: 0 0 20px rgba(229, 185, 88, 0.45);
+    }
+
+    /* ════════════════════════════════════════════════════
+       GIAO DIỆN LOGO KIM SẮC & 4 THANH TAB CỔ KÍNH
+    ════════════════════════════════════════════════════ */
+    .hub-ui {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 20px 30px 20px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Khối Logo Vàng */
+    .gold-logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .gold-logo-img {
+      width: min(500px, 82vw);
+      height: auto;
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px rgba(245, 215, 140, 0.55));
+      animation: floatLogo 5s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes floatLogo {
+      0% {
+        transform: translateY(0px) scale(1);
+      }
+      100% {
+        transform: translateY(-8px) scale(1.015);
+      }
+    }
+
+    /* 4 Thanh Tab Cổ Kính Tone Nâu Da Thuộc & Viền Đồng */
+    .tabs-controller {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      pointer-events: auto;
+      width: 100%;
+      max-width: 980px;
+      position: relative;
+      z-index: 60;
+    }
+
+    .tabs-nav {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 70;
+      pointer-events: auto;
+    }
+
+    .tab-item {
+      position: relative;
+      z-index: 75;
+      pointer-events: auto;
+      background: linear-gradient(180deg, #2b1a13 0%, #1a0f0a 100%);
+      border: 1.5px solid #845a33;
+      box-shadow: 
+        inset 0 1px 1px rgba(255, 235, 190, 0.22),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.75),
+        0 6px 18px rgba(0, 0, 0, 0.65);
+      padding: 11px 24px;
+      border-radius: 26px;
+      color: #ebdcc2;
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+    }
+
+    .tab-item::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border: 1px dashed rgba(212, 175, 95, 0.25);
+      border-radius: 23px;
+      pointer-events: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .tab-item:hover {
+      background: linear-gradient(180deg, #3d251a 0%, #24140d 100%);
+      border-color: #d4a753;
+      color: #fff9ea;
+      transform: translateY(-2px);
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 240, 200, 0.3),
+        0 10px 25px rgba(0, 0, 0, 0.75), 
+        0 0 18px rgba(212, 167, 83, 0.35);
+    }
+
+    .tab-item:hover::before {
+      border-color: rgba(245, 215, 140, 0.55);
+    }
+
+    .tab-item.active {
+      background: linear-gradient(180deg, #4d2e1f 0%, #2b170e 100%);
+      border-color: #f5d78c;
+      color: #ffffff;
+      box-shadow: 
+        inset 0 0 14px rgba(245, 215, 140, 0.35),
+        0 8px 24px rgba(0, 0, 0, 0.8),
+        0 0 25px rgba(245, 215, 140, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .tab-item.active::before {
+      border-color: rgba(255, 235, 175, 0.85);
+    }
+
+    /* Bảng Chi Tiết Khi Đã Zoom Vào Phòng */
+    .room-card-panel {
+      width: min(680px, 94vw);
+      background: linear-gradient(180deg, rgba(38, 24, 17, 0.95) 0%, rgba(20, 12, 8, 0.96) 100%);
+      border: 1.5px solid #a87e45;
+      border-radius: 24px;
+      padding: 24px 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: 
+        inset 0 1px 2px rgba(255, 230, 170, 0.25),
+        0 20px 50px rgba(0, 0, 0, 0.9), 
+        0 0 40px rgba(185, 135, 60, 0.3);
+      text-align: center;
+      display: none;
+      position: relative;
+      z-index: 80;
+      pointer-events: auto;
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .room-card-panel.active {
+      display: block;
+    }
+
+    @keyframes popIn {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+      }
+    }
+
+    .room-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff2cc;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      text-shadow: 0 0 18px rgba(245, 215, 140, 0.6);
+    }
+
+    .room-desc {
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 16px;
+    }
+
+    .room-action-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-enter-room {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 28px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, #d4a753 0%, #aa7c30 100%);
+      border: 1px solid #fce4a6;
+      color: #1a0f08;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6), 0 0 18px rgba(212, 167, 83, 0.4);
+    }
+
+    .btn-enter-room:hover {
+      transform: translateY(-2px) scale(1.04);
+      background: linear-gradient(180deg, #f7d688 0%, #c49138 100%);
+      box-shadow: 0 10px 28px rgba(245, 215, 140, 0.65);
+    }
+
+    .btn-view-toggle {
+      padding: 10px 20px;
+      border-radius: 30px;
+      background: linear-gradient(180deg, #2c1a12 0%, #1c0f0a 100%);
+      border: 1px solid #7a4f29;
+      backdrop-filter: blur(12px);
+      color: #ebdcc2;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-view-toggle:hover {
+      background: linear-gradient(180deg, #3d2419 0%, #24140d 100%);
+      border-color: #d4a753;
+      color: #fff;
+    }
+
+    /* Gợi ý nhẹ khi đang ở ngoài cổng vòm */
+    .enter-hint {
+      font-size: 0.74rem;
+      letter-spacing: 2px;
+      color: #ebdcc2;
+      opacity: 0.85;
+      text-transform: uppercase;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      animation: pulseHint 2.4s infinite ease-in-out;
+      margin-bottom: -2px;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% {
+        opacity: 0.45;
+        transform: translateY(0);
+      }
+      50% {
+        opacity: 0.95;
+        transform: translateY(-3px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="viewport" id="viewport">
+    <!-- Canvas Three.js WebGL Mê Cung Thư Viện Tri Thức 3D (luôn chạy và nhìn thấy qua cửa sổ vòm) -->
+    <canvas id="palaceCanvas"></canvas>
+
+    <!-- Cổng Vòm Thư Viện Tiền Cảnh: Trong suốt ở giữa để nhìn xuyên vào 3D -->
+    <div class="foreground-portal" id="fgPortal"></div>
+
+    <!-- Thanh Navigation trên cùng -->
+    <header class="nav-bar">
+      <div class="nav-btn" onclick="resetToOverview()" title="Trở về tiền sảnh">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+      </div>
+      <div class="nav-center-badge">
+        <div class="cam-mode-indicator" id="camModeText">🏛️ TIỀN SẢNH CUNG ĐIỆN</div>
+      </div>
+      <div class="nav-btn" onclick="toggleTopDownDirect()" title="Chuyển góc chiếu bằng trên cao">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+    </header>
+
+    <!-- Giao Diện Logo Kim Sắc & 4 Thanh Tab Cổ Kính Điều Khiển Truy Xuất (Luôn hiển thị từ ngoài vòm đến khi vào) -->
+    <div class="hub-ui" id="hubUi">
+      <!-- Logo Kim Sắc -->
+      <div class="gold-logo-box">
+        <img src="title_gold.png" alt="CUNG ĐIỆN KÍ ỨC" class="gold-logo-img">
+      </div>
+
+      <!-- 4 Thanh Tab Cổ Kính & Khung Chi Tiết -->
+      <div class="tabs-controller">
+        <!-- Dòng gợi ý khi đang ở ngoài cổng vòm -->
+        <div class="enter-hint" id="enterHint">✦ Chạm cổng hoặc cuộn chuột để bước vào không gian 3D ✦</div>
+
+        <div class="tabs-nav" id="tabsNav">
+          <button class="tab-item" data-room="0">
+            <span>🏛️</span>
+            <span>Không Gian VR</span>
+          </button>
+          <button class="tab-item" data-room="1">
+            <span>⚔️</span>
+            <span>Kháng Chiến 1945 - 1954</span>
+          </button>
+          <button class="tab-item" data-room="2">
+            <span>🎖️</span>
+            <span>Kháng Chiến 1954 - 1975</span>
+          </button>
+          <button class="tab-item" data-room="3">
+            <span>🤖</span>
+            <span>Trợ Lý AI Loci</span>
+          </button>
+        </div>
+
+        <!-- Bảng Chi Tiết Điểm Truy Xuất Trong Mê Cung -->
+        <div class="room-card-panel" id="roomCardPanel">
+          <h2 class="room-title" id="roomTitle">Phòng Trưng Bày Lịch Sử</h2>
+          <p class="room-desc" id="roomDesc">Mô tả chi tiết nội dung phòng trong cung điện ký ức.</p>
+          <div class="room-action-wrap">
+            <a href="index.html" class="btn-enter-room" id="roomActionBtn">Bước Vào Trải Nghiệm ↗</a>
+            <button class="btn-view-toggle" onclick="diveIntoSelectedRoom()">
+              <span>🔍 Sà Vào Phòng (Cận Cảnh)</span>
+            </button>
+            <button class="btn-view-toggle" onclick="toggleTopDownDirect()">
+              <span>👁️ Xem Mặt Bằng</span>
+            </button>
+            <button class="btn-view-toggle" onclick="resetToOverview()">
+              <span>🏛️ Tiền Sảnh (Nhìn Ngang)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════
+    // 1. DỮ LIỆU 4 ĐIỂM TRUY XUẤT TRONG CUNG ĐIỆN MÊ CUNG TRI THỨC
+    // ══════════════════════════════════════════════════════════════
+    const ROOMS = [
+      {
+        id: 0,
+        name: "Đài Kỳ Quan Không Gian VR",
+        desc: "Không gian thực tế ảo 3D Loci tương tác trực quan, tham quan các hiện vật lịch sử và gắn neo ghi nhớ trong căn phòng 3D trên kính VR Meta Quest hoặc trình duyệt Web.",
+        url: "index.html",
+        btnText: "Bước Vào Không Gian VR ↗",
+        pos: { x: 0, y: 3.8, z: -15 },
+        look: { x: 0, y: 2.5, z: -24 },
+        steleText: "KHÔNG GIAN TRẢI NGHIỆM 3D VR",
+        subText: "NEO TRÍ NHỚ LOCI METHOD",
+        color: 0xd4af37
+      },
+      {
+        id: 1,
+        name: "Khu Kháng Chiến Chống Pháp (1945 - 1954)",
+        desc: "Hành trình 9 năm trường kỳ gian khổ: Lời kêu gọi toàn quốc kháng chiến 1946, Chiến dịch Việt Bắc 1947, Biên Giới 1950 và mốc son Điện Biên Phủ 1954 lừng lẫy năm châu.",
+        url: "index.html",
+        btnText: "Khám Phá Mốc Lịch Sử ↗",
+        pos: { x: -15, y: 3.8, z: 0 },
+        look: { x: -25, y: 2.5, z: 0 },
+        steleText: "KHÁNG CHIẾN CHỐNG PHÁP 1945 - 1954",
+        subText: "ĐIỆN BIÊN PHỦ LỪNG LẪY NĂM CHÂU",
+        color: 0xc88242
+      },
+      {
+        id: 2,
+        name: "Khu Kháng Chiến Chống Mỹ (1954 - 1975)",
+        desc: "21 năm kiên cường thống nhất non sông: Phong trào Đồng Khởi 1960, Đánh bại các chiến lược chiến tranh của Mỹ, Điện Biên Phủ trên không 1972 và Đại thắng Mùa Xuân 1975.",
+        url: "index.html",
+        btnText: "Khám Phá Mốc Lịch Sử ↗",
+        pos: { x: 15, y: 3.8, z: 0 },
+        look: { x: 25, y: 2.5, z: 0 },
+        steleText: "KHÁNG CHIẾN CHỐNG MỸ 1954 - 1975",
+        subText: "ĐẠI THẮNG MÙA XUÂN 30/04/1975",
+        color: 0xdda15e
+      },
+      {
+        id: 3,
+        name: "Phòng Nghiên Cứu Trợ Lý AI Loci",
+        desc: "Phòng thí nghiệm Trí tuệ Nhân tạo Loci phân tích sự kiện lịch sử, hướng dẫn ghi nhớ siêu tốc và luyện đề thi trắc nghiệm THPT Quốc gia theo phương pháp Loci VR.",
+        url: "test_ai.html",
+        btnText: "Trò Chuyện Cùng AI Loci ↗",
+        pos: { x: 0, y: 3.8, z: 15 },
+        look: { x: 0, y: 2.5, z: 24 },
+        steleText: "TRỢ LÝ TRÍ TUỆ NHÂN TẠO AI LOCI",
+        subText: "MÔ HÌNH HỌC TẬP TƯƠNG TÁC THÔNG MINH",
+        color: 0xb89560
+      }
+    ];
+
+    // Vị trí camera tiền sảnh ngang tầm mắt (Khung cảnh chuẩn Ảnh 2 - nhìn ngang ban đầu)
+    const CAM_OVERVIEW = {
+      pos: { x: 0, y: 3.5, z: 24 },
+      look: { x: 0, y: 2.8, z: 0 }
+    };
+
+    // Vị trí camera chiếu bằng từ trên cao (Mặt bằng toàn cảnh mê cung - Ảnh 1)
+    const CAM_TOPDOWN = {
+      pos: { x: 0, y: 52, z: 0.1 },
+      look: { x: 0, y: 0, z: 0 }
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // 2. KHỞI TẠO THREE.JS WEBGL RENDERER & SCENE (TỐI ƯU SIÊU MƯỢT 60FPS)
+    // ══════════════════════════════════════════════════════════════
+    const canvas = document.getElementById('palaceCanvas');
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true, 
+      alpha: false,
+      powerPreference: "high-performance"
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x76b6f7);
+    scene.fog = new THREE.FogExp2(0xcbe3f7, 0.0035);
+
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 350);
+    // Luôn bắt đầu từ góc nhìn ngang tiền sảnh như Ảnh 2
+    camera.position.set(CAM_OVERVIEW.pos.x, CAM_OVERVIEW.pos.y, CAM_OVERVIEW.pos.z);
+    let cameraTarget = new THREE.Vector3(CAM_OVERVIEW.look.x, CAM_OVERVIEW.look.y, CAM_OVERVIEW.look.z);
+    camera.lookAt(cameraTarget);
+
+    // ── BẦU TRỜI XANH MÂY TRẮNG (Sky Dome With Fluffy Clouds) ──
+    function createSkyWithCloudsTexture() {
+      const c = document.createElement('canvas');
+      c.width = 2048;
+      c.height = 1024;
+      const ctx = c.getContext('2d');
+
+      // 1. Dải màu gradient bầu trời xanh thiên thanh trong vắt
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, 1024);
+      skyGrad.addColorStop(0.0, '#1261be'); // Xanh thiên đỉnh thăm thẳm
+      skyGrad.addColorStop(0.25, '#298cef'); // Xanh ngọc hoàng gia
+      skyGrad.addColorStop(0.55, '#68b5f6'); // Xanh da trời êm đềm
+      skyGrad.addColorStop(0.82, '#bce0fd'); // Chân trời quang đãng
+      skyGrad.addColorStop(1.0, '#e8f4fd');  // Sương sớm sát đất
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, 2048, 1024);
+
+      // 2. Hàm vẽ từng cụm mây trắng bồng bềnh xếp tầng tự nhiên
+      function drawCloudCluster(cx, cy, scale) {
+        const puffCount = 20 + Math.floor(Math.random() * 12);
+        for (let i = 0; i < puffCount; i++) {
+          const ox = (Math.random() - 0.5) * 180 * scale;
+          const oy = (Math.random() - 0.5) * 65 * scale - Math.random() * 22 * scale;
+          const rad = (38 + Math.random() * 60) * scale;
+
+          // Lớp bóng mây mờ mềm phía chân mây
+          const shadowGrad = ctx.createRadialGradient(
+            cx + ox, cy + oy + rad * 0.25, rad * 0.2,
+            cx + ox, cy + oy, rad
+          );
+          shadowGrad.addColorStop(0, 'rgba(235, 244, 255, 0.85)');
+          shadowGrad.addColorStop(0.65, 'rgba(210, 228, 245, 0.7)');
+          shadowGrad.addColorStop(1, 'rgba(210, 228, 245, 0)');
+          ctx.fillStyle = shadowGrad;
+          ctx.beginPath();
+          ctx.arc(cx + ox, cy + oy, rad, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Lớp mây trắng muốt xốp đón ánh sáng
+          const puffGrad = ctx.createRadialGradient(
+            cx + ox - rad * 0.15, cy + oy - rad * 0.15, rad * 0.1,
+            cx + ox, cy + oy, rad
+          );
+          puffGrad.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+          puffGrad.addColorStop(0.7, 'rgba(255, 255, 255, 0.85)');
+          puffGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = puffGrad;
+          ctx.beginPath();
+          ctx.arc(cx + ox, cy + oy, rad, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Rải các cụm mây trắng bồng bềnh khắp vòm trời 360 độ
+      const cloudPositions = [
+        { x: 260, y: 380, s: 1.4 },
+        { x: 680, y: 460, s: 1.15 },
+        { x: 1060, y: 350, s: 1.6 },
+        { x: 1460, y: 440, s: 1.25 },
+        { x: 1860, y: 390, s: 1.45 },
+        { x: 420, y: 250, s: 0.95 },
+        { x: 880, y: 230, s: 1.05 },
+        { x: 1300, y: 270, s: 0.9 },
+        { x: 1720, y: 240, s: 1.1 }
+      ];
+
+      cloudPositions.forEach(cPos => {
+        drawCloudCluster(cPos.x, cPos.y, cPos.s);
+      });
+
+      // Mây ti mỏng (Wispy Cirrus) tầng cao vắt ngang trời
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 14;
+      for (let w = 0; w < 10; w++) {
+        const wx = Math.random() * 2048;
+        const wy = 110 + Math.random() * 180;
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.bezierCurveTo(wx + 160, wy - 25, wx + 320, wy + 35, wx + 480, wy - 10);
+        ctx.stroke();
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      return tex;
+    }
+
+    const skyGeo = new THREE.SphereGeometry(220, 32, 24);
+    const skyMat = new THREE.MeshBasicMaterial({
+      map: createSkyWithCloudsTexture(),
+      side: THREE.BackSide,
+      fog: false
+    });
+    const skyDome = new THREE.Mesh(skyGeo, skyMat);
+    scene.add(skyDome);
+
+    // ── HỆ THỐNG ÁNH SÁNG TỰ NHIÊN DỊU MẮT, KHÔNG BỊ CHÓI ──
+    // Ánh sáng phản xạ vòm trời và đất tự nhiên
+    const hemiLight = new THREE.HemisphereLight(0x82c2ff, 0x4a3628, 0.85);
+    scene.add(hemiLight);
+
+    // Ánh nắng mặt trời dịu nhẹ chiếu xiên, có đổ bóng thật
+    const sunLight = new THREE.DirectionalLight(0xffeedd, 1.3);
+    sunLight.position.set(40, 60, 30);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 150;
+    sunLight.shadow.camera.left = -60;
+    sunLight.shadow.camera.right = 60;
+    sunLight.shadow.camera.top = 60;
+    sunLight.shadow.camera.bottom = -60;
+    sunLight.shadow.bias = -0.0005;
+    scene.add(sunLight);
+
+    // Đèn ấm trung tâm tiền sảnh dịu nhẹ (giảm độ chói mắt)
+    const centralLight = new THREE.PointLight(0xffbe6b, 1.2, 75, 1.2);
+    centralLight.position.set(0, 14, 0);
+    scene.add(centralLight);
+
+    // Đèn bổ trợ ấm áp nhẹ
+    const fillLightB = new THREE.PointLight(0xffc27d, 0.7, 45);
+    fillLightB.position.set(0, 9, -22);
+    scene.add(fillLightB);
+
+    const fillLightS = new THREE.PointLight(0xffc27d, 0.7, 45);
+    fillLightS.position.set(0, 9, 16);
+    scene.add(fillLightS);
+
+    // ══════════════════════════════════════════════════════════════
+    // 3. TẠO TEXTURE THƯ VIỆN HOGWARTS: SÀN GỖ XƯƠNG CÁ & KỆ SÁCH GOTHIC
+    // ══════════════════════════════════════════════════════════════
+
+    // 3.1. Kệ sách cổ Gothic Hogwarts: Gỗ sồi mun chạm khắc vòm nhọn, hoa văn trefoil & sách cổ da thuộc
+    function createHogwartsBookshelfTexture() {
+      const c = document.createElement('canvas');
+      c.width = 1024;
+      c.height = 1024;
+      const ctx = c.getContext('2d');
+
+      // Gỗ sồi mun cổ sẫm màu
+      ctx.fillStyle = '#1c0e08';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      const shelfCount = 4;
+      const shelfH = 1024 / shelfCount;
+
+      const hogwartsBookColors = [
+        '#4a151b', '#3b1c10', '#1c2e1f', '#4f2414', '#591f16',
+        '#1d2433', '#3d2011', '#5a2d18', '#2d1810', '#421a12',
+        '#682e14', '#202a1e', '#521d22', '#2a1a2e', '#3c2317'
+      ];
+
+      for (let s = 0; s < shelfCount; s++) {
+        const topY = s * shelfH;
+        const bottomY = topY + shelfH;
+
+        // Ván sàn kệ gỗ dày chạm trổ hoa văn Gothic
+        ctx.fillStyle = '#2f170c';
+        ctx.fillRect(0, bottomY - 32, 1024, 32);
+        // Đường nẹp đồng vàng cổ
+        ctx.fillStyle = '#c59b4e';
+        ctx.fillRect(0, bottomY - 32, 1024, 3.5);
+        ctx.fillStyle = '#0f0603';
+        ctx.fillRect(0, bottomY - 4, 1024, 4);
+
+        // Vòm nhọn Gothic (Pointed Gothic Arches) ở đỉnh mỗi tầng kệ
+        const archWidth = 128;
+        for (let ax = 0; ax < 1024; ax += archWidth) {
+          ctx.fillStyle = '#2b150a';
+          ctx.beginPath();
+          ctx.moveTo(ax, topY + 28);
+          ctx.quadraticCurveTo(ax + archWidth / 2, topY - 8, ax + archWidth, topY + 28);
+          ctx.lineTo(ax + archWidth, topY);
+          ctx.lineTo(ax, topY);
+          ctx.closePath();
+          ctx.fill();
+
+          // Viền vòm mạ đồng
+          ctx.strokeStyle = '#b8893d';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(ax + 6, topY + 26);
+          ctx.quadraticCurveTo(ax + archWidth / 2, topY - 4, ax + archWidth - 6, topY + 26);
+          ctx.stroke();
+
+          // Điểm nhấn hoa văn Gothic nhỏ
+          ctx.fillStyle = '#d4af37';
+          ctx.beginPath();
+          ctx.arc(ax + archWidth / 2, topY + 12, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Lan can con tiện gỗ trang trí
+        ctx.fillStyle = '#422213';
+        ctx.fillRect(0, bottomY - 32, 1024, 8);
+        ctx.fillStyle = '#b8893d';
+        ctx.fillRect(0, bottomY - 26, 1024, 1.5);
+
+        // Sách cổ ma thuật và lịch sử Hogwarts xếp dày đặc
+        let curX = 16;
+        while (curX < 1008) {
+          const bWidth = 14 + Math.random() * 22;
+          const bHeight = (shelfH - 46) * (0.84 + Math.random() * 0.16);
+          const color = hogwartsBookColors[Math.floor(Math.random() * hogwartsBookColors.length)];
+
+          // Gáy sách bọc da thuộc cổ
+          ctx.fillStyle = color;
+          ctx.fillRect(curX, bottomY - 32 - bHeight, bWidth, bHeight);
+
+          // Gân gáy sách dập vàng kim
+          ctx.fillStyle = 'rgba(215, 175, 90, 0.55)';
+          ctx.fillRect(curX + 2, bottomY - 32 - bHeight + 10, bWidth - 4, 2.5);
+          ctx.fillRect(curX + 2, bottomY - 32 - 14, bWidth - 4, 2.5);
+
+          // Nhãn tiêu đề sách chữ vàng cổ
+          if (Math.random() > 0.35) {
+            ctx.fillStyle = 'rgba(240, 210, 140, 0.75)';
+            ctx.fillRect(curX + bWidth * 0.28, bottomY - 32 - bHeight * 0.62, bWidth * 0.44, 12);
+          }
+
+          // Khe bóng đổ giữa các cuốn sách
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+          ctx.fillRect(curX + bWidth - 1.5, bottomY - 32 - bHeight, 1.5, bHeight);
+
+          curX += bWidth + 2;
+        }
+      }
+
+      // Khung cột trụ gỗ Gothic hai bên
+      ctx.fillStyle = '#2f180d';
+      ctx.fillRect(0, 0, 22, 1024);
+      ctx.fillRect(1002, 0, 22, 1024);
+      ctx.fillStyle = '#b8893d';
+      ctx.fillRect(22, 0, 3, 1024);
+      ctx.fillRect(999, 0, 3, 1024);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    // 3.2. Sàn gỗ xương cá (Herringbone Chevron Parquet) tông gỗ sồi trầm & gỗ óc chó cổ điển sang trọng
+    function createHogwartsParquetTexture() {
+      const c = document.createElement('canvas');
+      c.width = 1024;
+      c.height = 1024;
+      const ctx = c.getContext('2d');
+
+      // Nền gỗ mun sẫm màu
+      ctx.fillStyle = '#220e06';
+      ctx.fillRect(0, 0, 1024, 1024);
+
+      // Bảng màu ván gỗ trầm ấm, quý phái, không bị chói vàng
+      const woodTones = [
+        '#3c1f10', '#30180b', '#482513', '#2a1308', '#381b0e',
+        '#422111', '#2f1609', '#4b2715', '#391c0e', '#251006'
+      ];
+
+      const plankW = 32;
+      const plankL = 128;
+      const step = 64;
+
+      // Vẽ các dải chevron ziczac xương cá
+      for (let y = -plankL; y < 1024 + plankL; y += step) {
+        for (let x = -plankL; x < 1024 + plankL; x += step * 2) {
+          // Ván xiên góc phải 45 độ
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(Math.PI / 4);
+          const col1 = woodTones[Math.abs(Math.floor(x * 13 + y * 7)) % woodTones.length];
+          ctx.fillStyle = col1;
+          ctx.fillRect(-plankW / 2, -plankL / 2, plankW, plankL);
+
+          // Vân gỗ mịn
+          ctx.strokeStyle = 'rgba(20, 8, 3, 0.45)';
+          ctx.lineWidth = 1;
+          for (let v = -plankW / 2 + 5; v < plankW / 2; v += 6) {
+            ctx.beginPath();
+            ctx.moveTo(v, -plankL / 2);
+            ctx.lineTo(v + (Math.random() - 0.5) * 4, plankL / 2);
+            ctx.stroke();
+          }
+
+          // Khe viền ván gỗ
+          ctx.strokeStyle = '#180a04';
+          ctx.lineWidth = 1.8;
+          ctx.strokeRect(-plankW / 2, -plankL / 2, plankW, plankL);
+          ctx.restore();
+
+          // Ván xiên góc trái -45 độ đối xứng
+          ctx.save();
+          ctx.translate(x + step, y);
+          ctx.rotate(-Math.PI / 4);
+          const col2 = woodTones[Math.abs(Math.floor(x * 19 + y * 11 + 3)) % woodTones.length];
+          ctx.fillStyle = col2;
+          ctx.fillRect(-plankW / 2, -plankL / 2, plankW, plankL);
+
+          ctx.strokeStyle = 'rgba(20, 8, 3, 0.45)';
+          ctx.lineWidth = 1;
+          for (let v = -plankW / 2 + 5; v < plankW / 2; v += 6) {
+            ctx.beginPath();
+            ctx.moveTo(v, -plankL / 2);
+            ctx.lineTo(v + (Math.random() - 0.5) * 4, plankL / 2);
+            ctx.stroke();
+          }
+
+          ctx.strokeStyle = '#180a04';
+          ctx.lineWidth = 1.8;
+          ctx.strokeRect(-plankW / 2, -plankL / 2, plankW, plankL);
+          ctx.restore();
+        }
+      }
+
+      // Khung viền nẹp gỗ mun & chỉ đồng hoàng gia bao quanh từng block
+      ctx.strokeStyle = '#2d1408';
+      ctx.lineWidth = 10;
+      ctx.strokeRect(10, 10, 1004, 1004);
+      ctx.strokeStyle = '#8c6b32';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(18, 18, 988, 988);
+      ctx.strokeRect(18, 18, 988, 988);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    const bookshelfTex = createHogwartsBookshelfTexture();
+    bookshelfTex.repeat.set(2, 1);
+
+    const floorTex = createHogwartsParquetTexture();
+    floorTex.repeat.set(8, 8);
+
+    const bookshelfMat = new THREE.MeshStandardMaterial({
+      map: bookshelfTex,
+      bumpMap: bookshelfTex,
+      bumpScale: 0.08,
+      roughness: 0.85,
+      metalness: 0.05
+    });
+
+    const floorMat = new THREE.MeshStandardMaterial({
+      map: floorTex,
+      bumpMap: floorTex,
+      bumpScale: 0.03,
+      roughness: 0.75,
+      metalness: 0.05
+    });
+
+    const gothicGoldMat = new THREE.MeshStandardMaterial({
+      color: 0xc89e4c,
+      roughness: 0.3,
+      metalness: 0.85
+    });
+
+    // Định nghĩa antiqueGoldMat đồng bộ tránh lỗi ReferenceError
+    const antiqueGoldMat = gothicGoldMat;
+
+    const woodColumnMat = new THREE.MeshStandardMaterial({
+      color: 0x361b0f,
+      roughness: 0.85,
+      metalness: 0.05
+    });
+
+    const lanternMat = new THREE.MeshStandardMaterial({
+      color: 0xffe8b3,
+      emissive: 0xff9922,
+      emissiveIntensity: 1.2,
+      roughness: 0.2
+    });
+
+    // Sàn gỗ đại sảnh mê cung (80x80m)
+    const floorGeo = new THREE.PlaneGeometry(80, 80);
+    const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.receiveShadow = true;
+    scene.add(floorMesh);
+
+    // Dải thảm đá cẩm thạch hoàng gia trung tâm tiền sảnh
+    const laneGeo = new THREE.PlaneGeometry(2.4, 48);
+    const laneMat = new THREE.MeshStandardMaterial({
+      color: 0xd6cbb8,
+      roughness: 0.4,
+      metalness: 0.12,
+      transparent: true,
+      opacity: 0.75
+    });
+    const centralLane = new THREE.Mesh(laneGeo, laneMat);
+    centralLane.rotation.x = -Math.PI / 2;
+    centralLane.position.set(0, 0.02, 0);
+    centralLane.receiveShadow = true;
+    scene.add(centralLane);
+
+    // ══════════════════════════════════════════════════════════════
+    // 4. DỰNG TƯỜNG MÊ CUNG GOTHIC, CỘT ĐÈN LỒNG & BÀN ĐỌC SÁCH BÁT GIÁC
+    // ══════════════════════════════════════════════════════════════
+    const palaceGroup = new THREE.Group();
+    scene.add(palaceGroup);
+
+    // Hàm tạo bức tường kệ sách Gothic viền đồng vàng
+    function createMazeWall(x, z, w, d, h = 5.2) {
+      const group = new THREE.Group();
+
+      // Thân tường kệ sách Gothic
+      const geo = new THREE.BoxGeometry(w, h, d);
+      const mesh = new THREE.Mesh(geo, bookshelfMat);
+      mesh.position.y = h / 2;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+
+      // Phào chỉ vòm Gothic mạ đồng trên đỉnh tường
+      const corniceGeo = new THREE.BoxGeometry(w + 0.15, 0.32, d + 0.15);
+      const cornice = new THREE.Mesh(corniceGeo, gothicGoldMat);
+      cornice.position.y = h + 0.16;
+      cornice.castShadow = true;
+      group.add(cornice);
+
+      // Chân đế gỗ sồi sẫm
+      const baseGeo = new THREE.BoxGeometry(w + 0.12, 0.4, d + 0.12);
+      const base = new THREE.Mesh(baseGeo, woodColumnMat);
+      base.position.y = 0.2;
+      base.castShadow = true;
+      base.receiveShadow = true;
+      group.add(base);
+
+      group.position.set(x, 0, z);
+      palaceGroup.add(group);
+      return group;
+    }
+
+    // Hàm dựng thức cột gỗ Gothic có đèn lồng nến ấm áp (Dùng Emissive siêu nhẹ, không gắn 20 PointLight gây lag)
+    function createGothicColumn(x, z) {
+      const colGroup = new THREE.Group();
+
+      // Thân cột gỗ bát giác
+      const shaftGeo = new THREE.CylinderGeometry(0.44, 0.48, 5.2, 8);
+      const shaft = new THREE.Mesh(shaftGeo, woodColumnMat);
+      shaft.position.y = 2.6;
+      shaft.castShadow = true;
+      shaft.receiveShadow = true;
+      colGroup.add(shaft);
+
+      // Đầu cột vòm Gothic mạ đồng cổ
+      const capGeo = new THREE.BoxGeometry(1.2, 0.45, 1.2);
+      const cap = new THREE.Mesh(capGeo, gothicGoldMat);
+      cap.position.y = 5.3;
+      cap.castShadow = true;
+      colGroup.add(cap);
+
+      // Chân đế cột
+      const baseGeo = new THREE.BoxGeometry(1.2, 0.4, 1.2);
+      const base = new THREE.Mesh(baseGeo, woodColumnMat);
+      base.position.y = 0.2;
+      base.castShadow = true;
+      base.receiveShadow = true;
+      colGroup.add(base);
+
+      // Đèn lồng nến Hogwarts treo trên cột (Phát sáng Emissive rực rỡ)
+      const lanternGeo = new THREE.CylinderGeometry(0.18, 0.14, 0.4, 6);
+      const lantern = new THREE.Mesh(lanternGeo, lanternMat);
+      lantern.position.set(0, 3.4, 0.65);
+      colGroup.add(lantern);
+
+      // Khung sắt đèn lồng
+      const frameGeo = new THREE.BoxGeometry(0.24, 0.46, 0.24);
+      const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a0f08, metalness: 0.8, roughness: 0.3 });
+      const frame = new THREE.Mesh(frameGeo, frameMat);
+      frame.position.set(0, 3.4, 0.65);
+      colGroup.add(frame);
+
+      colGroup.position.set(x, 0, z);
+      palaceGroup.add(colGroup);
+      return colGroup;
+    }
+
+    // Hàm tạo bàn đọc sách bát giác trứ danh của Thư viện Hogwarts
+    function createReadingDesk(x, z) {
+      const deskGroup = new THREE.Group();
+
+      // Bàn gỗ bát giác lớn
+      const tableGeo = new THREE.CylinderGeometry(2.4, 2.6, 0.8, 8);
+      const table = new THREE.Mesh(tableGeo, woodColumnMat);
+      table.position.y = 0.4;
+      table.castShadow = true;
+      table.receiveShadow = true;
+      deskGroup.add(table);
+
+      // Mặt bàn viền nẹp đồng
+      const rimGeo = new THREE.CylinderGeometry(2.65, 2.65, 0.1, 8);
+      const rim = new THREE.Mesh(rimGeo, gothicGoldMat);
+      rim.position.y = 0.85;
+      deskGroup.add(rim);
+
+      // Kệ tài liệu trung tâm bàn
+      const centerGeo = new THREE.CylinderGeometry(1.0, 1.1, 0.6, 8);
+      const centerDesk = new THREE.Mesh(centerGeo, woodColumnMat);
+      centerDesk.position.y = 1.15;
+      deskGroup.add(centerDesk);
+
+      // Đèn bàn đọc sách Hogwarts hình nấm (Tỏa sáng Emissive êm dịu)
+      const lampGeo = new THREE.SphereGeometry(0.25, 8, 8);
+      const lampMat = new THREE.MeshStandardMaterial({
+        color: 0xffd277,
+        emissive: 0xff9922,
+        emissiveIntensity: 1.5,
+        roughness: 0.2
+      });
+      const lamp = new THREE.Mesh(lampGeo, lampMat);
+      lamp.position.set(0, 1.7, 0);
+      deskGroup.add(lamp);
+
+      // Sách mở trên bàn
+      const bookGeo = new THREE.BoxGeometry(0.65, 0.08, 0.45);
+      const bookMat = new THREE.MeshStandardMaterial({ color: 0x5a2d18, roughness: 0.5 });
+      const b1 = new THREE.Mesh(bookGeo, bookMat);
+      b1.position.set(1.4, 0.9, 0.5);
+      b1.rotation.y = 0.4;
+      deskGroup.add(b1);
+
+      const b2 = new THREE.Mesh(bookGeo, bookMat);
+      b2.position.set(-1.4, 0.9, -0.4);
+      b2.rotation.y = -0.3;
+      deskGroup.add(b2);
+
+      deskGroup.position.set(x, 0, z);
+      palaceGroup.add(deskGroup);
+      return deskGroup;
+    }
+
+    // ── Xây dựng bố cục mê cung thư viện đối xứng 4 phương (Không che chắn phòng) ──
+    // 4 Bức tường bao quanh hoàng cung
+    createMazeWall(0, -32, 64, 1.4); // Bắc
+    createMazeWall(-32, 0, 1.4, 64); // Tây
+    createMazeWall(32, 0, 1.4, 64);  // Đông
+    createMazeWall(0, 32, 64, 1.4);  // Nam
+
+    // 4 Vách tường kệ sách định hình đại lộ thư viện trung tâm (nhìn từ tiền sảnh chuẩn Ảnh 2)
+    createMazeWall(-5.5, -6, 1.2, 14);
+    createMazeWall(5.5, -6, 1.2, 14);
+    createMazeWall(-5.5, 6, 1.2, 14);
+    createMazeWall(5.5, 6, 1.2, 14);
+
+    // 8 Vách tường mê cung tại 4 góc tạo thành cấu trúc mê cung cổ điển (không chắn lối hay tầm nhìn phòng)
+    // Góc Tây Bắc:
+    createMazeWall(-14, -18, 12, 1.2);
+    createMazeWall(-20, -12, 1.2, 12);
+    // Góc Đông Bắc:
+    createMazeWall(14, -18, 12, 1.2);
+    createMazeWall(20, -12, 1.2, 12);
+    // Góc Tây Nam:
+    createMazeWall(-14, 18, 12, 1.2);
+    createMazeWall(-20, 12, 1.2, 12);
+    // Góc Đông Nam:
+    createMazeWall(14, 18, 12, 1.2);
+    createMazeWall(20, 12, 1.2, 12);
+
+    // Hàng cột gỗ Gothic trang trọng dọc các đại lộ
+    const colCoords = [
+      [-4.5, -4], [4.5, -4], [-4.5, -10], [4.5, -10], [-4.5, -16], [4.5, -16],
+      [-4.5, 4], [4.5, 4], [-4.5, 10], [4.5, 10], [-4.5, 16], [4.5, 16],
+      [-10, -4.5], [-10, 4.5], [-16, -4.5], [-16, 4.5],
+      [10, -4.5], [10, 4.5], [16, -4.5], [16, 4.5]
+    ];
+    colCoords.forEach(([x, z]) => createGothicColumn(x, z));
+
+    // Đặt 4 bàn đọc sách bát giác phong cách Hogwarts tại 4 khu sảnh phụ
+    createReadingDesk(-10, -10);
+    createReadingDesk(10, -10);
+    createReadingDesk(-10, 10);
+    createReadingDesk(10, 10);
+
+    // ══════════════════════════════════════════════════════════════
+    // 5. BIA ĐÁ KHẮC SỰ KIỆN LỊCH SỬ & ĐÀI KỲ QUAN PHÁT SÁNG TẠI 4 PHÒNG
+    // ══════════════════════════════════════════════════════════════
+    function createSteleTexture(mainTitle, subTitle, accentColorHex) {
+      const c = document.createElement('canvas');
+      c.width = 1024;
+      c.height = 768;
+      const ctx = c.getContext('2d');
+
+      // Nền bia đá cổ cẩm thạch đen huyền
+      ctx.fillStyle = '#0f0c13';
+      ctx.fillRect(0, 0, 1024, 768);
+
+      // Khung viền hoa văn vàng kim
+      ctx.strokeStyle = '#cda250';
+      ctx.lineWidth = 10;
+      ctx.strokeRect(30, 30, 964, 708);
+      ctx.strokeStyle = accentColorHex;
+      ctx.lineWidth = 4;
+      ctx.strokeRect(46, 46, 932, 676);
+
+      // Ngôi sao vàng & hoa sen biểu trưng
+      ctx.fillStyle = '#ebdcc2';
+      ctx.font = 'bold 36px "Cinzel", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('★  ★  ★', 512, 140);
+
+      // Dòng tiêu đề chính khắc vàng
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 42px "Plus Jakarta Sans", sans-serif';
+      ctx.shadowColor = accentColorHex;
+      ctx.shadowBlur = 18;
+      ctx.fillText(mainTitle, 512, 320);
+
+      // Dòng phụ đề
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = '#ebdcc2';
+      ctx.font = '600 28px "Cinzel", serif';
+      ctx.fillText(subTitle, 512, 410);
+
+      // Hoa văn chân bia
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(205, 162, 80, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(250, 470);
+      ctx.lineTo(774, 470);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(235, 220, 194, 0.7)';
+      ctx.font = '22px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText('CUNG ĐIỆN KÍ ỨC LOCI VR — LỊCH SỬ VIỆT NAM', 512, 530);
+
+      const tex = new THREE.CanvasTexture(c);
+      return tex;
+    }
+
+    // ── VẬT LIỆU ĐIÊU KHẮC NGHỆ THUẬT BẢO TÀNG & CỔ VẬT HOÀNG GIA ──
+    const antiqueBronzeMat = new THREE.MeshStandardMaterial({
+      color: 0x8a5a36,
+      roughness: 0.32,
+      metalness: 0.82
+    });
+
+    const royalGoldMat = new THREE.MeshStandardMaterial({
+      color: 0xd4af37,
+      roughness: 0.25,
+      metalness: 0.92
+    });
+
+    const warmAmberCrystalMat = new THREE.MeshStandardMaterial({
+      color: 0xffb74d,
+      emissive: 0x995500,
+      emissiveIntensity: 0.55,
+      roughness: 0.15,
+      metalness: 0.3
+    });
+
+    const antiqueDarkGraniteMat = new THREE.MeshStandardMaterial({
+      color: 0x241812,
+      roughness: 0.45,
+      metalness: 0.2
+    });
+
+    // Hàm tạo 4 Tác Phẩm Điêu Khắc Nghệ Thuật Lịch Sử riêng biệt cho từng phòng
+    function createArtisticMonument(room) {
+      const group = new THREE.Group();
+      group.position.set(0, 0.45, 0.65); // Đặt trang trọng trên bệ, phía trước bia đá
+
+      let animatedParts = {};
+
+      if (room.id === 0) {
+        // 🏛️ PHÒNG 0: KHUNG CẦU THIÊN THỂ HOÀNG GIA & LĂNG KÍNH THẠCH ANH (ARMILLARY ASTROLABE)
+        const standGeo = new THREE.CylinderGeometry(0.5, 0.75, 0.8, 12);
+        const stand = new THREE.Mesh(standGeo, antiqueBronzeMat);
+        stand.position.y = 0.4;
+        group.add(stand);
+
+        const subRingGeo = new THREE.TorusGeometry(0.85, 0.05, 12, 32);
+        const subRing = new THREE.Mesh(subRingGeo, royalGoldMat);
+        subRing.rotation.x = Math.PI / 2;
+        subRing.position.y = 0.82;
+        group.add(subRing);
+
+        const sphereGroup = new THREE.Group();
+        sphereGroup.position.y = 1.7;
+
+        const ring1Geo = new THREE.TorusGeometry(1.05, 0.045, 12, 48);
+        const ring1 = new THREE.Mesh(ring1Geo, royalGoldMat);
+        sphereGroup.add(ring1);
+
+        const ring2Geo = new THREE.TorusGeometry(0.95, 0.045, 12, 48);
+        const ring2 = new THREE.Mesh(ring2Geo, antiqueBronzeMat);
+        ring2.rotation.x = Math.PI / 3;
+        sphereGroup.add(ring2);
+
+        const ring3Geo = new THREE.TorusGeometry(0.85, 0.04, 12, 48);
+        const ring3 = new THREE.Mesh(ring3Geo, royalGoldMat);
+        ring3.rotation.y = Math.PI / 4;
+        sphereGroup.add(ring3);
+
+        const prismGeo = new THREE.OctahedronGeometry(0.52);
+        const prism = new THREE.Mesh(prismGeo, warmAmberCrystalMat);
+        sphereGroup.add(prism);
+
+        group.add(sphereGroup);
+        animatedParts = { type: 'astrolabe', sphereGroup, ring1, ring2, ring3, prism };
+
+      } else if (room.id === 1) {
+        // ⚔️ PHÒNG 1: ĐÀI KỶ NIỆM CHIẾN THẮNG ĐIỆN BIÊN PHỦ (VICTORY OBELISK & STEEL FEATHER RELIEF)
+        const lotusBaseGeo = new THREE.CylinderGeometry(0.9, 1.2, 0.35, 16);
+        const lotusBase = new THREE.Mesh(lotusBaseGeo, antiqueBronzeMat);
+        lotusBase.position.y = 0.18;
+        group.add(lotusBase);
+
+        const obeliskGeo = new THREE.CylinderGeometry(0.3, 0.65, 2.3, 4);
+        const obelisk = new THREE.Mesh(obeliskGeo, antiqueDarkGraniteMat);
+        obelisk.rotation.y = Math.PI / 4;
+        obelisk.position.y = 1.45;
+        group.add(obelisk);
+
+        const bandGeo = new THREE.BoxGeometry(0.72, 0.12, 0.72);
+        const band = new THREE.Mesh(bandGeo, royalGoldMat);
+        band.position.y = 1.6;
+        group.add(band);
+
+        const starGroup = new THREE.Group();
+        starGroup.position.y = 2.85;
+
+        for (let s = 0; s < 5; s++) {
+          const ptGeo = new THREE.ConeGeometry(0.18, 0.45, 4);
+          const ptMesh = new THREE.Mesh(ptGeo, royalGoldMat);
+          ptMesh.rotation.z = (s * Math.PI * 2) / 5;
+          ptMesh.position.y = Math.cos((s * Math.PI * 2) / 5) * 0.28;
+          ptMesh.position.x = -Math.sin((s * Math.PI * 2) / 5) * 0.28;
+          starGroup.add(ptMesh);
+        }
+        const starCenter = new THREE.Mesh(new THREE.DodecahedronGeometry(0.24), royalGoldMat);
+        starGroup.add(starCenter);
+        group.add(starGroup);
+
+        const wreath1Geo = new THREE.TorusGeometry(0.65, 0.035, 8, 24, Math.PI * 1.1);
+        const wreath1 = new THREE.Mesh(wreath1Geo, royalGoldMat);
+        wreath1.rotation.y = Math.PI / 2;
+        wreath1.rotation.z = -0.4;
+        wreath1.position.set(-0.35, 1.4, 0);
+        group.add(wreath1);
+
+        const wreath2Geo = new THREE.TorusGeometry(0.65, 0.035, 8, 24, Math.PI * 1.1);
+        const wreath2 = new THREE.Mesh(wreath2Geo, royalGoldMat);
+        wreath2.rotation.y = -Math.PI / 2;
+        wreath2.rotation.z = -0.4;
+        wreath2.position.set(0.35, 1.4, 0);
+        group.add(wreath2);
+
+        animatedParts = { type: 'starMonument', starGroup };
+
+      } else if (room.id === 2) {
+        // 🎖️ PHÒNG 2: ĐÀI ĐỘC LẬP KHẢI HOÀN & NGỌN ĐUỐC THỐNG NHẤT 1975 (TRIUMPHAL TORCH & LAUREL)
+        const marbleBaseGeo = new THREE.CylinderGeometry(0.95, 1.25, 0.35, 16);
+        const marbleBase = new THREE.Mesh(marbleBaseGeo, antiqueBronzeMat);
+        marbleBase.position.y = 0.18;
+        group.add(marbleBase);
+
+        const torchGeo = new THREE.CylinderGeometry(0.38, 0.24, 1.8, 12);
+        const torch = new THREE.Mesh(torchGeo, antiqueBronzeMat);
+        torch.position.y = 1.18;
+        group.add(torch);
+
+        const bowlGeo = new THREE.CylinderGeometry(0.62, 0.3, 0.4, 12);
+        const bowl = new THREE.Mesh(bowlGeo, royalGoldMat);
+        bowl.position.y = 2.15;
+        group.add(bowl);
+
+        const laurelGeo = new THREE.TorusGeometry(0.65, 0.06, 12, 32);
+        const laurel = new THREE.Mesh(laurelGeo, royalGoldMat);
+        laurel.rotation.x = Math.PI / 2;
+        laurel.position.y = 1.35;
+        group.add(laurel);
+
+        const flameGroup = new THREE.Group();
+        flameGroup.position.y = 2.5;
+
+        const f1Geo = new THREE.ConeGeometry(0.28, 0.85, 8);
+        const f1 = new THREE.Mesh(f1Geo, warmAmberCrystalMat);
+        f1.position.set(0, 0.35, 0);
+        flameGroup.add(f1);
+
+        const f2Geo = new THREE.ConeGeometry(0.18, 0.6, 6);
+        const f2 = new THREE.Mesh(f2Geo, royalGoldMat);
+        f2.position.set(0.12, 0.25, 0.08);
+        f2.rotation.z = -0.25;
+        flameGroup.add(f2);
+
+        const f3Geo = new THREE.ConeGeometry(0.16, 0.55, 6);
+        const f3 = new THREE.Mesh(f3Geo, royalGoldMat);
+        f3.position.set(-0.1, 0.22, -0.06);
+        f3.rotation.z = 0.22;
+        flameGroup.add(f3);
+
+        group.add(flameGroup);
+        animatedParts = { type: 'flame', flameGroup, laurel };
+
+      } else if (room.id === 3) {
+        // 🤖 PHÒNG 3: ĐIÊU KHẮC NÃO BỘ VÔ CỰC MÖBIUS & TRỤ TRÍ TUỆ AI (INFINITE MIND & NEURAL CORE)
+        const baseGeo = new THREE.CylinderGeometry(0.85, 1.15, 0.4, 8);
+        const base = new THREE.Mesh(baseGeo, antiqueBronzeMat);
+        base.position.y = 0.2;
+        group.add(base);
+
+        const pylonGeo = new THREE.CylinderGeometry(0.42, 0.55, 0.7, 8);
+        const pylon = new THREE.Mesh(pylonGeo, royalGoldMat);
+        pylon.position.y = 0.7;
+        group.add(pylon);
+
+        const mindGroup = new THREE.Group();
+        mindGroup.position.y = 1.85;
+
+        const mobiusGeo = new THREE.TorusKnotGeometry(0.68, 0.075, 48, 8, 2, 3);
+        const mobius = new THREE.Mesh(mobiusGeo, royalGoldMat);
+        mindGroup.add(mobius);
+
+        const coreGeo = new THREE.IcosahedronGeometry(0.38);
+        const core = new THREE.Mesh(coreGeo, warmAmberCrystalMat);
+        mindGroup.add(core);
+
+        group.add(mindGroup);
+        animatedParts = { type: 'mobius', mindGroup, mobius, core };
+      }
+
+      return { group, animatedParts };
+    }
+
+    const pedestals = [];
+    const clickableRooms = [];
+
+    ROOMS.forEach((room) => {
+      const pGroup = new THREE.Group();
+      pGroup.userData = { roomId: room.id };
+
+      // Bệ đá bát giác La Mã chạm đồng cổ
+      const baseGeo = new THREE.CylinderGeometry(2.4, 2.7, 0.9, 8);
+      const baseMesh = new THREE.Mesh(baseGeo, gothicGoldMat);
+      baseMesh.position.y = 0.45;
+      pGroup.add(baseMesh);
+
+      // Bia đá bia ký lịch sử đứng trang trọng
+      const steleGeo = new THREE.BoxGeometry(4.2, 3.2, 0.35);
+      const steleTex = createSteleTexture(room.steleText, room.subText, '#' + room.color.toString(16).padStart(6, '0'));
+      const steleMat = new THREE.MeshStandardMaterial({
+        map: steleTex,
+        roughness: 0.3,
+        metalness: 0.4
+      });
+      const steleMesh = new THREE.Mesh(steleGeo, steleMat);
+      steleMesh.position.set(0, 2.7, -0.6);
+      pGroup.add(steleMesh);
+
+      // Tác phẩm điêu khắc nghệ thuật lịch sử riêng biệt
+      const monument = createArtisticMonument(room);
+      pGroup.add(monument.group);
+
+      // Vòng đai đá cẩm thạch la bàn hoàng gia bao quanh bệ
+      const floorRingGeo = new THREE.RingGeometry(2.4, 2.7, 32);
+      const floorRingMat = new THREE.MeshBasicMaterial({
+        color: 0xc89e4c,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.55
+      });
+      const floorRing = new THREE.Mesh(floorRingGeo, floorRingMat);
+      floorRing.rotation.x = -Math.PI / 2;
+      floorRing.position.y = 0.04;
+      pGroup.add(floorRing);
+
+      // Xoay hướng bia đá đối diện với lối vào của từng phòng
+      if (room.id === 0) pGroup.rotation.y = 0;
+      else if (room.id === 1) pGroup.rotation.y = Math.PI / 2;
+      else if (room.id === 2) pGroup.rotation.y = -Math.PI / 2;
+      else if (room.id === 3) pGroup.rotation.y = Math.PI;
+
+      pGroup.position.set(room.look.x, 0, room.look.z);
+      scene.add(pGroup);
+
+      pedestals.push({ group: pGroup, monument, color: room.color });
+      clickableRooms.push(pGroup);
+    });
+
+    // ── Hạt Bụi Tri Thức Vàng Kim Lơ Lửng Trong Cung Điện (Knowledge Dust Particles) ──
+    const particleCount = 420;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      particlePositions[i] = (Math.random() - 0.5) * 58;
+      particlePositions[i + 1] = 0.5 + Math.random() * 7.5;
+      particlePositions[i + 2] = (Math.random() - 0.5) * 58;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+    const particleMat = new THREE.PointsMaterial({
+      color: 0xf5d78c,
+      size: 0.2,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending
+    });
+    const particleSystem = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleSystem);
+
+    // ── Đường lộ trình phát sáng (Glowing Laser Route) ──
+    const pathGeo = new THREE.BufferGeometry();
+    const maxPathPoints = 60;
+    const pathPositions = new Float32Array(maxPathPoints * 3);
+    pathGeo.setAttribute('position', new THREE.BufferAttribute(pathPositions, 3));
+
+    const pathMat = new THREE.LineBasicMaterial({
+      color: 0xcda250,
+      linewidth: 5,
+      transparent: true,
+      opacity: 0
+    });
+    const pathLine = new THREE.Line(pathGeo, pathMat);
+    scene.add(pathLine);
+
+    function updateGlowingRoute(targetRoom) {
+      const pts = [];
+      pts.push(new THREE.Vector3(0, 0.15, 0)); // Tâm đại sảnh
+      if (targetRoom.id === 0) {
+        pts.push(new THREE.Vector3(0, 0.15, -10));
+        pts.push(new THREE.Vector3(0, 0.15, targetRoom.look.z + 1.5));
+      } else if (targetRoom.id === 1) {
+        pts.push(new THREE.Vector3(-10, 0.15, 0));
+        pts.push(new THREE.Vector3(targetRoom.look.x + 1.5, 0.15, 0));
+      } else if (targetRoom.id === 2) {
+        pts.push(new THREE.Vector3(10, 0.15, 0));
+        pts.push(new THREE.Vector3(targetRoom.look.x - 1.5, 0.15, 0));
+      } else if (targetRoom.id === 3) {
+        pts.push(new THREE.Vector3(0, 0.15, 10));
+        pts.push(new THREE.Vector3(0, 0.15, targetRoom.look.z - 1.5));
+      }
+
+      const curve = new THREE.CatmullRomCurve3(pts);
+      const sampled = curve.getPoints(maxPathPoints - 1);
+      const posAttr = pathGeo.attributes.position;
+      for (let i = 0; i < maxPathPoints; i++) {
+        posAttr.setXYZ(i, sampled[i].x, sampled[i].y, sampled[i].z);
+      }
+      posAttr.needsUpdate = true;
+      pathMat.color.setHex(targetRoom.color);
+      pathMat.opacity = 0.95;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 6. ĐIỀU KHIỂN CHUYỂN CẢNH CAMERA (Ngang ban đầu -> Mặt Bằng khi ấn Tab)
+    // ══════════════════════════════════════════════════════════════
+    let isTransitioning = false;
+    let transitionStage = 0; // 0: Idle, 1: Go to Top-down, 2: Swoop to Room, 3: Return Overview
+    let stageStartTime = 0;
+    let stageDuration = 1000;
+    let startPos = new THREE.Vector3();
+    let startLook = new THREE.Vector3();
+    let endPos = new THREE.Vector3();
+    let endLook = new THREE.Vector3();
+    let selectedRoom = null;
+
+    const camModeText = document.getElementById('camModeText');
+    const roomCardPanel = document.getElementById('roomCardPanel');
+    const roomTitle = document.getElementById('roomTitle');
+    const roomDesc = document.getElementById('roomDesc');
+    const roomActionBtn = document.getElementById('roomActionBtn');
+    const tabButtons = document.querySelectorAll('.tab-item');
+
+    // Khi ấn 1 trong 4 tab: Chuyển camera lên góc chiếu bằng (Mặt Bằng) nhìn toàn cảnh
+    function navigateToRoom(roomIndex) {
+      selectedRoom = ROOMS[roomIndex];
+
+      // Đổi highlight tab
+      tabButtons.forEach(b => b.classList.remove('active'));
+      const activeBtn = document.querySelector(`.tab-item[data-room="${roomIndex}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Vẽ đường phát sáng dẫn vào phòng
+      updateGlowingRoute(selectedRoom);
+
+      // Chuyển mượt mà từ góc ngang lên góc chiếu bằng mặt bằng mê cung
+      transitionStage = 1;
+      isTransitioning = true;
+      stageStartTime = performance.now();
+      stageDuration = 950;
+
+      startPos.copy(camera.position);
+      startLook.copy(cameraTarget);
+
+      endPos.set(CAM_TOPDOWN.pos.x, CAM_TOPDOWN.pos.y, CAM_TOPDOWN.pos.z);
+      endLook.set(CAM_TOPDOWN.look.x, CAM_TOPDOWN.look.y, CAM_TOPDOWN.look.z);
+
+      camModeText.textContent = "🛰️ MẶT BẰNG MÊ CUNG — " + selectedRoom.name.toUpperCase();
+      camModeText.classList.add('pulse');
+      roomCardPanel.classList.remove('active');
+    }
+
+    // Sà vào phòng cận cảnh (khi người dùng bấm nút Khám phá phòng)
+    function diveIntoSelectedRoom() {
+      if (!selectedRoom) return;
+      transitionStage = 2;
+      isTransitioning = true;
+      stageStartTime = performance.now();
+      stageDuration = 1100;
+
+      startPos.copy(camera.position);
+      startLook.copy(cameraTarget);
+
+      endPos.set(selectedRoom.pos.x, selectedRoom.pos.y, selectedRoom.pos.z);
+      endLook.set(selectedRoom.look.x, selectedRoom.look.y, selectedRoom.look.z);
+
+      camModeText.textContent = "📍 CẬN CẢNH: " + selectedRoom.name.toUpperCase();
+      camModeText.classList.remove('pulse');
+    }
+
+    // Chuyển thẳng lên góc chiếu bằng tự do (Mặt Bằng)
+    function toggleTopDownDirect() {
+      transitionStage = 1;
+      isTransitioning = true;
+      stageStartTime = performance.now();
+      stageDuration = 950;
+
+      startPos.copy(camera.position);
+      startLook.copy(cameraTarget);
+
+      endPos.set(CAM_TOPDOWN.pos.x, CAM_TOPDOWN.pos.y, CAM_TOPDOWN.pos.z);
+      endLook.set(CAM_TOPDOWN.look.x, CAM_TOPDOWN.look.y, CAM_TOPDOWN.look.z);
+
+      camModeText.textContent = "🛰️ TOÀN CẢNH MẶT BẰNG MÊ CUNG";
+      camModeText.classList.remove('pulse');
+    }
+
+    // Trở về tiền sảnh góc nhìn ngang ban đầu (Ảnh 2 - nhìn ngang)
+    function resetToOverview() {
+      tabButtons.forEach(b => b.classList.remove('active'));
+      roomCardPanel.classList.remove('active');
+      pathMat.opacity = 0;
+      selectedRoom = null;
+
+      transitionStage = 3;
+      isTransitioning = true;
+      stageStartTime = performance.now();
+      stageDuration = 1050;
+
+      startPos.copy(camera.position);
+      startLook.copy(cameraTarget);
+
+      endPos.set(CAM_OVERVIEW.pos.x, CAM_OVERVIEW.pos.y, CAM_OVERVIEW.pos.z);
+      endLook.set(CAM_OVERVIEW.look.x, CAM_OVERVIEW.look.y, CAM_OVERVIEW.look.z);
+
+      camModeText.textContent = "🏛️ TIỀN SẢNH CUNG ĐIỆN";
+      camModeText.classList.remove('pulse');
+    }
+
+    // Bắt sự kiện click vào 4 Tab
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Nếu người dùng đang ở ngoài cổng, tự động mở cổng bay vào ngay
+        if (portalProgress < 0.95) {
+          triggerEnterPortal();
+        }
+        const rIndex = parseInt(btn.getAttribute('data-room'), 10);
+        navigateToRoom(rIndex);
+      });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // 7. HIỆU ỨNG PHÓNG QUA CỔNG TIỀN CẢNH (SCROLL & 1-TOUCH)
+    // ══════════════════════════════════════════════════════════════
+    const fgPortal = document.getElementById('fgPortal');
+    const enterHint = document.getElementById('enterHint');
+    const hubUi = document.getElementById('hubUi');
+
+    let portalProgress = 0; // 0.0 (Ngoài cổng) -> 1.0 (Đã vào sảnh)
+    let targetPortalProgress = 0;
+    let isAutoEntering = false;
+    let autoEnterStart = 0;
+
+    // Lăn chuột xuyên qua cổng
+    window.addEventListener('wheel', (e) => {
+      if (portalProgress < 0.99) {
+        targetPortalProgress += e.deltaY * 0.0016;
+        targetPortalProgress = Math.max(0, Math.min(1, targetPortalProgress));
+      }
+    }, { passive: true });
+
+    function triggerEnterPortal() {
+      isAutoEntering = true;
+      autoEnterStart = performance.now();
+      targetPortalProgress = 1.0;
+    }
+
+    // Bấm trực tiếp vào cổng vòm để bước vào
+    fgPortal.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (portalProgress < 0.3) triggerEnterPortal();
+    });
+
+    // Hỗ trợ Raycaster nhấp chuột vào đối tượng 3D trên Canvas
+    const raycaster = new THREE.Raycaster();
+    const mouseVec = new THREE.Vector2();
+
+    canvas.addEventListener('click', (e) => {
+      mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouseVec, camera);
+      const intersects = raycaster.intersectObjects(clickableRooms, true);
+      if (intersects.length > 0) {
+        let obj = intersects[0].object;
+        while (obj && typeof obj.userData.roomId !== 'number' && obj.parent) {
+          obj = obj.parent;
+        }
+        if (obj && typeof obj.userData.roomId === 'number') {
+          if (portalProgress < 0.95) triggerEnterPortal();
+          navigateToRoom(obj.userData.roomId);
+        }
+      }
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // 8. VÒNG LẶP RENDER MƯỢT MÀ 60 FPS
+    // ══════════════════════════════════════════════════════════════
+    function animate() {
+      // 1. Quán tính mở cổng tiền cảnh
+      if (isAutoEntering) {
+        const elapsed = performance.now() - autoEnterStart;
+        const t = Math.min(1, elapsed / 1600);
+        const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        portalProgress = ease;
+        if (t >= 1) isAutoEntering = false;
+      } else {
+        portalProgress += (targetPortalProgress - portalProgress) * 0.08;
+      }
+
+      // Biến đổi phóng to cổng ảnh tiền cảnh xuyên vào mê cung 3D
+      const scale = 1 + portalProgress * 5.4;
+      const opacity = 1 - portalProgress * 1.35;
+      fgPortal.style.transform = `scale(${scale})`;
+      fgPortal.style.opacity = Math.max(0, opacity);
+      // Mở ngay pointer-events: none khi cổng bắt đầu zoom để không chắn tương tác
+      fgPortal.style.pointerEvents = portalProgress > 0.04 ? 'none' : 'auto';
+
+      // Ẩn dòng chữ gợi ý khi đã bước vào
+      if (enterHint) {
+        enterHint.style.opacity = Math.max(0, 1 - portalProgress * 2.8);
+      }
+
+      // 2. Chuyển động máy ảnh Camera mượt mà
+      if (isTransitioning) {
+        const elapsed = performance.now() - stageStartTime;
+        const progress = Math.min(1, elapsed / stageDuration);
+        const ease = progress * progress * (3 - 2 * progress);
+
+        camera.position.lerpVectors(startPos, endPos, ease);
+        cameraTarget.lerpVectors(startLook, endLook, ease);
+        camera.lookAt(cameraTarget);
+
+        if (progress >= 1) {
+          isTransitioning = false;
+          transitionStage = 0;
+          if (selectedRoom) {
+            roomTitle.textContent = selectedRoom.name;
+            roomDesc.textContent = selectedRoom.desc;
+            roomActionBtn.href = selectedRoom.url;
+            roomActionBtn.textContent = selectedRoom.btnText;
+            roomCardPanel.classList.add('active');
+          }
+        }
+      }
+
+      // 3. Bầu trời mây trắng trôi chậm rãi kỳ ảo
+      if (skyDome) {
+        skyDome.rotation.y += 0.00012;
+      }
+
+      // 4. Hiệu ứng hạt bụi tri thức trôi lơ lửng (tối ưu xoay toàn khối 0% lag)
+      const timeSec = performance.now() * 0.001;
+      particleSystem.rotation.y = timeSec * 0.03;
+      particleSystem.position.y = Math.sin(timeSec * 0.5) * 0.15;
+
+      // 5. Chuyển động nhẹ nhàng của các tác phẩm điêu khắc nghệ thuật
+      pedestals.forEach((p) => {
+        const anim = p.monument.animatedParts;
+        if (!anim) return;
+        if (anim.type === 'astrolabe') {
+          anim.sphereGroup.rotation.y = timeSec * 0.35;
+          anim.ring1.rotation.x = Math.sin(timeSec * 0.4) * 0.25;
+          anim.ring2.rotation.y = timeSec * 0.5;
+          anim.prism.rotation.y = -timeSec * 0.7;
+          anim.prism.position.y = Math.sin(timeSec * 1.5) * 0.05;
+        } else if (anim.type === 'starMonument') {
+          anim.starGroup.rotation.y = timeSec * 0.25;
+          anim.starGroup.position.y = 2.85 + Math.sin(timeSec * 1.2) * 0.03;
+        } else if (anim.type === 'flame') {
+          anim.flameGroup.rotation.y = timeSec * 0.45;
+          anim.flameGroup.scale.set(
+            1 + Math.sin(timeSec * 3) * 0.025,
+            1 + Math.cos(timeSec * 2.5) * 0.04,
+            1 + Math.sin(timeSec * 3) * 0.025
+          );
+        } else if (anim.type === 'mobius') {
+          anim.mindGroup.rotation.y = timeSec * 0.4;
+          anim.mindGroup.rotation.z = Math.sin(timeSec * 0.5) * 0.18;
+          anim.core.rotation.x = -timeSec * 0.6;
+          anim.core.position.y = Math.sin(timeSec * 1.4) * 0.04;
+        }
+      });
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    // Xử lý thay đổi kích thước màn hình
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    animate();
+  </script>
+</body>
+
+</html>

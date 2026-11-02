@@ -7,8 +7,10 @@
   <title>VR 3D Tester & Meta Quest 2 Simulator | Cung Điện Ký Ức</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+    rel="stylesheet">
+
   <style>
     :root {
       --bg-dark: #070b14;
@@ -292,17 +294,25 @@
       z-index: 15;
     }
 
-    .lens-crosshair::before, .lens-crosshair::after {
+    .lens-crosshair::before,
+    .lens-crosshair::after {
       content: '';
       position: absolute;
       background: rgba(0, 242, 254, 0.4);
     }
 
     .lens-crosshair::before {
-      top: 50%; left: 0; right: 0; height: 1px;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
     }
+
     .lens-crosshair::after {
-      left: 50%; top: 0; bottom: 0; width: 1px;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
     }
 
     /* The actual test iframes */
@@ -411,7 +421,8 @@
       transform: translateY(-2px);
     }
 
-    .ctrl-btn:active, .ctrl-btn.pressed {
+    .ctrl-btn:active,
+    .ctrl-btn.pressed {
       background: var(--primary);
       color: #040814;
       transform: scale(0.95);
@@ -439,7 +450,8 @@
       font-family: monospace;
     }
 
-    .ctrl-btn:active .ctrl-key-badge, .ctrl-btn.pressed .ctrl-key-badge {
+    .ctrl-btn:active .ctrl-key-badge,
+    .ctrl-btn.pressed .ctrl-key-badge {
       background: #040814;
       color: #00f2fe;
     }
@@ -607,7 +619,8 @@
     <!-- URL Input -->
     <div class="url-box-wrap">
       <span style="margin-right:8px; font-size:14px; opacity:0.6;">🌐</span>
-      <input type="text" id="url-input" class="url-input" placeholder="Dán link web của bạn (VD: http://localhost:3000 hoặc link Netlify)..." value="./app/index.html" />
+      <input type="text" id="url-input" class="url-input"
+        placeholder="Dán link web của bạn (VD: http://localhost:3000 hoặc link Netlify)..." value="./app/index.html" />
       <button class="action-btn" id="load-url-btn" title="Nạp link vào môi trường test">
         <span>Nạp Link 🚀</span>
       </button>
@@ -633,24 +646,26 @@
 
   <!-- MAIN STAGE -->
   <main id="viewport-stage">
-    
+
     <!-- 1. Single / Device Mode Viewport -->
     <div class="viewport-container" id="single-viewport">
       <div class="device-quest-frame" id="device-frame">
-        <iframe id="test-frame-main" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+        <iframe id="test-frame-main" class="test-iframe" src="./app/index.html"
+          allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
       </div>
     </div>
 
     <!-- 2. Stereoscopic Dual-Lens Mode Viewport -->
     <div class="dual-eyes-wrap" id="dual-viewport">
       <div class="ipd-divider"></div>
-      
+
       <!-- Left Eye -->
       <div class="eye-frame-box">
         <div class="eye-mask"></div>
         <div class="lens-crosshair"></div>
         <div class="eye-label">MẮT TRÁI (LEFT EYE • 1832x1920)</div>
-        <iframe id="test-frame-left" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+        <iframe id="test-frame-left" class="test-iframe" src="./app/index.html"
+          allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
       </div>
 
       <!-- Right Eye -->
@@ -658,7 +673,8 @@
         <div class="eye-mask"></div>
         <div class="lens-crosshair"></div>
         <div class="eye-label">MẮT PHẢI (RIGHT EYE • 1832x1920)</div>
-        <iframe id="test-frame-right" class="test-iframe" src="./app/index.html" allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
+        <iframe id="test-frame-right" class="test-iframe" src="./app/index.html"
+          allow="camera; microphone; xr-spatial-tracking; display-capture; autoplay"></iframe>
       </div>
     </div>
 
@@ -700,7 +716,7 @@
 
     <!-- VIRTUAL META QUEST 2 CONTROLLERS HUD -->
     <div id="vr-controllers-hud">
-      
+
       <!-- LEFT CONTROLLER (TAY CẦM TRÁI) -->
       <div class="controller-panel" id="left-controller">
         <div class="controller-header">
@@ -837,7 +853,7 @@
       if (!targetUrl) return;
       currentUrl = targetUrl;
       urlInput.value = targetUrl;
-      
+
       testFrameMain.src = targetUrl;
       if (dualViewport.style.display === 'grid') {
         testFrameLeft.src = targetUrl;
@@ -911,7 +927,7 @@
 
     function dispatchVRSignal(actionName, codeKey, description) {
       showToast(description, '🎮');
-      
+
       const frames = getActiveFrames();
       frames.forEach(frame => {
         try {

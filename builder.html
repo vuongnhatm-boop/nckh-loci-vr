@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xây Dựng Không Gian Của Bạn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; background: #111; color: #fff; display: flex; }
+        #canvas-container { flex: 1; height: 100vh; position: relative; }
+        #sidebar { 
+            width: 320px; height: 100vh; background: #1a1a1a; 
+            border-left: 1px solid #333; display: flex; flex-direction: column;
+            z-index: 10;
+        }
+        .header { padding: 20px; border-bottom: 1px solid #333; background: #222; }
+        .header h2 { font-size: 18px; margin-bottom: 8px; color: #00f2fe; }
+        .header p { font-size: 13px; color: #aaa; line-height: 1.5; }
+        
+        .item-list { padding: 15px; overflow-y: auto; flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item-card { 
+            background: #2a2a2a; border: 1px solid #444; border-radius: 8px; 
+            padding: 10px; text-align: center; cursor: pointer; transition: all 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            height: 100px; overflow: hidden; position: relative;
+        }
+        .item-card:hover { border-color: #00f2fe; background: #333; transform: translateY(-2px); }
+        .item-card span { font-size: 13px; font-weight: 500; }
+        .item-card.active { border-color: #ffd54f; background: rgba(255,213,79,0.1); }
+        
+        .controls { padding: 15px; border-top: 1px solid #333; background: #222; display: flex; flex-direction: column; gap: 10px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-mode { background: #333; color: #fff; border: 1px solid #555; }
+        .btn-mode.active { background: #00f2fe; color: #000; border-color: #00f2fe; }
+        .btn-danger { background: #ff5252; color: #fff; }
+        .btn-danger:hover { background: #ff1744; }
+        .btn-back { background: transparent; border: 1px solid #fff; color: #fff; }
+        .btn-back:hover { background: #fff; color: #000; }
+        
+        .mode-toggles { display: flex; gap: 5px; }
+        .mode-toggles .btn { flex: 1; font-size: 12px; padding: 8px; }
+        
+        #loading {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center; z-index: 50; flex-direction: column; gap: 15px;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: #00f2fe; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #lessonPanel { display: none; padding: 14px 15px; border-top: 1px solid #333; background: linear-gradient(160deg, #14203a, #101626); max-height: 42vh; overflow-y: auto; }
+        #lessonPanel h3 { font-size: 13px; color: #00f2fe; margin-bottom: 6px; }
+        #lessonPanel .lp-hint { font-size: 11.5px; color: #94a3b8; margin-bottom: 10px; line-height: 1.5; }
+        .anchor-chip { display: flex; gap: 8px; align-items: center; padding: 7px 9px; border-radius: 9px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .anchor-chip:hover, .anchor-chip.active { border-color: #00f2fe; background: rgba(0,242,254,0.1); }
+        #anchorInfo { display: none; margin-top: 10px; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(0,242,254,0.3); font-size: 12px; line-height: 1.55; color: #e2e8f0; white-space: pre-line; }
+        #anchorInfo b { color: #fff; }
+        .lock-tag { display: inline-block; font-size: 10.5px; color: #fde047; background: rgba(234,179,8,0.15); padding: 2px 7px; border-radius: 8px; margin-bottom: 6px; }
+        /* Bảng kính kiểu iOS 26 (Liquid Glass) */
+        #glassPanel { position: fixed; top: 0; right: 320px; width: calc((100vw - 320px) / 2); height: 100vh; z-index: 40; display: flex; align-items: center; justify-content: center;
+            padding: 24px; pointer-events: none; opacity: 0; transform: translateX(30px); transition: opacity .4s ease, transform .5s cubic-bezier(.16,1,.3,1); }
+        #glassPanel.open { opacity: 1; transform: none; pointer-events: auto; }
+        .lg-card { position: relative; width: 100%; max-width: 560px; max-height: calc(100vh - 48px); display: flex; flex-direction: column; overflow: hidden; border-radius: 32px; color: #fff;
+            background: linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.07) 45%, rgba(255,255,255,.12));
+            backdrop-filter: blur(28px) saturate(185%); -webkit-backdrop-filter: blur(28px) saturate(185%); border: 1px solid rgba(255,255,255,.35);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 30px rgba(255,255,255,.06), 0 30px 70px rgba(0,0,0,.4); }
+        .lg-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .7; mix-blend-mode: screen;
+            background: radial-gradient(120% 60% at 15% 0%, rgba(255,255,255,.35), transparent 55%), radial-gradient(80% 50% at 100% 100%, var(--acc-soft, rgba(0,242,254,.3)), transparent 60%); }
+        .lg-head { position: relative; padding: 24px 26px 14px; display: flex; gap: 14px; align-items: flex-start; }
+        .lg-badge { flex-shrink: 0; width: 54px; height: 54px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35); }
+        .lg-badge .ico { font-size: 22px; } .lg-badge .num { font-size: 11px; font-weight: 800; opacity: .85; }
+        .lg-kicker { font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: var(--acc, #00f2fe); }
+        .lg-title { margin-top: 4px; font-size: 20px; font-weight: 800; line-height: 1.3; text-shadow: 0 2px 10px rgba(0,0,0,.3); }
+        .lg-close { margin-left: auto; flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); }
+        .lg-close:hover { background: rgba(255,255,255,.28); }
+        .lg-body { position: relative; padding: 4px 26px 26px; overflow-y: auto; }
+        .lg-summary { font-size: 14.5px; line-height: 1.65; padding: 14px 16px; border-radius: 18px; margin-bottom: 16px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); }
+        .lg-sec { font-size: 11.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .75; margin-bottom: 10px; }
+        .lg-points { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+        .lg-points li { display: flex; gap: 11px; font-size: 13.5px; line-height: 1.6; padding: 11px 13px; border-radius: 15px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+            opacity: 0; transform: translateY(8px); animation: lgIn .45s cubic-bezier(.16,1,.3,1) forwards; }
+        .lg-points li .dot { flex-shrink: 0; width: 23px; height: 23px; border-radius: 50%; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; background: var(--acc-soft); border: 1px solid var(--acc); }
+        @keyframes lgIn { to { opacity: 1; transform: none; } }
+    </style>
+</head>
+<body>
+    <div id="glassPanel">
+        <div class="lg-card" role="dialog" aria-label="Nội dung mốc">
+            <div class="lg-head">
+                <div class="lg-badge"><span class="ico" id="gpIco">📍</span><span class="num" id="gpNum"></span></div>
+                <div style="min-width:0"><div class="lg-kicker" id="gpKicker"></div><div class="lg-title" id="gpTitle"></div></div>
+                <button class="lg-close" id="gpClose" title="Đóng">✕</button>
+            </div>
+            <div class="lg-body">
+                <div class="lg-summary" id="gpSummary"></div>
+                <div class="lg-sec">Ý chính cần nhớ</div>
+                <ul class="lg-points" id="gpPoints"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Đang tải không gian...</p>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <div class="header">
+            <h2>Đồ tự thiết lập</h2>
+            <p>Nhấn vào món đồ để thêm vào không gian. Sử dụng công cụ bên dưới để di chuyển hoặc xoay.</p>
+        </div>
+        
+        <div class="item-list" id="itemList">
+            <!-- Items will be injected here -->
+        </div>
+
+        <div id="lessonPanel">
+            <h3 id="lessonTitle">📚 Mốc bài học</h3>
+            <div class="lp-hint">Kéo mũi tên trên mốc để đổi vị trí. Nội dung mốc được khóa, không thể sửa/xóa. Vị trí tự động lưu.</div>
+            <div id="anchorList"></div>
+            <div id="anchorInfo"></div>
+        </div>
+
+        <div class="controls">
+            <div class="mode-toggles">
+                <button class="btn btn-mode active" id="btnTranslate">Di chuyển</button>
+                <button class="btn btn-mode" id="btnRotate">Xoay</button>
+                <button class="btn btn-mode" id="btnScale">Phóng to</button>
+            </div>
+            <button class="btn btn-danger" id="btnDelete">Xoá đồ vật đang chọn</button>
+            <button class="btn btn-back" onclick="window.location.href='portal.html'">Trở về Portal</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="loci_anchors_data.js"></script>
+
+    <script>
+        const canvasContainer = document.getElementById('canvas-container');
+        const loading = document.getElementById('loading');
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB); // Default sky color
+        scene.fog = new THREE.FogExp2(0x87CEEB, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(60, (window.innerWidth - 320) / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth - 320, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        canvasContainer.appendChild(renderer.domElement);
+
+        // Lights
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 30, 20);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        // Grid & Plane
+        const grid = new THREE.GridHelper(100, 100, 0x000000, 0x000000);
+        grid.material.opacity = 0.2;
+        grid.material.transparent = true;
+        scene.add(grid);
+
+        // OrbitControls
+        const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        orbit.enableDamping = true;
+        orbit.dampingFactor = 0.05;
+
+        // TransformControls
+        const transformControl = new THREE.TransformControls(camera, renderer.domElement);
+        transformControl.addEventListener('dragging-changed', function (event) {
+            orbit.enabled = !event.value;
+        });
+        scene.add(transformControl);
+
+        // Object management
+        const objects = [];
+        let selectedObject = null;
+
+        // Setup Programmatic Environments
+        const urlParams = new URLSearchParams(window.location.search);
+        const envType = urlParams.get('env');
+        const loader = new THREE.GLTFLoader();
+
+        let skyColor = 0x87CEEB;
+        let floorColor = 0x556b2f;
+        let gridColor = 0x000000;
+        let isGrid = false;
+        
+        switch(envType) {
+            case 'grass':
+                skyColor = 0x87CEEB;
+                floorColor = 0x4CAF50;
+                gridColor = 0x388E3C;
+                break;
+            case 'space':
+                skyColor = 0x000000;
+                floorColor = 0x111111;
+                gridColor = 0x333333;
+                hemiLight.intensity = 0.2;
+                dirLight.intensity = 0.5;
+                // Tạo sao
+                const starsGeo = new THREE.BufferGeometry();
+                const starsVertices = [];
+                for(let i=0; i<1500; i++) {
+                    starsVertices.push((Math.random()-0.5)*200, Math.random()*100, (Math.random()-0.5)*200);
+                }
+                starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+                const starsMat = new THREE.PointsMaterial({color:0xffffff, size:0.2});
+                const stars = new THREE.Points(starsGeo, starsMat);
+                scene.add(stars);
+                break;
+            case 'studio':
+                skyColor = 0xffffff;
+                floorColor = 0xf5f5f5;
+                gridColor = 0xdddddd;
+                hemiLight.intensity = 1.0;
+                dirLight.intensity = 1.0;
+                break;
+            case 'desert':
+                skyColor = 0xffb74d;
+                floorColor = 0xedc9af;
+                gridColor = 0xcda98f;
+                scene.fog = new THREE.FogExp2(0xffb74d, 0.015);
+                break;
+            case 'beach':
+                skyColor = 0x4fc3f7;
+                floorColor = 0xffe082;
+                gridColor = 0xd7b45a;
+                break;
+            case 'grid':
+                skyColor = 0x222222;
+                floorColor = 0x1a1a1a;
+                gridColor = 0x00f2fe;
+                isGrid = true;
+                break;
+            default:
+                // grass default
+                skyColor = 0x87CEEB;
+                floorColor = 0x556b2f;
+                gridColor = 0x000000;
+        }
+
+        scene.background = new THREE.Color(skyColor);
+        if (!scene.fog || envType !== 'desert') {
+            scene.fog = new THREE.FogExp2(skyColor, envType === 'space' ? 0.002 : 0.008);
+        }
+
+        const floorGeo = new THREE.PlaneGeometry(200, 200);
+        let floorMat;
+        if (isGrid) {
+            floorMat = new THREE.MeshStandardMaterial({ color: floorColor, roughness: 0.2, metalness: 0.8 });
+        } else {
+            floorMat = new THREE.MeshStandardMaterial({ color: floorColor, roughness: 0.9, metalness: 0.1 });
+        }
+        
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        
+        grid.material.color.setHex(gridColor);
+        grid.material.opacity = isGrid ? 0.6 : 0.2;
+        
+        loading.style.display = 'none';
+
+        // Available Items
+        const customItems = [
+            { name: "Bàn học", file: "Bàn học.glb", img: "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?auto=format&fit=crop&w=300&q=80" },
+            { name: "Bàn kính cà phê", file: "Bàn kính cà phê.glb", img: "https://images.unsplash.com/photo-1533090481720-856c6e3c1fdc?auto=format&fit=crop&w=300&q=80" },
+            { name: "Kệ ti vi", file: "Kệ ti vi và ti vi.glb", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80" },
+            { name: "Sofa", file: "sofa.glb", img: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80" },
+            { name: "Tủ sách 2", file: "tủ sách 2.glb", img: "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=300&q=80" },
+            { name: "Tủ sách", file: "tủ sách.glb", img: "https://images.unsplash.com/photo-1520699049698-acd2fce18738?auto=format&fit=crop&w=300&q=80" }
+        ];
+
+        const itemList = document.getElementById('itemList');
+        customItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.9)), url('${item.img}')`;
+            div.style.backgroundSize = 'cover';
+            div.style.backgroundPosition = 'center';
+            div.innerHTML = `<span style="position:relative; z-index:2; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">${item.name}</span>`;
+            div.onclick = () => loadItem(item.file);
+            itemList.appendChild(div);
+        });
+
+        function loadItem(filename) {
+            loading.style.display = 'flex';
+            loading.querySelector('p').innerText = 'Đang tải ' + filename + '...';
+            
+            // Xử lý URI để tránh lỗi đường dẫn tiếng Việt
+            const path = 'model không gian 3d/Nhà cửa/Đồ tự thiết lập/' + filename;
+            const encodedPath = encodeURI(path);
+            
+            loader.load(encodedPath, (gltf) => {
+                const model = gltf.scene;
+                model.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        // To allow raycasting to hit the mesh
+                        child.userData.isSelectable = true;
+                    }
+                });
+                // Put it in front of the camera
+                model.position.copy(orbit.target);
+                model.position.y += 1; // Slightly above ground
+                scene.add(model);
+                objects.push(model);
+                selectObject(model);
+                loading.style.display = 'none';
+            }, undefined, (err) => {
+                console.error(err);
+                alert("Không thể tải mô hình: " + filename + "\nVui lòng kiểm tra lại đường dẫn file.");
+                loading.style.display = 'none';
+            });
+        }
+
+        // ===== MỐC BÀI HỌC CHO SẴN (?lesson=bai_X) — khóa nội dung, chỉ kéo thả vị trí =====
+        const lessonKey = urlParams.get('lesson');
+        const lessonData = (lessonKey && window.LOCI_ANCHORS) ? window.LOCI_ANCHORS[lessonKey] : null;
+        const LESSON_STORE_KEY = `builder_${envType || 'grass'}_lesson_${lessonKey}`;
+        const anchorMarkers = [];
+
+        function makeLabelSprite(text, color) {
+            const c = document.createElement('canvas');
+            c.width = 512; c.height = 128;
+            const g = c.getContext('2d');
+            g.fillStyle = 'rgba(10,16,30,0.88)'; g.strokeStyle = color; g.lineWidth = 5;
+            g.beginPath(); g.roundRect ? g.roundRect(8, 8, 496, 112, 28) : g.rect(8, 8, 496, 112); g.fill(); g.stroke();
+            g.fillStyle = '#fff'; g.font = 'bold 34px "Plus Jakarta Sans", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillText(text.length > 24 ? text.slice(0, 22) + '…' : text, 256, 64);
+            const tex = new THREE.CanvasTexture(c);
+            const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+            sp.scale.set(2.4, 0.6, 1); sp.position.y = 1.1; sp.renderOrder = 999;
+            return sp;
+        }
+
+        function saveAnchorPositions() {
+            const data = {};
+            anchorMarkers.forEach(m => { data[m.userData.anchor.id] = [m.position.x, m.position.y, m.position.z]; });
+            localStorage.setItem(LESSON_STORE_KEY, JSON.stringify(data));
+        }
+
+        let gpAnim = null;
+        let gpOpenId = null;
+        function setBuilderViewOffset(on) {
+            const w = window.innerWidth - 320, h = window.innerHeight;
+            if (on) camera.setViewOffset(w, h, w / 4, 0, w, h); else camera.clearViewOffset();
+            camera.updateProjectionMatrix();
+        }
+        function closeGlass() {
+            document.getElementById('glassPanel').classList.remove('open');
+            setBuilderViewOffset(false);
+            gpOpenId = null;
+            document.querySelectorAll('.anchor-chip').forEach(ch => ch.classList.remove('active'));
+        }
+        document.getElementById('gpClose').onclick = () => { closeGlass(); };
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeGlass(); });
+
+        function showAnchorInfo(marker) {
+            document.querySelectorAll('.anchor-chip').forEach(ch => ch.classList.toggle('active', !!marker && ch.dataset.id === marker.userData.anchor.id));
+            if (!marker) { closeGlass(); return; }
+            const a = marker.userData.anchor;
+            const panel = document.getElementById('glassPanel');
+            const color = a.color || '#00f2fe';
+            panel.style.setProperty('--acc', color);
+            panel.style.setProperty('--acc-soft', color + '55');
+            document.getElementById('gpIco').textContent = a.icon || '📍';
+            document.getElementById('gpNum').textContent = '#' + (a.order || '');
+            document.getElementById('gpKicker').textContent = lessonData ? lessonData.title : '';
+            document.getElementById('gpTitle').textContent = a.title;
+            document.getElementById('gpSummary').textContent = a.summary || '';
+            const ul = document.getElementById('gpPoints');
+            ul.innerHTML = '';
+            (a.keyPoints || []).forEach((p, i) => {
+                const li = document.createElement('li');
+                li.style.animationDelay = (0.12 + i * 0.06) + 's';
+                const dot = document.createElement('span'); dot.className = 'dot'; dot.textContent = i + 1;
+                const tx = document.createElement('span'); tx.textContent = p;
+                li.append(dot, tx); ul.appendChild(li);
+            });
+            panel.classList.add('open');
+            setBuilderViewOffset(true);
+
+            // Chỉ bay camera khi mở mốc mới (tránh giật khi đang kéo thả)
+            if (gpOpenId === a.id) return;
+            gpOpenId = a.id;
+            const target = marker.position.clone();
+            const dir = camera.position.clone().sub(target); dir.y = 0;
+            if (dir.lengthSq() < 0.01) dir.set(0, 0, 1);
+            dir.normalize();
+            const endPos = target.clone().addScaledVector(dir, 6); endPos.y = target.y + 2.2;
+            const sPos = camera.position.clone(), sTarget = orbit.target.clone();
+            const t0 = performance.now(), dur = 800;
+            if (gpAnim) cancelAnimationFrame(gpAnim);
+            const step = (now) => {
+                const t = Math.min(1, (now - t0) / dur), k = 1 - Math.pow(1 - t, 3);
+                camera.position.lerpVectors(sPos, endPos, k);
+                orbit.target.lerpVectors(sTarget, target, k);
+                gpAnim = t < 1 ? requestAnimationFrame(step) : null;
+            };
+            gpAnim = requestAnimationFrame(step);
+        }
+
+        if (lessonData && lessonData.anchors) {
+            let saved = {};
+            try { saved = JSON.parse(localStorage.getItem(LESSON_STORE_KEY) || '{}'); } catch (e) { saved = {}; }
+            const n = lessonData.anchors.length;
+            const radius = Math.max(5, n * 1.1);
+            const listEl = document.getElementById('anchorList');
+            document.getElementById('lessonPanel').style.display = 'block';
+            document.getElementById('lessonTitle').textContent = '📚 ' + lessonData.title;
+
+            lessonData.anchors.forEach((a, i) => {
+                const color = a.color || '#00f2fe';
+                const grp = new THREE.Group();
+                const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.6, 12), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4 }));
+                pillar.position.y = -0.2;
+                const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.8, metalness: 0.6, roughness: 0.2 }));
+                gem.position.y = 0.6;
+                const hit = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 10), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+                hit.position.y = 0.4;
+                [pillar, gem, hit].forEach(m => { m.userData.isAnchorPart = true; grp.add(m); });
+                grp.add(makeLabelSprite(`${a.order || i + 1}. ${a.title}`, color));
+                const ang = -Math.PI / 2 + (i / n) * Math.PI * 2;
+                const p = saved[a.id] || [Math.cos(ang) * radius, 1, Math.sin(ang) * radius];
+                grp.position.set(p[0], p[1], p[2]);
+                grp.userData.anchor = a;
+                grp.userData.isAnchor = true;
+                scene.add(grp);
+                anchorMarkers.push(grp);
+
+                const chip = document.createElement('div');
+                chip.className = 'anchor-chip'; chip.dataset.id = a.id;
+                chip.textContent = `${a.icon || '📍'} ${a.order || i + 1}. ${a.title}`;
+                chip.onclick = () => { selectObject(grp); };
+                listEl.appendChild(chip);
+            });
+
+            transformControl.addEventListener('dragging-changed', (e) => {
+                if (!e.value && selectedObject && selectedObject.userData.isAnchor) saveAnchorPositions();
+            });
+        }
+
+        // Selection Logic
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        renderer.domElement.addEventListener('pointerdown', (event) => {
+            if (event.button !== 0) return; // Only left click
+            // Don't select if we are interacting with transform controls
+            if (transformControl.dragging) return;
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Collect all selectable meshes
+            let selectableMeshes = [];
+            objects.forEach(obj => {
+                obj.traverse(child => {
+                    if(child.isMesh && child.userData.isSelectable) selectableMeshes.push(child);
+                });
+            });
+
+            const intersects = raycaster.intersectObjects(selectableMeshes, false);
+            // Ưu tiên chọn mốc bài học
+            const anchorParts = [];
+            anchorMarkers.forEach(m => m.traverse(ch => { if (ch.isMesh && ch.userData.isAnchorPart) anchorParts.push(ch); }));
+            const anchorHits = raycaster.intersectObjects(anchorParts, false);
+            if (anchorHits.length > 0) {
+                selectObject(anchorHits[0].object.parent);
+                return;
+            }
+            if (intersects.length > 0) {
+                // Find root object
+                let obj = intersects[0].object;
+                while (obj.parent && !objects.includes(obj)) {
+                    obj = obj.parent;
+                }
+                if (objects.includes(obj)) {
+                    selectObject(obj);
+                }
+            } else {
+                // Clicked on empty space
+                selectObject(null);
+            }
+        });
+
+        function selectObject(obj) {
+            selectedObject = obj;
+            const isAnchor = !!(obj && obj.userData.isAnchor);
+            if (isAnchor) {
+                // Mốc bài học: chỉ cho di chuyển
+                transformControl.setMode('translate');
+                document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+                document.getElementById('btnTranslate').classList.add('active');
+            }
+            if (typeof showAnchorInfo === 'function') showAnchorInfo(isAnchor ? obj : null);
+            if (obj) {
+                transformControl.attach(obj);
+            } else {
+                transformControl.detach();
+            }
+        }
+
+        // UI Controls
+        document.getElementById('btnTranslate').onclick = function() {
+            transformControl.setMode('translate');
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        };
+        document.getElementById('btnRotate').onclick = function() {
+            if (selectedObject && selectedObject.userData.isAnchor) return alert('Mốc bài học chỉ được di chuyển vị trí.');
+            transformControl.setMode('rotate');
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        };
+        document.getElementById('btnScale').onclick = function() {
+            if (selectedObject && selectedObject.userData.isAnchor) return alert('Mốc bài học chỉ được di chuyển vị trí.');
+            transformControl.setMode('scale');
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        };
+        document.getElementById('btnDelete').onclick = function() {
+            if (selectedObject && selectedObject.userData.isAnchor) return alert('🔒 Mốc bài học cho sẵn không thể xóa.');
+            if (selectedObject) {
+                scene.remove(selectedObject);
+                objects.splice(objects.indexOf(selectedObject), 1);
+                transformControl.detach();
+                selectedObject = null;
+            }
+        };
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth - 320;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            orbit.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

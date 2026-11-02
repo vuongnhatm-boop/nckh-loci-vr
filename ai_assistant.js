@@ -4,6 +4,7 @@
  * Tích hợp nhận diện Wake-Word "Hey Memory", Visualizer Plasma Ring & Điều hướng 3D tức thì.
  */
 import './history_knowledge_base.js';
+import './history_sentinel_bot.js';
 
 /**
  * QUẢN LÝ TIẾN TRÌNH & HỒ SƠ GHI NHỚ KHÔNG GIAN CỦA NGƯỜI DÙNG (SPATIAL LEARNING PROFILE)
@@ -171,40 +172,40 @@ export class UserProgressManager {
 
 export class LociAIAssistant {
   constructor(options = {}) {
-    this.onAction = options.onAction || (() => {});
-    this.onStateChange = options.onStateChange || (() => {});
-    this.onMessage = options.onMessage || (() => {});
-    this.onTranscript = options.onTranscript || (() => {});
-    this.onWakeWord = options.onWakeWord || (() => {});
+    this.onAction = options.onAction || (() => { });
+    this.onStateChange = options.onStateChange || (() => { });
+    this.onMessage = options.onMessage || (() => { });
+    this.onTranscript = options.onTranscript || (() => { });
+    this.onWakeWord = options.onWakeWord || (() => { });
     this.getContext = options.getContext || (() => ({ lociList: [] }));
     this.progressManager = options.progressManager || new UserProgressManager();
 
     // API Configuration
     let storedKey = localStorage.getItem('loci_gemini_api_key');
-    if (!storedKey || storedKey.includes('Ab8RN6') || storedKey.startsWith('AQ.')) {
-      storedKey = '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';
-      localStorage.setItem('loci_gemini_api_key', storedKey);
+    const knownExpiredKeys = [
+      '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',
+      'AQ.Ab8RN6LNaNbKGPSWpIdOAZMkm5k5X-5vAcXb0smx5CwmVL94PA'
+    ];
+    if (!storedKey || knownExpiredKeys.includes(storedKey) || storedKey.startsWith('sk-or-v1')) {
+      storedKey = 'AQ.Ab8RN6KLMu7QuN7LcaGiQuwbl63Q0GqVelMLAIPeFQZWqmZo1Q';
+      try { localStorage.setItem('loci_gemini_api_key', storedKey); } catch (_) { }
     }
     this.apiKey = storedKey;
-    
-    // Model 3 Flash mặc định: google/gemini-3.5-flash-lite (OpenRouter) / gemini-3.5-flash
+
+    // Model mặc định: gemini-2.5-flash (Google Gemini Direct API - Nhanh, sâu sắc, chuẩn xác)
     let savedModel = localStorage.getItem('loci_gemini_model');
-    const resetModels = ['gemini-1.5-pro', '1.5', 'gemini-1.5-flash', 'gemini-3.5-flash', 'gemini-2.0-flash'];
-    if (!savedModel || resetModels.some(m => savedModel === m)) {
-      savedModel = 'google/gemini-3.5-flash-lite';
-      localStorage.setItem('loci_gemini_model', savedModel);
+    const resetModels = ['gemini-1.5-pro', '1.5', 'gemini-3.5-flash', 'gemini-2.0-flash', 'google/gemini-3.5-flash-lite', 'google/gemini-2.5-flash'];
+    if (!savedModel || resetModels.includes(savedModel)) {
+      savedModel = 'gemini-2.5-flash';
+      try { localStorage.setItem('loci_gemini_model', savedModel); } catch (_) { }
     }
     this.modelName = savedModel;
 
-    // Danh sách model ưu tiên: Model 3 Flash -> 2.5 Flash -> 2.0 Flash
+    // Danh sách model Google ưu tiên: 2.5 Flash -> 1.5 Flash -> 3.8 Flash
     this.candidateModels = [
-      'google/gemini-3.5-flash-lite',
-      'google/gemini-3.7-flash',
-      'google/gemini-3.8-flash',
-      'google/gemini-2.5-flash',
-      'gemini-3.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash'
+      'gemini-2.5-flash',
+      'gemini-1.5-flash',
+      'gemini-3.8-flash'
     ];
 
     // State: 'idle' | 'listening' | 'thinking' | 'speaking'
@@ -257,8 +258,8 @@ export class LociAIAssistant {
           this.audioPlayer.pause();
           this.audioUnlocked = true;
           console.log('🔊 Đã mở khóa Audio TTS cho Meta Quest 2 / Trình duyệt.');
-        }).catch(() => {});
-      } catch (e) {}
+        }).catch(() => { });
+      } catch (e) { }
     }
   }
 
@@ -410,7 +411,7 @@ export class LociAIAssistant {
                 this.recognition.start();
               }
             }, 400);
-          } catch (e) {}
+          } catch (e) { }
         }
       };
     } else {
@@ -453,7 +454,7 @@ export class LociAIAssistant {
     if (this.recognition && !this.isListening) {
       try {
         this.recognition.start();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -462,7 +463,7 @@ export class LociAIAssistant {
     if (this.recognition && this.isListening) {
       try {
         this.recognition.stop();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -481,7 +482,7 @@ export class LociAIAssistant {
       if (!this.isListening) {
         try {
           this.recognition.start();
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   }
@@ -502,10 +503,10 @@ export class LociAIAssistant {
 
     // Lọc bỏ cụm wake-word ở đầu câu nói nếu có
     command = command.replace(/^(hey|hay|này|ê)\s+memory\s*(ơi)?/i, '')
-                     .replace(/^memory\s*(ơi)?/i, '')
-                     .replace(/^(hey|hay)\s+(loci|lo-xi|lo\s+xi|loxi|lô\s*xi)\s*(ơi)?/i, '')
-                     .replace(/^(loci|lo-xi|lo\s+xi|loxi|lô\s*xi)\s*(ơi)?/i, '')
-                     .trim();
+      .replace(/^memory\s*(ơi)?/i, '')
+      .replace(/^(hey|hay)\s+(loci|lo-xi|lo\s+xi|loxi|lô\s*xi)\s*(ơi)?/i, '')
+      .replace(/^(loci|lo-xi|lo\s+xi|loxi|lô\s*xi)\s*(ơi)?/i, '')
+      .trim();
 
     if (!command) {
       command = 'Tôi đang ở đây, bạn cần tìm hiểu sự kiện lịch sử nào?';
@@ -531,7 +532,19 @@ export class LociAIAssistant {
     // Chuẩn hoá phát âm tiếng Việt: Viết "Loci" nhưng đọc là "lo-xi"
     cleanSpeech = cleanSpeech.replace(/\bloci\b/gi, 'lo-xi');
 
-    if (!cleanSpeech) return;
+    if (!cleanSpeech) {
+      this.setState('idle');
+      return;
+    }
+
+    // Set a safety timeout to clear thinking state if TTS fails to start
+    clearTimeout(this._speakSafetyTimer);
+    this._speakSafetyTimer = setTimeout(() => {
+      if (this.state === 'thinking') {
+        console.warn('TTS seems stuck, forcing idle state');
+        this.setState('idle');
+      }
+    }, 2000);
 
     // Kiểm tra xem có đang chạy trong kính Meta Quest (Oculus Browser) hoặc không có giọng tiếng Việt hệ thống
     const isQuest = /OculusBrowser|Quest/i.test(navigator.userAgent);
@@ -588,7 +601,7 @@ export class LociAIAssistant {
       this.isPlayingAudio = false;
       this.setState('idle');
       if (this.wakeWordListening && !this.isListening && this.recognition) {
-        try { this.recognition.start(); } catch (e) {}
+        try { this.recognition.start(); } catch (e) { }
       }
       return;
     }
@@ -611,7 +624,7 @@ export class LociAIAssistant {
     if (this.currentSpeechIndex >= this.speechQueue.length) {
       this.setState('idle');
       if (this.wakeWordListening && !this.isListening && this.recognition) {
-        try { this.recognition.start(); } catch (e) {}
+        try { this.recognition.start(); } catch (e) { }
       }
       return;
     }
@@ -657,18 +670,18 @@ export class LociAIAssistant {
       try {
         this.audioPlayer.pause();
         this.audioPlayer.currentTime = 0;
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (this.synth) {
       try {
         this.synth.cancel();
-      } catch (e) {}
+      } catch (e) { }
     }
 
     this.setState('idle');
     if (this.wakeWordListening && !this.isListening && this.recognition) {
-      try { this.recognition.start(); } catch (e) {}
+      try { this.recognition.start(); } catch (e) { }
     }
   }
 
@@ -743,8 +756,8 @@ export class LociAIAssistant {
       return `- ID "${l.id}": "${l.name}" (${l.year}) tại vị trí "${l.locName}". Trạng thái: [${stt}]. Mẹo nhớ: "${l.mnemonic}".`;
     }).join('\n');
 
-    const progressMemoryPrompt = this.progressManager 
-      ? this.progressManager.formatProfileForPrompt(lociList) 
+    const progressMemoryPrompt = this.progressManager
+      ? this.progressManager.formatProfileForPrompt(lociList)
       : '';
 
     // Nạp tri thức bổ trợ (CHỈ nạp trích dẫn liên quan trực tiếp, TUYỆT ĐỐI KHÔNG nạp mục lục toàn bộ SGK)
@@ -779,12 +792,69 @@ Khi người dùng đưa vào đoạn văn bản, tài liệu (kể cả ngoài 
 `;
     }
 
+    let depthDirective = '';
+    const currentDepth = this.answerDepth || (typeof localStorage !== 'undefined' ? localStorage.getItem('loci_gemini_depth') : 'detailed') || 'detailed';
+    if (currentDepth === 'short' || currentDepth === 'concise') {
+      depthDirective = `
+=== QUY ĐỊNH ĐỘ DÀI: TÓM TẮT NHANH (100 - 150 TỪ) ===
+- Trả lời súc tích, trực diện vào vấn đề ngay câu đầu tiên.
+- Trình bày 3-5 gạch đầu dòng then chốt hoặc bảng niên biểu ngắn gọn.
+- Gợi ý 1 mẹo liên tưởng Cung điện Ký ức Loci.`;
+    } else if (currentDepth === 'standard') {
+      depthDirective = `
+=== QUY ĐỊNH ĐỘ DÀI: TIÊU CHUẨN (400 - 500 TỪ) ===
+- Trả lời đầy đủ, mạch lạc, đúng trọng tâm câu hỏi.
+- Nêu rõ bối cảnh, các mốc diễn biến chính, kết quả, ý nghĩa lịch sử.
+- Đưa ra mẹo gắn vào không gian Cung điện Loci và tag hành động phù hợp.`;
+    } else {
+      // 'detailed' (mặc định - chuyên sâu toàn diện)
+      depthDirective = `
+=== QUY ĐỊNH ĐỘ SÂU & ĐỘ DÀI: PHÂN TÍCH CHUYÊN SÂU & TOÀN DIỆN (CHẾ ĐỘ MẶC ĐỊNH - CHUẨN ÔN THI THPT QUỐC GIA 12) ===
+🚨 BẮT BUỘC KHÔNG ĐƯỢC TRẢ LỜI NGẮN GỌN, HỜI HỢT HOẶC CỤT LỦN!
+Học sinh cần nắm vững kiến thức chi tiết, đa chiều và có hệ thống logic để đạt điểm cao môn Lịch sử 12.
+Đối với các câu hỏi về sự kiện, chiến dịch, giai đoạn lịch sử (như Chiến dịch Điện Biên Phủ, CMT8 1945, Hiệp định Giơ-ne-vơ, Phong trào Đồng Khởi, Đại thắng mùa Xuân 1975, Kháng chiến bảo vệ Tổ quốc...):
+BẮT BUỘC phân tích cặn kẽ theo đúng cấu trúc 5 tầng nhận thức chuẩn sư phạm:
+
+1. 🏛️ BỐI CẢNH LỊCH SỬ & THỜI CƠ:
+   - Hoàn cảnh quốc tế và khu vực tác động; tình hình thực tế trong nước.
+   - Âm mưu, kế hoạch và thủ đoạn của đối phương (ví dụ: Kế hoạch Na-va, các chiến lược của Mĩ...).
+   - Chủ trương, quyết định chiến lược và sự lãnh đạo sáng suốt của Đảng / Trung ương / Chủ tịch Hồ Chí Minh.
+
+2. ⚔️ DIỄN BIẾN THEN CHỐT & CÁC MỐC SON LỊCH SỬ:
+   - Trình bày chi tiết từng giai đoạn / đợt tiến công theo thứ tự thời gian.
+   - Ghi rõ ngày, tháng, năm chính xác tuyệt đối theo SGK Lịch sử 12 Bộ GD&ĐT.
+   - Nêu cụ thể địa danh chiến trường, hướng tiến công then chốt, những tấm gương chiến đấu anh dũng tiêu biểu.
+
+3. 🏆 KẾT QUẢ & Ý NGHĨA LỊCH SỬ SÂU SẮC:
+   - Phân tích 2 bình diện độc lập:
+     + Đối với cách mạng và nhân dân Việt Nam (chấm dứt ách thống trị, giải phóng dân tộc, bước ngoặt vĩ đại...).
+     + Đối với phong trào cách mạng thế giới (cổ vũ phong trào giải phóng dân tộc, làm lung lay hệ thống thuộc địa...).
+
+4. 💡 BÀI HỌC KINH NGHIỆM & NGHỆ THUẬT QUÂN SỰ:
+   - Đúc kết nghệ thuật chớp thời cơ "ngàn năm có một", sức mạnh khối đại đoàn kết toàn dân tộc, kết hợp sức mạnh dân tộc với sức mạnh thời đại, nghệ thuật thay đổi phương châm tác chiến (từ "đánh nhanh thắng nhanh" sang "đánh chắc tiến chắc"), kết hợp đấu tranh quân sự với chính trị và ngoại giao...
+
+5. 🧠 PHƯƠNG PHÁP CUNG ĐIỆN KÝ ỨC (METHOD OF LOCI 3D):
+   - Hướng dẫn học sinh mã hóa sự kiện thành hình ảnh trực quan giàu cảm xúc và neo giữ vào 5 đồ vật cố định trong Cung điện Ký ức Loft 3D:
+     * Cửa chính ra vào: Cách mạng tháng Tám (1945) [ACTION:TELEPORT:cmt8]
+     * Bàn trà trung tâm (lòng chảo Mường Thanh): Chiến dịch Điện Biên Phủ (1954) [ACTION:TELEPORT:dien_bien_phu]
+     * Kệ sách lớn: Hiệp định Giơ-ne-vơ (1954) [ACTION:TELEPORT:gio_ne_vo]
+     * Cửa sổ kính lớn: Phong trào Đồng Khởi (1960) [ACTION:TELEPORT:dong_khoi]
+     * Màn hình Tivi: Chiến dịch Hồ Chí Minh (1975) [ACTION:TELEPORT:ho_chi_minh]
+
+ĐỊNH DẠNG: Trình bày Markdown sinh động với tiêu đề H3 (###) rõ ràng, danh sách gạch đầu dòng mạch lạc và **IN ĐẬM TẤT CẢ TỪ KHÓA, NIÊN ĐẠI, SỐ LIỆU VÀ ĐỊA DANH QUAN TRỌNG**.`;
+    }
+
+    const sentinel = (typeof LociHistorySentinel !== 'undefined') ? LociHistorySentinel : (typeof window !== 'undefined' ? window.LociHistorySentinel : null);
+    const sentinelInstruction = sentinel ? sentinel.getSystemGuardInstruction() : '';
+
     return `
+${sentinelInstruction}
+
 Bạn là "Loci" (phát âm tiếng Việt: "lo-xi") — Người bạn đồng hành thông thái, tâm lý và là BẬC THẦY CUNG ĐIỆN KÝ ỨC (Method of Loci) dành riêng cho học sinh ôn thi tốt nghiệp THPT môn Lịch Sử 12.
 
 🚨 QUY TẮC CỐT TỬ CỦA LOCI (BẮT BUỘC TUÂN THỦ 100%):
 1. TUYỆT ĐỐI KHÔNG LIỆT KÊ DANH SÁCH BÀI HỌC: Không bao giờ đọc mục lục, không liệt kê "Chúng ta có Bài 1, Bài 2, Bài 3...", trừ khi người dùng hỏi đích danh: "Hãy liệt kê các bài học trong SGK".
-2. TRẢ LỜI ĐÚNG TRỌNG TÂM CÂU HỎI: Người dùng hỏi gì thì trả lời thẳng vào vấn đề đó ngay câu đầu tiên. Phân tích nguyên nhân - diễn biến - ý nghĩa - bài học lịch sử sắc bén, mạch lạc.
+2. PHÂN TÍCH CHUYÊN SÂU & TOÀN DIỆN: Người dùng hỏi sự kiện gì thì đi thẳng vào trọng tâm, phân tích cặn kẽ 5 bước nhận thức, số liệu, diễn biến, ý nghĩa, bài học và mẹo Cung điện Loci.
 3. QUAN TÂM CẢM XÚC, THẤU HIỂU & CHÂN THÀNH:
    - Khi học sinh than mệt mỏi, áp lực, lo lắng thi cử: Hãy là người bạn lắng nghe, xoa dịu tâm lý, khuyên bạn hít thở sâu, thư giãn trong căn phòng 3D thanh bình, và truyền cảm hứng tự tin.
    - Xưng hô "mình" - "bạn" ấm áp, gần gũi.
@@ -796,6 +866,8 @@ Bạn là "Loci" (phát âm tiếng Việt: "lo-xi") — Người bạn đồng 
      + 🌴 Phong trào Đồng Khởi (1960): Gắn tại CỬA SỔ KÍNH (ngọn gió cách mạng lan tỏa).
      + 🎖️ Chiến dịch Hồ Chí Minh (1975): Gắn tại MÀN HÌNH TIVI (bản tin 30/4 toàn thắng).
    - Chỉ chèn tag [ACTION:TELEPORT:<id_mốc>] khi cần đưa học sinh tới vị trí cụ thể đó.
+
+${depthDirective}
 
 === HỒ SƠ TIẾN TRÌNH & GHI NHỚ CỦA HỌC SINH HIỆN TẠI ===
 ${progressMemoryPrompt}
@@ -814,6 +886,7 @@ ${summaryDirective}
 - [ACTION:DISMISS] : Tự động trượt đóng trợ lý khi học sinh chào tạm biệt / nhờ tắt
 - [ACTION:STATUS:<id_mốc>:mastered] : Đánh dấu mốc đã thuộc sâu
 - [ACTION:STATUS:<id_mốc>:reviewing] : Đánh dấu mốc cần ôn lại
+- [ACTION:SHOW_IMAGE:<từ_khóa>] : BẮT BUỘC chèn tag này nếu người dùng yêu cầu xem ảnh, tìm ảnh (ví dụ: "cho xem ảnh Bác Hồ"). AI sẽ tự động kích hoạt engine tìm ảnh và hiện lên VR.
 `;
   }
 
@@ -867,12 +940,12 @@ ${summaryDirective}
 
     // Bổ sung đáp án nhiễu nếu danh sách mốc trong phòng ít hơn 4
     const defaultFurnitureDistractors = [
-      'Bàn làm việc cạnh cửa sổ', 'Tủ sách lớn góc phòng', 
-      'Bức tranh trên tường phía đông', 'Đèn chùm phòng khách', 
+      'Bàn làm việc cạnh cửa sổ', 'Tủ sách lớn góc phòng',
+      'Bức tranh trên tường phía đông', 'Đèn chùm phòng khách',
       'Thảm trải sàn trung tâm', 'Ghế bành bọc da'
     ];
     const defaultEventDistractors = [
-      'Phong trào Xô Viết Nghệ Tĩnh (1930)', 'Chiến dịch Biên giới Thu Đông (1950)', 
+      'Phong trào Xô Viết Nghệ Tĩnh (1930)', 'Chiến dịch Biên giới Thu Đông (1950)',
       'Hội nghị Ban Chấp hành TW Đảng VIII (1941)', 'Hiệp định Paris về Việt Nam (1973)'
     ];
 
@@ -933,6 +1006,22 @@ ${summaryDirective}
     }
     const lociList = context.lociList || [];
 
+    // --- 0. BOT QUÉT KẾT NỐI & KIỂM DUYỆT NỘI DUNG LỊCH SỬ (LOCI HISTORY SENTINEL) ---
+    const sentinel = (typeof LociHistorySentinel !== 'undefined') ? LociHistorySentinel : (typeof window !== 'undefined' ? window.LociHistorySentinel : null);
+    if (sentinel) {
+      const inspection = sentinel.inspect(userInput, context);
+      if (!inspection.isAllowed) {
+        console.warn('🛡️ [LociHistorySentinel] Chặn câu hỏi ngoài lề môn Lịch sử:', inspection.category, userInput);
+        const interceptReply = sentinel.formatInterceptResponse(inspection, userInput);
+        this.setState('idle');
+        this.chatHistory.push({ role: 'user', parts: [{ text: userInput }] });
+        this.chatHistory.push({ role: 'model', parts: [{ text: interceptReply }] });
+        this.onMessage({ role: 'assistant', text: interceptReply });
+        this.speak(interceptReply);
+        return;
+      }
+    }
+
     // 0. Kiểm tra ngay lập tức yêu cầu rời đi / tắt trợ lý / nói "oke bạn"
     if (this.matchDismissIntent(userInput)) {
       const dismissReplies = [
@@ -955,7 +1044,7 @@ ${summaryDirective}
     const isQuestion = /(?:là gì|tại sao|như thế nào|thế nào|ý nghĩa|diễn biến|nguyên nhân|kết quả|bài học|phân tích|giải thích|hướng dẫn|so sánh|đối chiếu|khi nào|bao giờ|ở đâu|ai là|ai lãnh đạo|có phải|mệt|áp lực|lo lắng|cung điện ký ức|phương pháp|làm sao|cách nhớ|khảo bài|kiểm tra|\?)/i.test(userInput);
 
     const isExplicitTeleportCmd = /(?:đưa|dẫn|chở|cho)\s+(?:tôi|mình|em|người\s+dùng)?\s*(?:đi|tới|đến|qua|lại)\s+/i.test(userInput) ||
-                                  /\b(?:bay\s+tới|bay\s+đến|di\s+chuyển\s+đến|dẫn\s+đến|chuyển\s+đến|mở\s+mốc|xem\s+mốc)\b/i.test(userInput);
+      /\b(?:bay\s+tới|bay\s+đến|di\s+chuyển\s+đến|dẫn\s+đến|chuyển\s+đến|mở\s+mốc|xem\s+mốc)\b/i.test(userInput);
 
     const matchedLocus = this.matchLocusIntent(userInput, lociList);
 
@@ -1015,7 +1104,7 @@ ${summaryDirective}
             },
             body: JSON.stringify({
               model: model,
-              max_tokens: 1500,
+              max_tokens: 4000,
               temperature: 0.65,
               messages: messages
             })
@@ -1041,10 +1130,9 @@ ${summaryDirective}
       // Direct Google Gemini API
       console.log('🌐 Gọi Google Gemini Direct API...');
       const googleModels = [
-        this.modelName.replace('google/', ''),
-        'gemini-3.5-flash',
-        'gemini-2.0-flash',
-        'gemini-1.5-flash'
+        'gemini-2.5-flash',
+        'gemini-1.5-flash',
+        'gemini-2.0-flash'
       ].filter((v, i, a) => a.indexOf(v) === i);
 
       for (const model of googleModels) {
@@ -1060,7 +1148,7 @@ ${summaryDirective}
             },
             generationConfig: {
               temperature: 0.65,
-              maxOutputTokens: 2500
+              maxOutputTokens: 4000
             }
           };
 
@@ -1145,6 +1233,13 @@ ${summaryDirective}
     if (/\[ACTION:DISMISS\]/i.test(aiReply)) {
       this.onAction({ type: 'dismiss' });
     }
+
+    // 6. Hiển thị hình ảnh
+    const imageMatch = aiReply.match(/\[ACTION:SHOW_IMAGE:([^\]]+)\]/i);
+    if (imageMatch) {
+      const query = imageMatch[1].trim();
+      this.onAction({ type: 'show_image', query: query });
+    }
   }
 
   /* --- ĐỘNG CƠ TRI THỨC SGK LỊCH SỬ 12 & TÂM LÝ THÔNG MINH (OFFLINE RAG & FALLBACK) --- */
@@ -1158,6 +1253,27 @@ ${summaryDirective}
       this.onMessage({ role: 'assistant', text: reply });
       this.speak(reply);
       this.onAction({ type: 'dismiss' });
+      return;
+    }
+
+    // 1.2 Yêu cầu vẽ sơ đồ tư duy (Offline fallback)
+    if (q.includes('vẽ sơ đồ tư duy') || q.includes('mindmap') || q.includes('sơ đồ')) {
+      const reply = `Do chưa có kết nối AI (chưa nhập API Key), đây là sơ đồ tư duy tham khảo mặc định:
+\`\`\`mermaid
+mindmap
+  root((Lịch sử 12))
+    Kháng chiến chống Pháp
+      Chiến dịch Việt Bắc
+      Chiến dịch Biên giới
+      Điện Biên Phủ
+    Kháng chiến chống Mỹ
+      Đồng Khởi
+      Mậu Thân 1968
+      Điện Biên Phủ trên không
+      Đại thắng mùa Xuân 1975
+\`\`\``;
+      this.onMessage({ role: 'assistant', text: reply });
+      this.speak("Mình đã vẽ một sơ đồ tư duy tổng quát cho bạn tham khảo do chưa cấu hình trí tuệ nhân tạo!");
       return;
     }
 
@@ -1245,15 +1361,14 @@ Não bộ con người ghi nhớ vị trí không gian và hình ảnh trực qu
     // 6. CHỈ KHI NGƯỜI DÙNG THỰC SỰ HỎI DANH SÁCH BÀI HỌC / MỤC LỤC
     const isAskingLessonList = /(danh sách bài|mục lục|bao nhiêu bài|những bài nào trong sgk|các bài học|các chủ đề trong sgk)/i.test(q);
     if (isAskingLessonList) {
-      const reply = `📚 **MỤC LỤC 6 CHỦ ĐỀ SGK LỊCH SỬ 12:**
-• **Chủ đề 1:** Thế giới trong và sau Chiến tranh Lạnh (Bài 1, 2)
-• **Chủ đề 2:** ASEAN: Những chặng đường lịch sử (Bài 3, 4)
-• **Chủ đề 3:** Cách mạng Tháng Tám 1945 & Chiến tranh giải phóng dân tộc (1945 - 1975) (Bài 5, 6, 7, 8)
-• **Chủ đề 4:** Công cuộc Đổi mới ở Việt Nam từ 1986 đến nay (Bài 9, 10, 11)
-• **Chủ đề 5:** Lịch sử đối ngoại Việt Nam thời cận - hiện đại (Bài 12, 13)
-• **Chủ đề 6:** Hồ Chí Minh trong lịch sử Việt Nam (Bài 14, 15, 16)
+      const reply = `📚 **CHƯƠNG TRÌNH TRỌNG TÂM — CHỦ ĐỀ 3: CÁCH MẠNG THÁNG TÁM NĂM 1945, CHIẾN TRANH GIẢI PHÓNG DÂN TỘC VÀ CHIẾN TRANH BẢO VỆ TỔ QUỐC TRONG LỊCH SỬ VIỆT NAM (TỪ THÁNG 8 NĂM 1945 ĐẾN NAY)**
+Hệ thống ôn tập và cung điện ký ức hiện tại tập trung trọn vẹn vào 4 bài học trọng tâm của Chủ đề 3:
+• **Bài 6:** Cách mạng tháng Tám năm 1945
+• **Bài 7:** Cuộc kháng chiến chống thực dân Pháp (1945 – 1954)
+• **Bài 8:** Cuộc kháng chiến chống Mĩ, cứu nước (1954 – 1975)
+• **Bài 9:** Đấu tranh bảo vệ Tổ quốc từ sau tháng 4 năm 1975 đến nay. Một số bài học lịch sử của các cuộc kháng chiến bảo vệ Tổ quốc từ năm 1945 đến nay.
 
-Bạn muốn tìm hiểu sâu về sự kiện nào trong các chủ đề trên? Hãy hỏi trực tiếp để mình phân tích cho bạn nhé!`;
+Bạn muốn tìm hiểu hoặc khảo bài về sự kiện, mốc thời gian hay mẹo Loci nào trong 4 bài học trên? Hãy hỏi trực tiếp để mình cùng bạn phân tích nhé!`;
       this.onMessage({ role: 'assistant', text: reply });
       this.speak(reply);
       return;
@@ -1402,22 +1517,41 @@ Bạn muốn tìm hiểu sâu về sự kiện nào trong các chủ đề trên
       return;
     }
 
-    // 8.8. TRẬT TỰ HAI CỰC IANTA & LIÊN HỢP QUỐC
-    if (q.includes('ianta') || q.includes('liên hợp quốc') || q.includes('lhq') || q.includes('chiến tranh lạnh')) {
-      let reply = `### 🌐 TRẬT TỰ HAI CỰC IANTA & LIÊN HỢP QUỐC
-- **Hội nghị Ianta (2/1945):** Ba cường quốc Liên Xô, Mĩ, Anh phân chia khu vực ảnh hưởng ở châu Âu và châu Á, hình thành trật tự thế giới hai cực Ianta do Liên Xô và Mĩ đứng đầu.
-- **Liên Hợp Quốc (LHQ - 1945):** Mục tiêu duy trì hòa bình và an ninh thế giới, phát triển quan hệ hữu nghị giữa các quốc gia. Nguyên tắc hoạt động cốt lõi là sự nhất trí của 5 nước Ủy viên thường trực Hội đồng Bảo an (Mĩ, Nga, Anh, Pháp, Trung Quốc).`;
+    // 8.8. BÀI 9: ĐẤU TRANH BẢO VỆ TỔ QUỐC TỪ SAU THÁNG 4/1975 ĐẾN NAY
+    if (q.includes('tây nam') || q.includes('biên giới phía bắc') || q.includes('1979') || q.includes('vị xuyên') || q.includes('pôn pốt') || q.includes('khmer đỏ') || q.includes('hà giang') || q.includes('bảo vệ tổ quốc')) {
+      let reply = `### 🛡️ ĐẤU TRANH BẢO VỆ TỔ QUỐC TỪ SAU THÁNG 4/1975 ĐẾN NAY (BÀI 9)
+• **Chiến đấu bảo vệ biên giới Tây Nam (1975 - 1979):**
+  - Chống tập đoàn phản động Pôn Pốt - Iêng Xari bảo vệ vững chắc chủ quyền biên giới Tây Nam.
+  - Phối hợp với Mặt trận Đoàn kết Dân tộc Cứu nước Campuchia cứu nhân dân Campuchia thoát khỏi thảm họa diệt chủng (07/01/1979).
+
+• **Chiến đấu bảo vệ biên giới phía Bắc (từ tháng 2/1979):**
+  - Ngày 17/02/1979, quân và dân ta kiên cường chiến đấu bảo vệ toàn tuyến biên giới phía Bắc.
+  - Mặt trận Vị Xuyên (Hà Giang, 1984 - 1989) lưu danh tinh thần bất khuất: *"Sống bám đá đánh giặc, chết hóa đá bất tử"*.
+
+• **Bảo vệ chủ quyền biển, đảo:** Kiên quyết, kiên trì đấu tranh bảo vệ chủ quyền, quyền chủ quyền đối với quần đảo Hoàng Sa và Trường Sa theo luật pháp quốc tế.`;
       this.onMessage({ role: 'assistant', text: reply });
       this.speak(reply);
       return;
     }
 
-    // 8.9. CÔNG CUỘC ĐỔI MỚI (TỪ 1986 ĐẾN NAY)
-    if (q.includes('đổi mới') || q.includes('1986') || q.includes('đại hội vi')) {
-      let reply = `### 🇻🇳 CÔNG CUỘC ĐỔI MỚI ĐẤT NƯỚC (TỪ 1986)
-- **Khởi xướng:** Đại hội Đại biểu toàn quốc lần thứ VI của Đảng (12/1986) đề ra đường lối đổi mới toàn diện, lấy đổi mới kinh tế làm trọng tâm.
-- **Chuyển đổi kinh tế:** Chuyển từ cơ chế quản lý tập trung quan liêu bao cấp sang kinh tế thị trường định hướng xã hội chủ nghĩa.
-- **Ý nghĩa:** Đưa Việt Nam thoát khỏi khủng hoảng kinh tế - xã hội, nâng cao vị thế quốc tế, đưa đất nước hội nhập sâu rộng toàn cầu.`;
+    // 8.9. BÀI 9: BÀI HỌC LỊCH SỬ VỀ CHIẾN TRANH GIẢI PHÓNG VÀ BẢO VỆ TỔ QUỐC (1945 - NAY)
+    if (q.includes('bài học') || q.includes('nghệ thuật quân sự') || q.includes('đại đoàn kết') || q.includes('chiến tranh nhân dân')) {
+      let reply = `### 💡 MỘT SỐ BÀI HỌC LỊCH SỬ QUÝ BÁU (1945 ĐẾN NAY)
+1. **Sự lãnh đạo đúng đắn của Đảng:** Nhân tố hàng đầu quyết định mọi thắng lợi của cách mạng Việt Nam.
+2. **Khối đại đoàn kết toàn dân tộc:** Phát huy sức mạnh của khối liên minh công - nông - trí thức và Mặt trận dân tộc thống nhất.
+3. **Đường lối chiến tranh nhân dân, toàn dân, toàn diện:** "Mỗi người dân là một chiến sĩ, mỗi làng xã là một pháo đài".
+4. **Nghệ thuật quân sự độc đáo:** Lấy nhỏ thắng lớn, lấy chí nhân thay cường bạo, chuyển hóa thế trận linh hoạt (từ Đánh nhanh thắng nhanh sang Đánh chắc tiến chắc).
+5. **Kết hợp sức mạnh dân tộc với sức mạnh thời đại:** Tranh thủ tối đa sự đồng tình, ủng hộ của các lực lượng hòa bình, tiến bộ trên thế giới.`;
+      this.onMessage({ role: 'assistant', text: reply });
+      this.speak(reply);
+      return;
+    }
+
+    // 8.10. CHUYỂN HƯỚNG CÂU HỎI NGOÀI CHỦ ĐỀ 3
+    if (q.includes('ianta') || q.includes('liên hợp quốc') || q.includes('lhq') || q.includes('asean') || q.includes('đổi mới') || q.includes('đại hội vi')) {
+      let reply = `💡 **Thông báo phạm vi kiến thức:** Hệ thống hiện đang tập trung chuyên sâu 100% vào **CHỦ ĐỀ 3: Cách mạng tháng Tám năm 1945, chiến tranh giải phóng dân tộc và chiến tranh bảo vệ Tổ quốc trong lịch sử Việt Nam (từ tháng 8 năm 1945 đến nay)** bao gồm 4 bài (Bài 6, 7, 8, 9).
+      
+Bạn hãy đặt câu hỏi liên quan đến Cách mạng tháng Tám, Kháng chiến chống Pháp, Kháng chiến chống Mĩ, hoặc Cuộc chiến đấu bảo vệ Tổ quốc từ sau 1975 để mình giải đáp chuẩn xác nhất nhé!`;
       this.onMessage({ role: 'assistant', text: reply });
       this.speak(reply);
       return;
@@ -1456,7 +1590,7 @@ Bạn đang quan tâm đến sự kiện nào hoặc muốn mình hỗ trợ đi
     if (typeof window !== 'undefined' && window.getRelevantHistoricalKnowledge) {
       kbDocs = window.getRelevantHistoricalKnowledge(q);
     }
-    
+
     let reply = `[Hệ thống] Trí tuệ nhân tạo Gemini đang tạm mất kết nối. Dù vậy, mình đã nghe rõ câu hỏi của bạn.\n\n`;
     if (kbDocs && kbDocs.length > 20) {
       reply += `Dựa vào CSDL Lịch Sử 12, mình tìm thấy dữ liệu:\n${kbDocs.substring(0, 350)}...\n\n`;
@@ -1692,7 +1826,7 @@ ${flashcardsMd}`;
 
 // Gắn hàm toàn cục để các trang và module khác có thể tái sử dụng ngay lập tức
 if (typeof window !== 'undefined') {
-  window.generateUniversalOfflineSummary = function(sourceText, format) {
+  window.generateUniversalOfflineSummary = function (sourceText, format) {
     const helper = new AIAssistant();
     return helper.generateUniversalOfflineSummaryInternal(sourceText, format);
   };

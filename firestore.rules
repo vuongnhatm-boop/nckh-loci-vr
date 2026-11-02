@@ -1,0 +1,129 @@
+rules_version = '2';
+
+// LOCI — Firestore rules cho project loci-b04a7
+// Thay thế test-mode "allow read, write: if request.time < date(...)".
+// Đã tính đến: posts, users, users/{uid}/fcmTokens, user_spaces, user_chats, shared_spaces,
+// moderation_logs, moderation_state.
+// Worker kiểm duyệt dùng Admin SDK nên bỏ qua rules này.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------- helpers ----------------
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userExists() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return userExists()
+        && 'role' in me()
+        && me().role == 'admin';
+    }
+
+    function isMuted() {
+      return userExists()
+        && 'mutedUntil' in me()
+        && me().mutedUntil is timestamp
+        && me().mutedUntil > request.time;
+    }
+
+    // ---------------- users ----------------
+    // Đọc công khai để bảng vàng + admin dashboard hoạt động.
+    match /users/{uid} {
+      allow read: if true;
+
+      // Tự tạo hồ sơ, không được tự phong admin.
+      allow create: if signedIn()
+        && uid == request.auth.uid
+        && (!('role' in request.resource.data) || request.resource.data.role == 'student');
+
+      // Tự sửa hồ sơ/stats, nhưng không được đụng trường kiểm duyệt/quyền.
+      allow update: if signedIn()
+        && uid == request.auth.uid
+        && !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['strikes', 'mutedUntil', 'muteCount', 'role',
+                       'moderationNotice', 'moderationNoticeAt', 'lastViolationAt']);
+
+      allow update, delete: if isAdmin();
+
+      match /fcmTokens/{tokenId} {
+        allow read, write: if signedIn() && uid == request.auth.uid;
+        allow read, delete: if isAdmin();
+      }
+    }
+
+    // ---------------- không gian 360 cá nhân ----------------
+    match /user_spaces/{uid} {
+      allow read, write: if signedIn() && uid == request.auth.uid;
+      allow read, write: if isAdmin();
+    }
+
+    // ---------------- lịch sử chat AI ----------------
+    match /user_chats/{uid} {
+      allow read, write: if signedIn() && uid == request.auth.uid;
+      allow read, write: if isAdmin();
+    }
+
+    // ---------------- không gian chia sẻ công khai ----------------
+    match /shared_spaces/{shareId} {
+      allow read: if true;
+
+      // App cho phép khách (chưa đăng nhập) chia sẻ không gian 360.
+      allow create: if true;
+
+      // Ai cũng được tăng lượt xem; chủ sở hữu/admin được sửa toàn bộ.
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewsCount'])
+        || (signedIn() && resource.data.authorUid == request.auth.uid)
+        || isAdmin();
+
+      allow delete: if (signedIn() && resource.data.authorUid == request.auth.uid)
+        || isAdmin();
+    }
+
+    // ---------------- bảng tin Kết nối ----------------
+    match /posts/{postId} {
+      allow read: if true;
+
+      // Chỉ tác giả, không bị khóa.
+      // status do client gửi chỉ được là 'published' (hoặc thiếu, cho client cũ).
+      // Worker/Admin SDK mới được đổi sang pending_review/hidden.
+      allow create: if signedIn()
+        && !isMuted()
+        && request.resource.data.authorId == request.auth.uid
+        && (!('status' in request.resource.data) || request.resource.data.status == 'published')
+        && (!('content' in request.resource.data)
+            || (request.resource.data.content is string
+                && request.resource.data.content.size() <= 5000));
+
+      // Like: mọi người đã đăng nhập (kể cả đang bị khóa).
+      // Bình luận: chỉ khi không bị khóa.
+      allow update: if signedIn() && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+          || (!isMuted()
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments']))
+        )
+        || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- dữ liệu kiểm duyệt (chỉ Admin SDK) ----------------
+    match /moderation_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /moderation_state/{docId} {
+      allow read, write: if false;
+    }
+  }
+}
