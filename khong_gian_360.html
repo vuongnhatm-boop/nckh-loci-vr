@@ -8187,6 +8187,29 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             border: 1px solid rgba(255, 255, 255, .3);
         }
 
+        #loci-model-ar .lmar-newtab {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-sizing: border-box;
+            width: min(520px, 100%);
+            padding: 11px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(148, 178, 255, .32);
+            background: rgba(14, 21, 40, .82);
+            color: #dbe6ff;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #loci-model-ar .lmar-newtab.show { display: flex; }
+        #loci-model-ar .lmar-newtab:active { transform: scale(.985); }
+
         #loci-model-ar .lmar-loading {
             position: absolute;
             inset: 0;
@@ -8290,6 +8313,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 <span>Xem trong không gian của bạn</span>
                 <span class="tag">AR</span>
             </button>
+            <a class="lmar-newtab" id="lmar-newtab" href="#" target="_blank" rel="noopener noreferrer">Mở AR trong tab mới ↗</a>
         </div>
     </div>
 
@@ -8350,6 +8374,64 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
         let lmarBound = false;
 
         const $lmar = (id) => document.getElementById(id);
+        const lmarEmbedded = (() => {
+            try { return window.self !== window.top; } catch (_) { return true; }
+        })();
+
+        function lmarBuildStandaloneUrl() {
+            let url;
+            try {
+                url = new URL(window.location.href);
+            } catch (_) {
+                return '';
+            }
+            const model = LMAR_MODELS[lmarState.index] || LMAR_MODELS[0];
+            url.hash = '';
+            url.searchParams.delete('embed');
+            url.searchParams.set('modelAr', '1');
+            if (model) {
+                url.searchParams.set('modelUrl', model.url);
+                url.searchParams.set('modelTitle', model.title);
+            }
+            return url.toString();
+        }
+
+        function lmarUpdateNewTabButton() {
+            const link = $lmar('lmar-newtab');
+            if (!link) return;
+            link.href = lmarBuildStandaloneUrl() || '#';
+            link.classList.toggle('show', lmarEmbedded);
+        }
+
+        function lmarOpenInNewTab() {
+            const url = lmarBuildStandaloneUrl();
+            if (!url) return;
+            const link = $lmar('lmar-newtab');
+            if (link) {
+                link.href = url;
+                link.click();
+                return;
+            }
+            const win = window.open(url, '_blank', 'noopener');
+            if (!win) lmarShowToast('Trình duyệt chặn tab mới. Hãy mở trang này trong tab riêng rồi bấm lại.', 6000);
+        }
+
+        function lmarHandleUrlParams() {
+            let params;
+            try { params = new URLSearchParams(window.location.search); } catch (_) { return; }
+            const modelUrl = (params.get('modelUrl') || '').trim();
+            const wantOpen = params.get('modelAr') === '1';
+            if (modelUrl) {
+                const title = (params.get('modelTitle') || '').trim() || 'Mô hình';
+                let index = LMAR_MODELS.findIndex(m => m.url === modelUrl);
+                if (index < 0) {
+                    LMAR_MODELS.push({ title, url: modelUrl });
+                    index = LMAR_MODELS.length - 1;
+                }
+                lmarState.index = index;
+            }
+            if (wantOpen) setTimeout(() => lmarOpen(), 300);
+        }
 
         function lmarLoadCustomModel() {
             try {
@@ -8406,7 +8488,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
         function lmarSetCtaEnabled(enabled) {
             const btn = $lmar('lmar-cta');
-            if (btn) btn.disabled = !enabled;
+            if (!btn) return;
+            // Không khoá nút: nếu mô hình chưa tải xong, lmarActivate sẽ hiện gợi ý thay vì im lặng.
+            btn.disabled = false;
+            btn.dataset.ready = enabled ? '1' : '0';
         }
 
         function lmarEnsureLib() {
@@ -8494,10 +8579,14 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             lmarState.readyUrl = src;
             lmarSetLoading(true, 'Sẵn sàng', 1);
             lmarSetCtaEnabled(true);
+            lmarUpdateNewTabButton();
 
             const canAr = !!mv.canActivateAR;
             const secure = window.isSecureContext;
-            if (canAr) {
+            if (lmarEmbedded) {
+                lmarSetStatus('Đang mở trong khung nhúng · AR cần tab riêng');
+                lmarSetHint('Khung nhúng của cổng học tập không được cấp quyền camera nên AR bị chặn. Bấm nút bên dưới để mở tab riêng — tab mới vào thẳng camera AR với đúng mô hình đang chọn.');
+            } else if (canAr) {
                 lmarSetStatus('AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
                 lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
             } else if (!secure) {
@@ -8520,6 +8609,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             const titleEl = $lmar('lmar-title');
             if (titleEl) titleEl.textContent = model.title;
             lmarRenderChips();
+            lmarUpdateNewTabButton();
             lmarSetStatus('Đang tải mô hình…');
             lmarSetLoading(false, 'Đang tải mô hình…', 0);
             lmarSetCtaEnabled(false);
@@ -8541,6 +8631,11 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
             if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); lmarClose(); });
             if (cta) cta.addEventListener('click', (e) => { e.stopPropagation(); lmarActivate(); });
+            const newTab = $lmar('lmar-newtab');
+            if (newTab) newTab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                newTab.href = lmarBuildStandaloneUrl() || '#';
+            });
 
             if (mv) {
                 mv.addEventListener('progress', (e) => {
@@ -8609,11 +8704,17 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
             lmarBindOnce();
             lmarRenderChips();
+            lmarUpdateNewTabButton();
             const first = LMAR_MODELS[lmarState.index] || LMAR_MODELS[0];
             const titleEl = $lmar('lmar-title');
             if (titleEl) titleEl.textContent = first.title;
-            lmarSetStatus('Đang chuẩn bị trình xem AR…');
-            lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
+            if (lmarEmbedded) {
+                lmarSetStatus('Khung nhúng · sẽ mở AR ở tab riêng');
+                lmarSetHint('Khung nhúng của cổng học tập không cấp quyền camera. Bấm "Mở AR trong tab mới" để vào camera AR với đúng mô hình đang chọn.');
+            } else {
+                lmarSetStatus('Đang chuẩn bị trình xem AR…');
+                lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
+            }
             lmarSetLoading(false, 'Đang tải thư viện AR…', 0.04);
             lmarSetCtaEnabled(false);
             overlay.classList.add('open');
@@ -8662,6 +8763,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
         }
 
         async function lmarActivate() {
+            if (lmarEmbedded) {
+                lmarOpenInNewTab();
+                return;
+            }
             const mv = $lmar('lmar-mv');
             if (!mv) return;
             if (!lmarState.readyUrl || !mv.loaded) {
@@ -8694,6 +8799,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
 
         lmarLoadCustomModel();
         lmarBindOnce();
+        lmarUpdateNewTabButton();
+        lmarHandleUrlParams();
 
         window.LociModelAR = {
             open: lmarOpen,
@@ -8705,7 +8812,19 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 LMAR_MODELS.push({ title: title || 'Mô hình', url });
                 return LMAR_MODELS.length - 1;
             },
-            select: lmarSelectModel
+            select: lmarSelectModel,
+            openInNewTab: lmarOpenInNewTab,
+            diagnose() {
+                const mv = $lmar('lmar-mv');
+                return {
+                    secure: window.isSecureContext,
+                    embedded: lmarEmbedded,
+                    xrSupported: typeof navigator.xr !== 'undefined',
+                    canActivateAR: !!(mv && mv.canActivateAR),
+                    loaded: !!(mv && mv.loaded),
+                    src: mv ? (mv.getAttribute('src') || '') : ''
+                };
+            }
         };
     </script>
 </body>
