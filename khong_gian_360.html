@@ -1963,6 +1963,8 @@
             <button class="icon-btn" id="v-gyro" title="Bật cảm biến xoay (VR Gyro)">🧭</button>
             <button class="icon-btn" id="v-ar" title="Mốc trong không gian thật (AR + mã neo QR)"
                 style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.92), rgba(14, 165, 233, 0.92)); color: #fff; border: none; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); cursor: pointer;">📷<span class="icon-btn-label"> AR</span></button>
+            <button class="icon-btn" id="v-model-ar" title="Đặt mô hình 3D vào không gian thật (world tracking)"
+                style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; border: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); cursor: pointer;">🧊<span class="icon-btn-label"> Mô hình</span></button>
             <button class="icon-btn" id="v-addnode" title="Thêm điểm chụp để di chuyển trong không gian">➕</button>
             <button class="icon-btn" id="v-panel-toggle" title="Danh sách mốc">📍</button>
             <button class="icon-btn" id="v-minimap" title="Bản đồ mini các điểm chụp" style="display:none">🗺️</button>
@@ -8034,6 +8036,263 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
         </div>
     </div>
 
+    <!-- ===== MÔ HÌNH 3D TRONG KHÔNG GIAN THẬT (World Tracking) ===== -->
+    <style>
+        #loci-model-ar {
+            position: fixed;
+            inset: 0;
+            z-index: 2147483000;
+            display: none;
+            flex-direction: column;
+            background:
+                radial-gradient(1100px 640px at 50% -12%, rgba(37, 99, 235, .30), transparent 62%),
+                radial-gradient(820px 560px at 112% 112%, rgba(6, 182, 212, .18), transparent 58%),
+                #070b18;
+            color: #eaf0ff;
+            font-family: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        #loci-model-ar.open { display: flex; }
+        body.lmar-open { overflow: hidden; }
+
+        #loci-model-ar .lmar-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
+        }
+
+        #loci-model-ar .lmar-heading { flex: 1; min-width: 0; }
+
+        #loci-model-ar .lmar-heading b {
+            display: block;
+            font-size: 15px;
+            letter-spacing: .2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #loci-model-ar .lmar-heading small {
+            display: block;
+            margin-top: 2px;
+            font-size: 11.5px;
+            color: #9aa8c7;
+            letter-spacing: .3px;
+        }
+
+        #loci-model-ar .lmar-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 178, 255, .22);
+            background: rgba(14, 21, 40, .72);
+            color: #eaf0ff;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        #loci-model-ar model-viewer {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            background: transparent;
+            --poster-color: transparent;
+            --progress-bar-color: transparent;
+            --progress-mask: transparent;
+            --progress-bar-height: 0;
+        }
+
+        #loci-model-ar .lmar-native { display: none; }
+
+        #loci-model-ar .lmar-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(to top, rgba(7, 11, 24, .95), rgba(7, 11, 24, .55) 62%, transparent);
+        }
+
+        #loci-model-ar .lmar-models {
+            display: flex;
+            gap: 8px;
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        #loci-model-ar .lmar-models::-webkit-scrollbar { display: none; }
+
+        #loci-model-ar .lmar-chip {
+            flex: none;
+            padding: 8px 13px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 178, 255, .22);
+            background: rgba(14, 21, 40, .75);
+            color: #b9c8e8;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        #loci-model-ar .lmar-chip.active {
+            background: linear-gradient(120deg, #2563eb, #06b6d4);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        #loci-model-ar .lmar-hint {
+            font-size: 12px;
+            line-height: 1.45;
+            color: #9aa8c7;
+            text-align: center;
+            max-width: 560px;
+        }
+
+        #loci-model-ar .lmar-cta {
+            width: min(520px, 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border: 0;
+            border-radius: 18px;
+            color: #fff;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: .2px;
+            cursor: pointer;
+            background: linear-gradient(120deg, #5b8cff, #22d3ee 90%);
+            box-shadow: 0 18px 45px rgba(50, 110, 255, .45), inset 0 1px 0 rgba(255, 255, 255, .35);
+            touch-action: manipulation;
+        }
+
+        #loci-model-ar .lmar-cta:active { transform: scale(.975); }
+        #loci-model-ar .lmar-cta:disabled { filter: grayscale(.35) brightness(.8); cursor: progress; }
+        #loci-model-ar .lmar-cta svg { width: 22px; height: 22px; flex: none; }
+
+        #loci-model-ar .lmar-cta .tag {
+            font-size: 10.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .2);
+            border: 1px solid rgba(255, 255, 255, .3);
+        }
+
+        #loci-model-ar .lmar-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(7, 11, 24, .92);
+            transition: opacity .35s ease;
+        }
+
+        #loci-model-ar .lmar-loading.done { opacity: 0; pointer-events: none; }
+
+        #loci-model-ar .lmar-ring {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 3px solid rgba(148, 178, 255, .18);
+            border-top-color: #22d3ee;
+            animation: lmarSpin .9s linear infinite;
+        }
+
+        #loci-model-ar .lmar-track {
+            width: min(260px, 70vw);
+            height: 5px;
+            border-radius: 999px;
+            background: rgba(148, 178, 255, .16);
+            overflow: hidden;
+        }
+
+        #loci-model-ar .lmar-track i {
+            display: block;
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #5b8cff, #22d3ee);
+            transition: width .2s ease;
+        }
+
+        #loci-model-ar .lmar-loading small { font-size: 12.5px; color: #9aa8c7; }
+
+        #loci-model-ar .lmar-toast {
+            position: absolute;
+            left: 50%;
+            bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+            transform: translate(-50%, 16px);
+            z-index: 5;
+            max-width: min(440px, calc(100% - 32px));
+            padding: 13px 16px;
+            border-radius: 14px;
+            font-size: 13.5px;
+            line-height: 1.45;
+            color: #eaf0ff;
+            background: rgba(17, 25, 46, .97);
+            border: 1px solid rgba(148, 178, 255, .22);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, .5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        #loci-model-ar .lmar-toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        @keyframes lmarSpin { to { transform: rotate(360deg); } }
+    </style>
+
+    <div id="loci-model-ar" role="dialog" aria-modal="true" aria-label="Đặt mô hình 3D vào không gian thật">
+        <div class="lmar-top">
+            <div class="lmar-heading">
+                <b id="lmar-title">Mô hình 3D</b>
+                <small id="lmar-status">Đang chuẩn bị…</small>
+            </div>
+            <button class="lmar-close" id="lmar-close" type="button" aria-label="Đóng trình xem AR">×</button>
+        </div>
+        <model-viewer id="lmar-mv" alt="Mô hình 3D đặt trong không gian thật" loading="eager"
+            ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="auto" xr-environment
+            camera-controls touch-action="pan-y" shadow-intensity="1.3" shadow-softness="0.8"
+            environment-image="neutral" exposure="1.05" auto-rotate auto-rotate-delay="2600"
+            rotation-per-second="14deg" interaction-prompt="auto">
+            <button slot="ar-button" class="lmar-native" tabindex="-1" aria-hidden="true"></button>
+        </model-viewer>
+        <div class="lmar-loading" id="lmar-loading">
+            <div class="lmar-ring"></div>
+            <div class="lmar-track"><i id="lmar-progress"></i></div>
+            <small id="lmar-loading-text">Đang tải mô hình…</small>
+        </div>
+        <div class="lmar-toast" id="lmar-toast" role="status" aria-live="polite"></div>
+        <div class="lmar-bottom">
+            <div class="lmar-models" id="lmar-models"></div>
+            <div class="lmar-hint" id="lmar-hint">Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.</div>
+            <button class="lmar-cta" id="lmar-cta" type="button">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3 3.5 7.6v8.8L12 21l8.5-4.6V7.6L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                    <path d="m3.7 7.7 8.3 4.5 8.3-4.5M12 12.2V21" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                </svg>
+                <span>Xem trong không gian của bạn</span>
+                <span class="tag">AR</span>
+            </button>
+        </div>
+    </div>
+
     <script>
                 // Các hàm xử lý giao diện Modal (chạy độc lập với module import để tránh lỗi CORS)
                 window.openAuthModal = () => document.getElementById('auth-modal').classList.add('open');
@@ -8073,6 +8332,381 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         await LociFirebase.logout();
                     }
                 };
+    </script>
+
+    <!-- ===== TRÌNH XEM MÔ HÌNH 3D TRONG KHÔNG GIAN THẬT ===== -->
+    <script type="module">
+        const LMAR_LIB_URLS = [
+            'https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js',
+            'https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js'
+        ];
+        const LMAR_CUSTOM_KEY = 'loci_model_ar_custom_v1';
+        const LMAR_MODELS = [
+            { title: 'Phi hành gia', url: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb' },
+            { title: 'Neil Armstrong', url: 'https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb' }
+        ];
+        const lmarState = { open: false, index: 0, desiredUrl: '', readyUrl: '', toastTimer: 0, pollTimer: 0, lastFocus: null };
+        let lmarLibPromise = null;
+        let lmarBound = false;
+
+        const $lmar = (id) => document.getElementById(id);
+
+        function lmarLoadCustomModel() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(LMAR_CUSTOM_KEY) || 'null');
+                if (saved && typeof saved.url === 'string' && saved.url) {
+                    LMAR_MODELS.push({ title: saved.title || 'Mô hình của tôi', url: saved.url, custom: true });
+                }
+            } catch (_) { /* bỏ qua dữ liệu hỏng */ }
+        }
+
+        function lmarSaveCustomModel(url) {
+            let title = 'Mô hình của tôi';
+            try {
+                const clean = url.split('?')[0].split('#')[0];
+                const base = decodeURIComponent(clean.substring(clean.lastIndexOf('/') + 1)).replace(/\.(glb|gltf|usdz)$/i, '');
+                if (base) title = base;
+            } catch (_) { /* dùng tên mặc định */ }
+            try { localStorage.setItem(LMAR_CUSTOM_KEY, JSON.stringify({ url, title })); } catch (_) { /* bỏ qua */ }
+            const existing = LMAR_MODELS.findIndex(m => m.url === url);
+            if (existing >= 0) return existing;
+            LMAR_MODELS.push({ title, url, custom: true });
+            return LMAR_MODELS.length - 1;
+        }
+
+        function lmarSetStatus(text) {
+            const el = $lmar('lmar-status');
+            if (el) el.textContent = text;
+        }
+
+        function lmarSetHint(text) {
+            const el = $lmar('lmar-hint');
+            if (el) el.textContent = text;
+        }
+
+        function lmarShowToast(message, ms = 4600) {
+            const toast = $lmar('lmar-toast');
+            if (!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(lmarState.toastTimer);
+            lmarState.toastTimer = setTimeout(() => toast.classList.remove('show'), ms);
+        }
+
+        function lmarSetLoading(done, text, progress) {
+            const wrap = $lmar('lmar-loading');
+            const bar = $lmar('lmar-progress');
+            const label = $lmar('lmar-loading-text');
+            if (label && text) label.textContent = text;
+            if (bar && typeof progress === 'number') {
+                bar.style.width = `${Math.round(Math.max(0, Math.min(1, progress)) * 100)}%`;
+            }
+            if (wrap) wrap.classList.toggle('done', !!done);
+        }
+
+        function lmarSetCtaEnabled(enabled) {
+            const btn = $lmar('lmar-cta');
+            if (btn) btn.disabled = !enabled;
+        }
+
+        function lmarEnsureLib() {
+            if (window.customElements && customElements.get('model-viewer')) return Promise.resolve();
+            if (!lmarLibPromise) {
+                lmarLibPromise = (async () => {
+                    let lastErr = null;
+                    for (const url of LMAR_LIB_URLS) {
+                        try {
+                            await import(url);
+                            if (customElements.get('model-viewer')) return;
+                        } catch (err) {
+                            lastErr = err;
+                            console.warn('[LociModelAR] Không nạp được model-viewer từ', url, err);
+                        }
+                    }
+                    throw lastErr || new Error('Không tải được thư viện model-viewer');
+                })();
+                lmarLibPromise.catch(() => { lmarLibPromise = null; });
+            }
+            return lmarLibPromise;
+        }
+
+        function lmarRenderChips() {
+            const wrap = $lmar('lmar-models');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            LMAR_MODELS.forEach((model, i) => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'lmar-chip' + (i === lmarState.index ? ' active' : '');
+                chip.textContent = model.title;
+                chip.title = model.url;
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (i !== lmarState.index) lmarSelectModel(i);
+                });
+                wrap.appendChild(chip);
+            });
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'lmar-chip';
+            add.textContent = '＋ Mô hình của bạn';
+            add.title = 'Dán URL file .glb để dùng mô hình riêng';
+            add.addEventListener('click', (e) => {
+                e.stopPropagation();
+                lmarPromptCustomModel();
+            });
+            wrap.appendChild(add);
+        }
+
+        function lmarPromptCustomModel() {
+            const url = prompt('Dán URL file .glb (https://…)\nMô hình sẽ được lưu lại trên thiết bị này.');
+            if (!url) return;
+            const trimmed = url.trim();
+            if (!/^https?:\/\//i.test(trimmed)) {
+                lmarShowToast('URL không hợp lệ. Cần bắt đầu bằng https:// hoặc http://.');
+                return;
+            }
+            if (!/\.(glb|gltf|usdz)(\?|#|$)/i.test(trimmed)) {
+                lmarShowToast('Hãy dùng URL trực tiếp tới file .glb / .gltf / .usdz.');
+                return;
+            }
+            const index = lmarSaveCustomModel(trimmed);
+            lmarRenderChips();
+            lmarSelectModel(index);
+        }
+
+        function lmarPollReady() {
+            clearTimeout(lmarState.pollTimer);
+            const mv = $lmar('lmar-mv');
+            if (!lmarState.open || !mv) return;
+            if (mv.loaded && mv.getAttribute('src') === lmarState.desiredUrl) {
+                lmarMarkReady();
+                return;
+            }
+            lmarState.pollTimer = setTimeout(lmarPollReady, 350);
+        }
+
+        function lmarMarkReady() {
+            const mv = $lmar('lmar-mv');
+            if (!mv) return;
+            const src = mv.getAttribute('src') || '';
+            if (!src || lmarState.readyUrl === src) return;
+            lmarState.readyUrl = src;
+            lmarSetLoading(true, 'Sẵn sàng', 1);
+            lmarSetCtaEnabled(true);
+
+            const canAr = !!mv.canActivateAR;
+            const secure = window.isSecureContext;
+            if (canAr) {
+                lmarSetStatus('AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
+                lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
+            } else if (!secure) {
+                lmarSetStatus('Cần HTTPS để mở AR trên điện thoại');
+                lmarSetHint('Trang đang chạy qua kết nối không bảo mật nên AR bị chặn. Hãy mở bằng HTTPS (hoặc localhost) trên điện thoại.');
+            } else {
+                lmarSetStatus('Đang xem 3D · thiết bị này chưa hỗ trợ AR');
+                lmarSetHint('Thiết bị này chỉ xem được mô hình 3D. Mở trên điện thoại Android/iOS qua HTTPS để dùng camera AR.');
+            }
+        }
+
+        function lmarSelectModel(index) {
+            const model = LMAR_MODELS[index];
+            if (!model) return;
+            lmarState.index = index;
+            lmarState.readyUrl = '';
+            lmarState.desiredUrl = model.url;
+
+            const mv = $lmar('lmar-mv');
+            const titleEl = $lmar('lmar-title');
+            if (titleEl) titleEl.textContent = model.title;
+            lmarRenderChips();
+            lmarSetStatus('Đang tải mô hình…');
+            lmarSetLoading(false, 'Đang tải mô hình…', 0);
+            lmarSetCtaEnabled(false);
+            if (mv) {
+                mv.removeAttribute('ios-src');
+                mv.setAttribute('src', model.url);
+            }
+            clearTimeout(lmarState.pollTimer);
+            lmarState.pollTimer = setTimeout(lmarPollReady, 800);
+        }
+
+        function lmarBindOnce() {
+            if (lmarBound) return;
+            lmarBound = true;
+
+            const mv = $lmar('lmar-mv');
+            const closeBtn = $lmar('lmar-close');
+            const cta = $lmar('lmar-cta');
+
+            if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); lmarClose(); });
+            if (cta) cta.addEventListener('click', (e) => { e.stopPropagation(); lmarActivate(); });
+
+            if (mv) {
+                mv.addEventListener('progress', (e) => {
+                    if (lmarState.readyUrl && lmarState.readyUrl === mv.getAttribute('src')) return;
+                    const p = (e.detail && typeof e.detail.totalProgress === 'number') ? e.detail.totalProgress : 0;
+                    lmarSetLoading(false, `Đang tải mô hình… ${Math.round(p * 100)}%`, p);
+                });
+                mv.addEventListener('load', () => {
+                    if (mv.getAttribute('src') === lmarState.desiredUrl) lmarMarkReady();
+                });
+                mv.addEventListener('error', (e) => {
+                    const type = e.detail && e.detail.type;
+                    lmarSetLoading(true, 'Lỗi tải mô hình', 0);
+                    lmarSetStatus('Không tải được mô hình');
+                    lmarShowToast(type === 'loadfailure'
+                        ? 'Không tải được mô hình. Kiểm tra kết nối mạng rồi chọn lại.'
+                        : 'Không tải được mô hình 3D này.', 5200);
+                });
+                mv.addEventListener('ar-status', (e) => {
+                    const status = e.detail && e.detail.status;
+                    if (status === 'session-started') {
+                        lmarSetStatus('Camera AR đang chạy · quét mặt phẳng để đặt mô hình');
+                        lmarSetHint('Di chuyển máy chậm để nhận diện sàn nhà hoặc mặt bàn, sau đó chạm vào màn hình để ghim mô hình.');
+                    } else if (status === 'object-placed') {
+                        lmarSetStatus('Đã ghim mô hình vào không gian thật');
+                        lmarSetHint('Di chuyển vòng quanh hoặc quay camera đi chỗ khác rồi quay lại — mô hình vẫn ở đúng vị trí.');
+                    } else if (status === 'failed') {
+                        lmarSetStatus('Không mở được AR trên thiết bị này');
+                        lmarShowToast('Không mở được AR. Hãy dùng Chrome trên Android hoặc Safari trên iPhone, mở trang qua HTTPS.', 5400);
+                    } else if (status === 'not-presenting') {
+                        lmarMarkReady();
+                    }
+                });
+                mv.addEventListener('ar-tracking', (e) => {
+                    if (!lmarState.open) return;
+                    const status = e.detail && e.detail.status;
+                    if (status === 'not-tracking') {
+                        lmarSetHint('Đang mất dấu mặt phẳng · di chuyển máy chậm và quét lại sàn.');
+                    } else {
+                        lmarSetHint('Đã bám mặt phẳng · chạm vào màn hình để ghim mô hình.');
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lmarState.open) {
+                    e.stopPropagation();
+                    lmarClose();
+                }
+            }, true);
+
+            const openBtn = $lmar('v-model-ar');
+            if (openBtn) openBtn.addEventListener('click', (e) => { e.stopPropagation(); lmarOpen(); });
+        }
+
+        async function lmarOpen() {
+            const overlay = $lmar('loci-model-ar');
+            if (!overlay) return;
+            if (lmarState.open) lmarClose(true);
+
+            lmarState.open = true;
+            lmarState.index = Math.min(lmarState.index, LMAR_MODELS.length - 1);
+            lmarState.desiredUrl = '';
+            lmarState.readyUrl = '';
+            lmarState.lastFocus = document.activeElement;
+
+            lmarBindOnce();
+            lmarRenderChips();
+            const first = LMAR_MODELS[lmarState.index] || LMAR_MODELS[0];
+            const titleEl = $lmar('lmar-title');
+            if (titleEl) titleEl.textContent = first.title;
+            lmarSetStatus('Đang chuẩn bị trình xem AR…');
+            lmarSetHint('Bấm nút bên dưới, quét sàn nhà hoặc mặt bàn rồi chạm để đặt mô hình. Quay camera đi chỗ khác và quay lại, mô hình vẫn ở đúng vị trí.');
+            lmarSetLoading(false, 'Đang tải thư viện AR…', 0.04);
+            lmarSetCtaEnabled(false);
+            overlay.classList.add('open');
+            document.body.classList.add('lmar-open');
+            try {
+                if (window.Loci360Bridge && typeof window.Loci360Bridge.setPaused === 'function') window.Loci360Bridge.setPaused(true);
+            } catch (_) { /* bỏ qua */ }
+
+            try {
+                await lmarEnsureLib();
+            } catch (err) {
+                console.warn('[LociModelAR]', err);
+                lmarSetLoading(true, 'Không tải được thư viện AR', 0);
+                lmarSetStatus('Không tải được thư viện AR');
+                lmarShowToast('Không tải được thư viện AR. Kiểm tra kết nối mạng rồi thử lại.', 6000);
+                return;
+            }
+            if (!lmarState.open) return;
+            lmarSelectModel(lmarState.index);
+        }
+
+        function lmarClose(keepState) {
+            const overlay = $lmar('loci-model-ar');
+            const mv = $lmar('lmar-mv');
+            lmarState.open = false;
+            clearTimeout(lmarState.pollTimer);
+            clearTimeout(lmarState.toastTimer);
+            if (overlay) overlay.classList.remove('open');
+            document.body.classList.remove('lmar-open');
+            const toast = $lmar('lmar-toast');
+            if (toast) toast.classList.remove('show');
+            if (mv && typeof mv.pause === 'function') {
+                try { mv.pause(); } catch (_) { /* bỏ qua */ }
+            }
+            try {
+                if (window.Loci360Bridge && typeof window.Loci360Bridge.setPaused === 'function') window.Loci360Bridge.setPaused(false);
+            } catch (_) { /* bỏ qua */ }
+            if (!keepState) {
+                lmarState.desiredUrl = '';
+                lmarState.readyUrl = '';
+                if (lmarState.lastFocus && typeof lmarState.lastFocus.focus === 'function') {
+                    try { lmarState.lastFocus.focus({ preventScroll: true }); } catch (_) { /* bỏ qua */ }
+                }
+                lmarState.lastFocus = null;
+            }
+        }
+
+        async function lmarActivate() {
+            const mv = $lmar('lmar-mv');
+            if (!mv) return;
+            if (!lmarState.readyUrl || !mv.loaded) {
+                lmarShowToast('Mô hình đang tải, chờ thêm một chút nhé.');
+                return;
+            }
+            if (typeof mv.activateAR !== 'function' || !mv.canActivateAR) {
+                const ua = navigator.userAgent || '';
+                const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (!window.isSecureContext) {
+                    lmarShowToast('AR cần HTTPS. Hãy mở trang bằng địa chỉ https:// trên điện thoại rồi thử lại.', 5800);
+                } else {
+                    lmarShowToast(isIOS
+                        ? 'Thiết bị này chưa mở được AR. Trên iPhone/iPad, hãy mở trang bằng Safari qua HTTPS.'
+                        : 'Thiết bị này chưa hỗ trợ AR. Hãy mở trang bằng Chrome trên Android hoặc Safari trên iPhone, qua HTTPS.', 5800);
+                }
+                return;
+            }
+            const btn = $lmar('lmar-cta');
+            if (btn) btn.disabled = true;
+            try {
+                await mv.activateAR();
+            } catch (err) {
+                console.warn('[LociModelAR] activateAR lỗi', err);
+                lmarShowToast('Không mở được AR. Thử lại trên Chrome Android hoặc Safari iPhone (HTTPS).', 5400);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        lmarLoadCustomModel();
+        lmarBindOnce();
+
+        window.LociModelAR = {
+            open: lmarOpen,
+            close: lmarClose,
+            models: LMAR_MODELS,
+            addModel(title, url) {
+                const index = LMAR_MODELS.findIndex(m => m.url === url);
+                if (index >= 0) { lmarState.index = index; return index; }
+                LMAR_MODELS.push({ title: title || 'Mô hình', url });
+                return LMAR_MODELS.length - 1;
+            },
+            select: lmarSelectModel
+        };
     </script>
 </body>
 
