@@ -8102,6 +8102,45 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             box-shadow: 0 0 0 4px rgba(34, 197, 94, .18);
         }
 
+        #loci-model-ar .lmar-3d {
+            display: none;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            background: transparent;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        #loci-model-ar.place-mode model-viewer { display: none; }
+        #loci-model-ar.place-mode .lmar-3d { display: block; }
+        #loci-model-ar.place-mode .lmar-cta { display: none; }
+
+        #loci-model-ar .lmar-place-hint {
+            position: absolute;
+            left: 50%;
+            top: calc(84px + env(safe-area-inset-top, 0px));
+            transform: translateX(-50%);
+            z-index: 2;
+            max-width: calc(100% - 48px);
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(7, 11, 24, .72);
+            border: 1px solid rgba(148, 178, 255, .28);
+            color: #eaf0ff;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .3s ease;
+        }
+
+        #loci-model-ar.place-mode .lmar-place-hint { opacity: 1; }
+        #loci-model-ar.place-mode .lmar-place-hint.placed { opacity: 0; }
+
         #loci-model-ar .lmar-top {
             display: flex;
             align-items: center;
@@ -8348,6 +8387,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             rotation-per-second="14deg" interaction-prompt="auto">
             <button slot="ar-button" class="lmar-native" tabindex="-1" aria-hidden="true"></button>
         </model-viewer>
+        <canvas id="lmar-3d" class="lmar-3d" aria-label="Khung đặt mô hình 3D"></canvas>
+        <div class="lmar-place-hint" id="lmar-place-hint">Chạm vào sàn trong khung hình để đặt mô hình</div>
         <div class="lmar-loading" id="lmar-loading">
             <div class="lmar-ring"></div>
             <div class="lmar-track"><i id="lmar-progress"></i></div>
@@ -8502,7 +8543,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 if (overlay) overlay.classList.add('cam-on');
                 const live = $lmar('lmar-live');
                 if (live) live.classList.add('show');
-                if (lmarState.readyUrl) {
+                if (lmarState.readyUrl && !lmarPlace.active) {
                     lmarSetStatus('Camera trực tiếp · bấm AR để ghim mô hình vào sàn');
                     lmarSetHint('Đây là hình ảnh camera thật. Bấm nút bên dưới để ARCore/ARKit quét mặt phẳng và ghim mô hình — quay đi chỗ khác rồi quay lại, mô hình vẫn ở đúng vị trí.');
                 }
@@ -8528,6 +8569,345 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             if (overlay) overlay.classList.remove('cam-on');
             const live = $lmar('lmar-live');
             if (live) live.classList.remove('show');
+        }
+
+        /* ===== CHẾ ĐỘ ĐẶT MÔ HÌNH TRONG KHUNG CAMERA (không cần ARKit/ARCore) ===== */
+        const lmarPlace = {
+            active: false, THREE: null, GLTFLoader: null, renderer: null, scene: null,
+            cam: null, anchor: null, blob: null, model: null, raf: 0, sizeW: 0, sizeH: 0,
+            hasSensor: false, dragLook: false, lookYaw: 0, lookPitch: 0, userPlaced: false,
+            orientationHandler: null, gesture: null
+        };
+
+        function lmarRequestOrientationPermission() {
+            const DOE = window.DeviceOrientationEvent;
+            if (DOE && typeof DOE.requestPermission === 'function') {
+                try { return DOE.requestPermission().catch(() => 'denied'); } catch (_) { return Promise.resolve('denied'); }
+            }
+            return Promise.resolve('granted');
+        }
+
+        async function lmarEnsurePlaceLibs() {
+            if (lmarPlace.THREE) return;
+            const [THREE, mod] = await Promise.all([
+                import('three'),
+                import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js')
+            ]);
+            lmarPlace.THREE = THREE;
+            lmarPlace.GLTFLoader = mod.GLTFLoader;
+        }
+
+        function lmarPlaceDispose(obj) {
+            if (!obj || !obj.traverse) return;
+            obj.traverse((o) => {
+                if (o.geometry) o.geometry.dispose();
+                if (o.material) {
+                    const mats = Array.isArray(o.material) ? o.material : [o.material];
+                    mats.forEach((m) => {
+                        for (const k in m) {
+                            const v = m[k];
+                            if (v && v.isTexture) v.dispose();
+                        }
+                        m.dispose();
+                    });
+                }
+            });
+        }
+
+        function lmarPlaceResize() {
+            const canvas = $lmar('lmar-3d');
+            if (!canvas || !lmarPlace.renderer || !lmarPlace.cam) return;
+            const w = canvas.clientWidth || window.innerWidth;
+            const h = canvas.clientHeight || window.innerHeight;
+            if (!w || !h) return;
+            if (w === lmarPlace.sizeW && h === lmarPlace.sizeH) return;
+            lmarPlace.sizeW = w;
+            lmarPlace.sizeH = h;
+            lmarPlace.renderer.setSize(w, h, false);
+            lmarPlace.cam.aspect = w / h;
+            lmarPlace.cam.updateProjectionMatrix();
+        }
+
+        function lmarInitPlaceScene() {
+            if (lmarPlace.renderer) return;
+            const THREE = lmarPlace.THREE;
+            const canvas = $lmar('lmar-3d');
+            if (!THREE || !canvas) return;
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch (_) { /* bỏ qua */ }
+            const scene = new THREE.Scene();
+            const cam = new THREE.PerspectiveCamera(62, 1, 0.05, 80);
+            cam.position.set(0, 1.6, 0);
+            scene.add(new THREE.HemisphereLight(0xffffff, 0x334155, 1.15));
+            const sun = new THREE.DirectionalLight(0xffffff, 1.7);
+            sun.position.set(2.5, 6, 3);
+            scene.add(sun);
+            const anchor = new THREE.Group();
+            scene.add(anchor);
+            const blob = new THREE.Mesh(
+                new THREE.CircleGeometry(0.42, 40),
+                new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false })
+            );
+            blob.rotation.x = -Math.PI / 2;
+            blob.position.y = 0.003;
+            blob.visible = false;
+            scene.add(blob);
+            lmarPlace.renderer = renderer;
+            lmarPlace.scene = scene;
+            lmarPlace.cam = cam;
+            lmarPlace.anchor = anchor;
+            lmarPlace.blob = blob;
+            lmarBindPlacePointer(canvas);
+            window.addEventListener('resize', lmarPlaceResize);
+            lmarPlaceResize();
+        }
+
+        function lmarBindPlacePointer(canvas) {
+            if (!canvas || canvas.dataset.lmarBound) return;
+            canvas.dataset.lmarBound = '1';
+            canvas.addEventListener('pointerdown', (e) => {
+                lmarPlace.gesture = { x: e.clientX, y: e.clientY, moved: false };
+            });
+            canvas.addEventListener('pointermove', (e) => {
+                const g = lmarPlace.gesture;
+                if (!g) return;
+                const dx = e.clientX - g.x;
+                const dy = e.clientY - g.y;
+                if (Math.abs(dx) + Math.abs(dy) > 10) g.moved = true;
+                if (g.moved && lmarPlace.dragLook && !lmarPlace.hasSensor && lmarPlace.cam) {
+                    const THREE = lmarPlace.THREE;
+                    lmarPlace.lookYaw -= dx * 0.005;
+                    lmarPlace.lookPitch = Math.max(-1.1, Math.min(1.1, lmarPlace.lookPitch - dy * 0.005));
+                    lmarPlace.cam.quaternion.setFromEuler(new THREE.Euler(lmarPlace.lookPitch, lmarPlace.lookYaw, 0, 'YXZ'));
+                    g.x = e.clientX;
+                    g.y = e.clientY;
+                }
+            });
+            canvas.addEventListener('pointerup', (e) => {
+                const g = lmarPlace.gesture;
+                lmarPlace.gesture = null;
+                if (!g || g.moved) return;
+                lmarPlaceAtScreen(e.clientX, e.clientY);
+            });
+            canvas.addEventListener('pointercancel', () => { lmarPlace.gesture = null; });
+        }
+
+        function lmarPlaceAtScreen(x, y) {
+            const { THREE, cam, anchor, blob } = lmarPlace;
+            const canvas = $lmar('lmar-3d');
+            if (!THREE || !cam || !anchor || !canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (!rect.width || !rect.height) return;
+            const ndc = new THREE.Vector2(
+                ((x - rect.left) / rect.width) * 2 - 1,
+                -((y - rect.top) / rect.height) * 2 + 1
+            );
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(ndc, cam);
+            const hit = new THREE.Vector3();
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            if (!raycaster.ray.intersectPlane(plane, hit)) {
+                lmarShowToast('Chạm thấp hơn — vào sàn hoặc mặt bàn trong khung hình để đặt mô hình.', 3400);
+                return;
+            }
+            const dist = Math.hypot(hit.x - cam.position.x, hit.z - cam.position.z);
+            if (dist < 0.5 || dist > 9) {
+                lmarShowToast('Chạm vào chỗ gần hơn (0,5–9 m) để đặt mô hình.', 3400);
+                return;
+            }
+            anchor.position.set(hit.x, 0, hit.z);
+            lmarPlace.userPlaced = true;
+            if (blob) {
+                blob.visible = true;
+                blob.position.set(hit.x, 0.003, hit.z);
+            }
+            const hint = $lmar('lmar-place-hint');
+            if (hint) {
+                hint.textContent = 'Đã đặt · chạm chỗ khác để di chuyển';
+                hint.classList.add('placed');
+            }
+        }
+
+        function lmarPlaceAuto() {
+            const { THREE, cam, anchor, blob } = lmarPlace;
+            if (!THREE || !cam || !anchor) return null;
+            const origin = cam.position.clone();
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion).normalize();
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const hit = new THREE.Vector3();
+            let pos = null;
+            if (dir.y < -0.08 && new THREE.Ray(origin, dir).intersectPlane(plane, hit)) {
+                const dist = Math.hypot(hit.x - origin.x, hit.z - origin.z);
+                if (dist >= 0.8 && dist <= 9) pos = new THREE.Vector3(hit.x, 0, hit.z);
+            }
+            if (!pos) {
+                const flat = new THREE.Vector3(dir.x, 0, dir.z);
+                if (flat.lengthSq() < 0.0001) flat.set(0, 0, -1);
+                flat.normalize();
+                pos = new THREE.Vector3(origin.x, 0, origin.z).addScaledVector(flat, 2.4);
+            }
+            anchor.position.copy(pos);
+            if (blob) {
+                blob.visible = true;
+                blob.position.set(pos.x, 0.003, pos.z);
+            }
+            const hint = $lmar('lmar-place-hint');
+            if (hint && !lmarPlace.userPlaced) {
+                hint.textContent = 'Mô hình đã đặt · chạm vào sàn để di chuyển';
+                hint.classList.remove('placed');
+            }
+            return pos;
+        }
+
+        function lmarSetDefaultPlaceView() {
+            const THREE = lmarPlace.THREE;
+            if (!THREE || !lmarPlace.cam) return;
+            lmarPlace.lookPitch = -0.42;
+            lmarPlace.lookYaw = 0;
+            lmarPlace.cam.position.set(0, 1.6, 0);
+            lmarPlace.cam.quaternion.setFromEuler(new THREE.Euler(lmarPlace.lookPitch, lmarPlace.lookYaw, 0, 'YXZ'));
+        }
+
+        function lmarWaitForSensor(ms) {
+            if (lmarPlace.hasSensor) return Promise.resolve(true);
+            return new Promise((resolve) => {
+                let done = false;
+                const finish = (ok) => {
+                    if (done) return;
+                    done = true;
+                    clearTimeout(timer);
+                    window.removeEventListener('deviceorientation', check, true);
+                    resolve(ok);
+                };
+                const check = () => { if (lmarPlace.hasSensor) finish(true); };
+                const timer = setTimeout(() => finish(lmarPlace.hasSensor), ms);
+                window.addEventListener('deviceorientation', check, true);
+            });
+        }
+
+        async function lmarLoadPlaceModel(url) {
+            const THREE = lmarPlace.THREE;
+            if (!THREE || !lmarPlace.anchor) return;
+            const loader = new lmarPlace.GLTFLoader();
+            const gltf = await loader.loadAsync(url);
+            if (!lmarPlace.active) return;
+            lmarPlace.anchor.children.slice().forEach((o) => {
+                lmarPlace.anchor.remove(o);
+                lmarPlaceDispose(o);
+            });
+            const obj = gltf.scene;
+            const box = new THREE.Box3().setFromObject(obj);
+            const size = new THREE.Vector3();
+            box.getSize(size);
+            const height = size.y || 1;
+            obj.scale.multiplyScalar(Math.min(3.2, 1.6 / height));
+            box.setFromObject(obj);
+            obj.position.y -= box.min.y;
+            obj.position.x -= (box.min.x + box.max.x) / 2;
+            obj.position.z -= (box.min.z + box.max.z) / 2;
+            lmarPlace.anchor.add(obj);
+            lmarPlace.model = obj;
+            // Người dùng đã tự đặt thì giữ nguyên chỗ, chỉ đổi mô hình.
+            if (!lmarPlace.userPlaced) lmarPlaceAuto();
+            lmarSetLoading(true, 'Sẵn sàng', 1);
+        }
+
+        function lmarBindOrientation() {
+            if (lmarPlace.orientationHandler) return;
+            const THREE = lmarPlace.THREE;
+            if (!THREE) return;
+            const zee = new THREE.Vector3(0, 0, 1);
+            const euler = new THREE.Euler();
+            const q0 = new THREE.Quaternion();
+            const q1 = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5));
+            lmarPlace.orientationHandler = (e) => {
+                if (!lmarPlace.active || !lmarPlace.cam) return;
+                if (e.alpha == null && e.beta == null && e.gamma == null) return;
+                const deg = THREE.MathUtils.degToRad;
+                const orient = deg((window.screen && screen.orientation && screen.orientation.angle) || window.orientation || 0);
+                euler.set(deg(e.beta || 0), deg(e.alpha || 0), -deg(e.gamma || 0), 'YXZ');
+                lmarPlace.cam.quaternion.setFromEuler(euler);
+                lmarPlace.cam.quaternion.multiply(q1);
+                lmarPlace.cam.quaternion.multiply(q0.setFromAxisAngle(zee, -orient));
+                lmarPlace.cam.position.y = 1.6;
+                const first = !lmarPlace.hasSensor;
+                lmarPlace.hasSensor = true;
+                // Cảm biến có hướng thật đầu tiên: đặt lại mô hình theo hướng người dùng đang nhìn.
+                if (first && !lmarPlace.userPlaced && lmarPlace.model) lmarPlaceAuto();
+            };
+            window.addEventListener('deviceorientation', lmarPlace.orientationHandler, true);
+        }
+
+        function lmarPlaceLoop() {
+            if (!lmarPlace.active) return;
+            lmarPlace.raf = requestAnimationFrame(lmarPlaceLoop);
+            lmarPlaceResize();
+            if (lmarPlace.renderer && lmarPlace.scene && lmarPlace.cam) {
+                lmarPlace.renderer.render(lmarPlace.scene, lmarPlace.cam);
+            }
+        }
+
+        async function lmarEnterPlaceMode() {
+            const overlay = $lmar('loci-model-ar');
+            const model = LMAR_MODELS[lmarState.index];
+            if (!overlay || !model || lmarPlace.active) return;
+            // Phải gọi xin quyền cảm biến ngay trong cử chỉ chạm, trước mọi await.
+            const permission = lmarRequestOrientationPermission();
+            lmarPlace.active = true;
+            lmarPlace.userPlaced = false;
+            overlay.classList.add('place-mode');
+            const hint = $lmar('lmar-place-hint');
+            if (hint) {
+                hint.textContent = 'Chạm vào sàn trong khung hình để đặt mô hình';
+                hint.classList.remove('placed');
+            }
+            lmarSetStatus('Đặt mô hình trong khung camera');
+            lmarSetHint('Chạm vào sàn hoặc mặt bàn trong khung hình để đặt mô hình. Xoay máy để ngắm — mô hình đứng yên trong khung cảnh khi bạn xoay.');
+            lmarSetLoading(false, 'Đang dựng khung đặt mô hình…', 0);
+            if (!lmarCam.stream) lmarStartCamera();
+            try {
+                await lmarEnsurePlaceLibs();
+                if (!lmarPlace.active) return;
+                lmarInitPlaceScene();
+                cancelAnimationFrame(lmarPlace.raf);
+                lmarPlaceLoop();
+                // Ưu tiên hướng thật của máy trước khi đặt mô hình.
+                const result = await permission;
+                if (result === 'granted') {
+                    lmarBindOrientation();
+                    await lmarWaitForSensor(300);
+                }
+                if (!lmarPlace.active) return;
+                if (!lmarPlace.hasSensor) lmarSetDefaultPlaceView();
+                await lmarLoadPlaceModel(model.url);
+                if (!lmarPlace.active) return;
+                setTimeout(() => {
+                    if (lmarPlace.active && !lmarPlace.hasSensor) lmarPlace.dragLook = true;
+                }, 900);
+            } catch (err) {
+                console.warn('[LociModelAR] Không mở được chế độ đặt mô hình', err);
+                lmarShowToast('Không mở được chế độ đặt mô hình. Kiểm tra kết nối mạng rồi thử lại.', 5600);
+                lmarExitPlaceMode();
+            }
+        }
+
+        function lmarExitPlaceMode() {
+            lmarPlace.active = false;
+            lmarPlace.dragLook = false;
+            lmarPlace.hasSensor = false;
+            lmarPlace.userPlaced = false;
+            lmarPlace.lookYaw = 0;
+            lmarPlace.lookPitch = 0;
+            lmarPlace.gesture = null;
+            cancelAnimationFrame(lmarPlace.raf);
+            lmarPlace.raf = 0;
+            if (lmarPlace.orientationHandler) {
+                window.removeEventListener('deviceorientation', lmarPlace.orientationHandler, true);
+                lmarPlace.orientationHandler = null;
+            }
+            const overlay = $lmar('loci-model-ar');
+            if (overlay) overlay.classList.remove('place-mode');
         }
 
         function lmarHandleUrlParams() {
@@ -8694,6 +9074,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             lmarSetLoading(true, 'Sẵn sàng', 1);
             lmarSetCtaEnabled(true);
             lmarUpdateNewTabButton();
+            if (lmarPlace.active) return;
 
             const canAr = !!mv.canActivateAR;
             const secure = window.isSecureContext;
@@ -8702,8 +9083,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 lmarSetStatus('Đang mở trong khung nhúng · AR cần tab riêng');
                 lmarSetHint('Khung nhúng của cổng học tập không được cấp quyền camera nên AR bị chặn. Bấm nút bên dưới để mở tab riêng — tab mới vào thẳng camera AR với đúng mô hình đang chọn.');
             } else if (lmarIOSNeedsSafari) {
-                lmarSetStatus('iPhone: cần mở bằng Safari để đặt mô hình');
-                lmarSetHint('Chrome/Edge trên iPhone báo "AR sẵn sàng" nhưng Apple không cho mở AR Quick Look. Bấm "Sao chép liên kết" bên dưới, mở Safari rồi dán vào thanh địa chỉ — sau đó bấm nút AR để đặt mô hình vào không gian thật.');
+                lmarSetStatus('Chạm để đặt mô hình trong khung camera');
+                lmarSetHint('Trình duyệt này không mở được AR gốc của Apple, nên mô hình sẽ đặt ngay trong khung camera: chạm vào sàn để đặt, xoay máy để ngắm. Muốn ghim thật vào không gian (đi lại vẫn đúng chỗ) thì mở bằng Safari.');
             } else if (canAr) {
                 lmarSetStatus(cameraOn ? 'Camera trực tiếp · chạm vào khung hình để đặt mô hình' : 'AR sẵn sàng · chạm nút để đặt mô hình vào không gian thật');
                 lmarSetHint(cameraOn
@@ -8713,11 +9094,11 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 lmarSetStatus('Cần HTTPS để mở AR trên điện thoại');
                 lmarSetHint('Trang đang chạy qua kết nối không bảo mật nên AR bị chặn. Hãy mở bằng HTTPS (hoặc localhost) trên điện thoại.');
             } else if (cameraOn) {
-                lmarSetStatus('Camera trực tiếp · thiết bị này chưa hỗ trợ ghim AR');
-                lmarSetHint('Bạn đang xem mô hình trên nền camera. Để ghim mô hình vào không gian thật, mở bằng Chrome trên Android hoặc Safari trên iPhone.');
+                lmarSetStatus('Camera trực tiếp · chạm vào khung hình để đặt mô hình');
+                lmarSetHint('Chạm vào sàn trong khung camera để đặt mô hình, kéo để đổi góc nhìn. Muốn ghim thật vào không gian (đi lại vẫn đúng chỗ) thì mở bằng Chrome Android hoặc Safari iPhone.');
             } else {
-                lmarSetStatus('Đang xem 3D · thiết bị này chưa hỗ trợ AR');
-                lmarSetHint('Thiết bị này chỉ xem được mô hình 3D. Mở trên điện thoại Android/iOS qua HTTPS để dùng camera AR.');
+                lmarSetStatus('Chạm để đặt mô hình trong khung camera');
+                lmarSetHint('Mô hình sẽ đặt trên sàn trong khung camera. Muốn ghim thật vào không gian (đi lại vẫn đúng chỗ) thì mở bằng điện thoại qua HTTPS.');
             }
         }
 
@@ -8742,6 +9123,9 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             }
             clearTimeout(lmarState.pollTimer);
             lmarState.pollTimer = setTimeout(lmarPollReady, 800);
+            if (lmarPlace.active) {
+                lmarLoadPlaceModel(model.url).catch((err) => console.warn('[LociModelAR]', err));
+            }
         }
 
         function lmarBindOnce() {
@@ -8786,6 +9170,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     if (moved < 12 && quick) lmarActivate();
                 });
                 mv.addEventListener('progress', (e) => {
+                    if (lmarPlace.active) return;
                     if (lmarState.readyUrl && lmarState.readyUrl === mv.getAttribute('src')) return;
                     const p = (e.detail && typeof e.detail.totalProgress === 'number') ? e.detail.totalProgress : 0;
                     lmarSetLoading(false, `Đang tải mô hình… ${Math.round(p * 100)}%`, p);
@@ -8794,6 +9179,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     if (mv.getAttribute('src') === lmarState.desiredUrl) lmarMarkReady();
                 });
                 mv.addEventListener('error', (e) => {
+                    if (lmarPlace.active) return;
                     const type = e.detail && e.detail.type;
                     lmarSetLoading(true, 'Lỗi tải mô hình', 0);
                     lmarSetStatus('Không tải được mô hình');
@@ -8891,6 +9277,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             const mv = $lmar('lmar-mv');
             lmarState.open = false;
             lmarStopCamera();
+            lmarExitPlaceMode();
             clearTimeout(lmarState.pollTimer);
             clearTimeout(lmarState.toastTimer);
             if (overlay) overlay.classList.remove('open');
@@ -8920,25 +9307,18 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 return;
             }
             if (lmarIOSNeedsSafari) {
-                lmarShowToast('iPhone chỉ đặt được mô hình bằng Safari. Bấm "Sao chép liên kết" rồi mở Safari, dán vào thanh địa chỉ.', 7000);
+                lmarEnterPlaceMode();
                 return;
             }
             const mv = $lmar('lmar-mv');
-            if (!mv) return;
-            if (!lmarState.readyUrl || !mv.loaded) {
-                lmarShowToast('Mô hình đang tải, chờ thêm một chút nhé.');
+            const canNative = !!mv && typeof mv.activateAR === 'function' && !!mv.canActivateAR;
+            if (!canNative) {
+                // Thiết bị/trình duyệt không dựng được AR gốc → đặt mô hình ngay trong khung camera.
+                lmarEnterPlaceMode();
                 return;
             }
-            if (typeof mv.activateAR !== 'function' || !mv.canActivateAR) {
-                const ua = navigator.userAgent || '';
-                const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                if (!window.isSecureContext) {
-                    lmarShowToast('AR cần HTTPS. Hãy mở trang bằng địa chỉ https:// trên điện thoại rồi thử lại.', 5800);
-                } else {
-                    lmarShowToast(isIOS
-                        ? 'Thiết bị này chưa mở được AR. Trên iPhone/iPad, hãy mở trang bằng Safari qua HTTPS.'
-                        : 'Thiết bị này chưa hỗ trợ AR. Hãy mở trang bằng Chrome trên Android hoặc Safari trên iPhone, qua HTTPS.', 5800);
-                }
+            if (!lmarState.readyUrl || !mv.loaded) {
+                lmarShowToast('Mô hình đang tải, chờ thêm một chút nhé.');
                 return;
             }
             const btn = $lmar('lmar-cta');
@@ -8977,13 +9357,22 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
             openInNewTab: lmarOpenInNewTab,
             diagnose() {
                 const mv = $lmar('lmar-mv');
+                const p = lmarPlace;
+                const a = p.anchor && p.anchor.position;
                 return {
                     secure: window.isSecureContext,
                     embedded: lmarEmbedded,
                     xrSupported: typeof navigator.xr !== 'undefined',
                     canActivateAR: !!(mv && mv.canActivateAR),
                     loaded: !!(mv && mv.loaded),
-                    src: mv ? (mv.getAttribute('src') || '') : ''
+                    src: mv ? (mv.getAttribute('src') || '') : '',
+                    placeMode: p.active,
+                    placeSensor: p.hasSensor,
+                    placeUserPlaced: p.userPlaced,
+                    placeModelLoaded: !!p.model,
+                    placeModelName: p.model ? (p.model.name || 'scene') : '',
+                    placeAnchor: a ? { x: +a.x.toFixed(2), y: +a.y.toFixed(2), z: +a.z.toFixed(2) } : null,
+                    placeCanvas: (() => { const c = $lmar('lmar-3d'); return c ? [c.clientWidth, c.clientHeight] : null; })()
                 };
             }
         };
