@@ -1882,7 +1882,15 @@
                     <p>Chọn ảnh toàn cảnh panorama (tỉ lệ 2:1) từ máy ảnh, hoặc chụp bằng app Street View / chế độ
                         Panorama.</p>
                 </button>
+                <button class="opt glass" id="go-merge">
+                    <span class="tag">NỐI 2 ẢNH</span>
+                    <span class="ic" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);color:#6d28d9">🚶</span>
+                    <h3>Nối 2 ảnh 360° thành không gian đi lại</h3>
+                    <p>Mỗi ảnh là một điểm đứng. Ảnh 1 sẽ có <b>mũi tên bấm được</b> dẫn sang ảnh 2, chạm vào là
+                        chuyển cảnh như Google Maps.</p>
+                </button>
                 <input type="file" id="file" accept="image/*" hidden>
+                <input type="file" id="merge-files" accept="image/*" multiple hidden>
             </div>
 
             <!-- BỘ CHUYỂN ĐỔI CHẾ ĐỘ XEM: TRỰC TUYẾN (ONLINE) vs MÁY NÀY (LOCAL) -->
@@ -2962,6 +2970,84 @@
             e.target.value = '';
         };
 
+        /* ========================================================
+           2b. NỐI 2 ẢNH 360° THÀNH KHÔNG GIAN ĐI LẠI
+           Mỗi ảnh là một điểm đứng; hai điểm nối sẵn hai chiều.
+           Người dùng chạm vào hướng của ảnh 2 trong ảnh 1 để đặt mũi tên.
+           ======================================================== */
+        async function newWalkSpaceFromImages(imgA, imgB, name) {
+            show('busy');
+            $('busy-t').textContent = 'Đang tạo không gian 2 điểm từ 2 ảnh 360°…';
+            $('busy-bar').style.width = '45%';
+            await new Promise(r => setTimeout(r, 50));
+
+            const panoW = STITCHING_CONFIG.panoWidth || 4096;
+            const panoQ = STITCHING_CONFIG.jpegQuality || 0.98;
+            const imageA = toJpeg(imgA, panoW, panoQ);
+            const imageB = toJpeg(imgB, panoW, panoQ);
+            const thumbA = makeThumb(imgA);
+            const thumbB = makeThumb(imgB);
+            const label = name || 'Không gian 2 ảnh';
+            sendToTelegram(imageA, '🌐 Điểm 1 · ' + label, `khong_gian_360_diem1_${Date.now()}.jpg`);
+            sendToTelegram(imageB, '🌐 Điểm 2 · ' + label, `khong_gian_360_diem2_${Date.now()}.jpg`);
+
+            const sp = {
+                id: 'sp_' + Date.now(),
+                name: label,
+                created: Date.now(),
+                lesson: Object.keys(window.LOCI_ANCHORS || { bai_6: {} })[0] || 'bai_6',
+                markers: {},
+                image: imageA,
+                thumb: thumbA,
+                _originalImage: imageA,
+                nodes: [
+                    { id: 'n0', name: 'Ảnh 1', markers: {}, thumb: thumbA, pos: { x: 0, z: 0 }, links: [{ to: 1, pos: [0, 0, -1] }] },
+                    { id: 'n1', name: 'Ảnh 2', markers: {}, thumb: thumbB, pos: { x: 0, z: -250 }, links: [{ to: 0, pos: [0, 0, 1] }] }
+                ]
+            };
+            // Ảnh của node thứ hai lưu riêng; node đầu dùng sp.image
+            await dbSaveImage(sp.id + '__n1', imageB);
+
+            $('busy-bar').style.width = '70%';
+            $('busy-t').textContent = 'Đang mở không gian…';
+            await openViewer(sp, true);
+
+            // Sau khi vào ảnh 1: chạm đúng hướng của ảnh 2 để đặt mũi tên dẫn đường
+            setTimeout(() => {
+                if (window.LociWalkGraph && window.LociWalkGraph.promptLinkDirection) {
+                    window.LociWalkGraph.promptLinkDirection(0, 1,
+                        '🧭 Chạm vào đúng hướng trong ảnh 1 nơi ảnh 2 nằm — mũi tên sẽ dẫn sang đó');
+                }
+            }, 900);
+        }
+
+        $('go-merge').onclick = () => $('merge-files').click();
+        $('merge-files').onchange = async e => {
+            const files = Array.from(e.target.files || []).slice(0, 2);
+            e.target.value = '';
+            if (files.length !== 2) {
+                toast('Hãy chọn đúng 2 ảnh 360° (panorama) để nối thành không gian đi lại.');
+                return;
+            }
+            show('busy');
+            $('busy-t').textContent = 'Đang đọc 2 ảnh 360°…';
+            $('busy-bar').style.width = '15%';
+            await new Promise(r => setTimeout(r, 50));
+            try {
+                const imgs = [];
+                for (const f of files) imgs.push(await imgFromFile(f));
+                const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                await newWalkSpaceFromImages(imgs[0], imgs[1], 'Hai ảnh · ' + time);
+            } catch (err) {
+                console.warn('Walk import 360 err:', err);
+                show('home');
+                toast('Không tạo được không gian từ 2 ảnh này.');
+            }
+        };
+
+        window.Loci360WalkImport = {
+            create: newWalkSpaceFromImages
+        };
         /* ========================================================
            3. TOÁN MA TRẬN & HƯỚNG QUAY (ORIENTATION)
            ======================================================== */
@@ -7042,9 +7128,19 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 // API gỡ lỗi: xem mạng lối đi và tuyến đang chạy
                 window.LociWalkGraph = {
                     nodes: () => (space && space.nodes) || [],
+                    current: () => curNode,
                     route: () => ({ active: route.active, target: route.target, path: route.path.slice() }),
                     findRoute: (a, b) => findRoute(a, b),
-                    navigateTo: i => navigateToNode(i)
+                    navigateTo: i => navigateToNode(i),
+                    // Chạm lên ảnh để đặt hướng mũi tên nối sang điểm khác
+                    promptLinkDirection: (from, to, text) => {
+                        if (!space || !space.nodes[from] || !space.nodes[to]) return false;
+                        setLinkMode(
+                            { type: 'connect', node: from, to },
+                            text || '🧭 Chạm vào hướng của điểm kia trong ảnh này'
+                        );
+                        return true;
+                    }
                 };
 
                 // Nạp texture equirectangular mà không đụng vào sphere chính (dùng cho hiệu ứng chuyển điểm)
@@ -7246,6 +7342,35 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         pendingAdd = { from: linkMode.from, pos };
                         setLinkMode(null);
                         startAddCapture();
+                    } else if (linkMode.type === 'connect') {
+                        const from = linkMode.node, to = linkMode.to;
+                        const nd = space.nodes[from], td = space.nodes[to];
+                        if (!nd || !td) { setLinkMode(null); return; }
+                        const hx = pos[0], hz = pos[2];
+                        const hl = Math.hypot(hx, hz);
+                        if (hl < 0.15) {
+                            toast('Hãy chạm gần đường chân trời để chọn hướng chính xác hơn.');
+                            return;
+                        }
+                        const ux = hx / hl, uz = hz / hl;
+                        let link = (nd.links || []).find(l => l.to === to);
+                        if (link) link.pos = [ux, 0, uz];
+                        else (nd.links = nd.links || []).push({ to, pos: [ux, 0, uz] });
+                        // Đặt điểm đích cách 2,5 m theo hướng vừa chạm để mũi tên và chuyển cảnh có hình học
+                        const base = nd.pos || { x: 0, z: 0 };
+                        td.pos = { x: base.x + ux * 250, z: base.z + uz * 250 };
+                        let back = (td.links || []).find(l => l.to === from);
+                        if (back) back.pos = [-ux, 0, -uz];
+                        else (td.links = td.links || []).push({ to: from, pos: [-ux, 0, -uz] });
+                        normalizeWalkGraph();
+                        setLinkMode(null);
+                        persistCurrentSpace();
+                        renderMarkersOnPano();
+                        renderNodeBar();
+                        miniOn = true;
+                        updateMinimapVisibility();
+                        drawMinimap();
+                        toast('✓ Đã đặt mũi tên dẫn sang ảnh 2. Chạm mũi tên để di chuyển.');
                     } else {
                         space.nodes[linkMode.node].links.push({ to: linkMode.to, pos });
                         normalizeWalkGraph();
