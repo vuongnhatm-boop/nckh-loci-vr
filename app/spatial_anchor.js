@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '1.2.0';
+    const VERSION = '1.3.0';
     if (window.LociSpatial && window.LociSpatial.__version === VERSION) return;
 
     const M = window.LociSpatialMath;
@@ -119,10 +119,12 @@
                 v: 1,
                 frameId: old.frameId || null,
                 calib: old.calib || null,
-                anchors: old.anchors || {}
+                anchors: old.anchors || {},
+                objects: old.objects || {}
             };
         }
         if (!space.spatial.anchors) space.spatial.anchors = {};
+        if (!space.spatial.objects) space.spatial.objects = {};
         return space.spatial;
     }
 
@@ -158,6 +160,28 @@
     function anchorTitle(id) {
         const a = anchorList().find(x => x.id === id);
         return a ? a.title : 'Mốc';
+    }
+
+    function objectsMap() {
+        return (S.spatial && S.spatial.objects) || {};
+    }
+
+    function objectList() {
+        const objs = objectsMap();
+        return Object.keys(objs).map(id => Object.assign({ id }, objs[id]));
+    }
+
+    function recOf(id) {
+        if (S.spatial && S.spatial.anchors && S.spatial.anchors[id]) return S.spatial.anchors[id];
+        const o = objectsMap()[id];
+        return o || null;
+    }
+
+    function labelOf(id) {
+        const o = objectsMap()[id];
+        if (o) return o.label || 'Đồ vật test';
+        if (S.placing && S.placing.id === id && S.placing.label) return S.placing.label;
+        return anchorTitle(id);
     }
 
     function toast(t) {
@@ -203,6 +227,9 @@
 .lsa-pin.ghost .dot{background:rgba(15,23,42,.72);border:2.5px dashed #38bdf8;box-shadow:none;animation:none}
 .lsa-pin.edge .dot{width:34px;height:34px;font-size:13px;animation:none}
 .lsa-pin.edge .lab{display:none}
+.lsa-pin.obj .dot{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#fbbf24,#d97706);border-color:#fde68a;font-size:20px;animation:none;box-shadow:0 8px 24px rgba(217,119,6,.5),0 0 0 6px rgba(245,158,11,.14)}
+.lsa-pin.obj .lab{border-color:rgba(245,158,11,.45)}
+.lsa-pin.obj .meta{color:#fcd34d}
 @keyframes lsaPulse{0%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 0 rgba(56,189,248,.5)}70%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 18px rgba(56,189,248,0)}100%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 0 rgba(56,189,248,0)}}
 .lsa-reticle{position:absolute;left:50%;top:50%;width:74px;height:74px;transform:translate(-50%,-50%);z-index:5;pointer-events:none;display:none}
 .lsa-reticle.on{display:block}
@@ -940,6 +967,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (S.visual.refs.length) return false;
         if (S.spatial && S.spatial.calib && S.spatial.calib.focalNorm > 0) return false;
         if (S.spatial && S.spatial.anchors && Object.keys(S.spatial.anchors).length) return false;
+        if (S.spatial && S.spatial.objects && Object.keys(S.spatial.objects).length) return false;
         return true;
     }
 
@@ -975,8 +1003,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
     async function restartWithSensor() {
         if (!S.spatial) return;
-        if (Object.keys(S.spatial.anchors || {}).length) {
-            toast('Không gian đã có mốc AR — hãy quét mã neo để khôi phục đúng hệ toạ độ.');
+        if (Object.keys(S.spatial.anchors || {}).length || Object.keys(S.spatial.objects || {}).length) {
+            toast('Không gian đã có mốc AR — hãy chờ nhận dạng khung cảnh hoặc quét mã neo để khôi phục đúng hệ toạ độ.');
             return;
         }
         const V = visualApi();
@@ -1142,6 +1170,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (!S.open || !S.root) return;
         const spatial = S.spatial;
         const pins = Object.keys((spatial && spatial.anchors) || {});
+        Object.keys((spatial && spatial.objects) || {}).forEach(id => pins.push(id));
         const alive = new Set(pins);
         for (const id in S.pinEls) {
             if (!alive.has(id)) { S.pinEls[id].remove(); delete S.pinEls[id]; }
@@ -1178,6 +1207,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             if (!uv) { el.style.display = 'none'; continue; }
             const dist = Math.hypot(pCam[0], pCam[1], pCam[2]);
             const idx = anchors.indexOf(a) + 1;
+            el.classList.remove('obj');
             el.querySelector('.dot').textContent = a.order || idx;
             el.querySelector('.lab').textContent = a.title || 'Mốc';
             el.querySelector('.meta').textContent = `${(dist / 100).toFixed(1)} m · ±${Math.round(estimatedErrorCm(dist))} cm`;
@@ -1185,6 +1215,22 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             el.classList.remove('ghost');
             place(el, uv, dist, {});
         }
+
+        objectList().forEach((o, i) => {
+            if (!Array.isArray(o.world)) return;
+            const pCam = M.worldToCamera(S.pose, o.world);
+            const uv = M.projectCam(pCam, f, cx, cy);
+            const el = ensurePin(o.id);
+            el.classList.add('obj');
+            if (!uv) { el.style.display = 'none'; return; }
+            const dist = Math.hypot(pCam[0], pCam[1], pCam[2]);
+            el.querySelector('.dot').textContent = '◻';
+            el.querySelector('.lab').textContent = o.label || ('Đồ vật test ' + (i + 1));
+            el.querySelector('.meta').textContent = `${(dist / 100).toFixed(1)} m · ±${Math.round(estimatedErrorCm(dist))} cm`;
+            el.classList.toggle('sel', S.detailId === o.id || S.selectedId === o.id);
+            el.classList.remove('ghost');
+            place(el, uv, dist, {});
+        });
 
         const ghost = $('lsa-ghost-pin');
         if (ghost) {
@@ -1214,9 +1260,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
     }
 
     /* ---------------- placement ---------------- */
-    function setPlacing(id, on) {
+    function setPlacing(id, on, kind, label) {
         S.selectedId = on ? id : null;
-        S.placing = on ? { id } : null;
+        S.placing = on ? { id, kind: kind || 'anchor', label: label || null } : null;
         if (!on) { S.aimUv = null; S.tapStart = null; }
         if (on) $('lsa-sheet').classList.add('collapsed');
         else $('lsa-sheet').classList.remove('collapsed');
@@ -1235,7 +1281,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             S.pose.C[1] + fwd[1] * d,
             S.pose.C[2] + fwd[2] * d
         ];
-        saveAnchorPos(S.placing.id, P, 'crosshair');
+        savePlacedPos(S.placing.id, P, 'crosshair');
     }
 
     function placeAtStand() {
@@ -1244,7 +1290,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         const fwd = M.poseForwardWorld(S.pose);
         const h = M.norm([fwd[0], fwd[1], 0]);
         const P = [S.pose.C[0] + h[0] * 25, S.pose.C[1] + h[1] * 25, S.pose.C[2]];
-        saveAnchorPos(S.placing.id, P, 'stand');
+        savePlacedPos(S.placing.id, P, 'stand');
     }
 
     function screenToVideo(clientX, clientY) {
@@ -1261,7 +1307,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (u < 0 || u > map.vw || v < 0 || v > map.vh) return false;
         const P = M.pointAlongRay(S.pose, u, v, focalPx(), map.vw / 2, map.vh / 2, S.distanceCm);
         if (!P) return false;
-        saveAnchorPos(S.placing.id, P, 'tap');
+        savePlacedPos(S.placing.id, P, 'tap');
         return true;
     }
 
@@ -1298,25 +1344,52 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.root.addEventListener('pointerup', onScenePointerUp, true);
     }
 
-    function saveAnchorPos(id, P, source) {
+    function savePlacedPos(id, P, source) {
         const spatial = ensureSpatial(S.space);
+        const kind = (S.placing && S.placing.kind) || 'anchor';
         const cam = S.pose.C;
         const dist = Math.hypot(P[0] - cam[0], P[1] - cam[1], P[2] - cam[2]);
-        spatial.anchors[id] = {
+        const rec = {
             world: [Math.round(P[0] * 10) / 10, Math.round(P[1] * 10) / 10, Math.round(P[2] * 10) / 10],
             yaw: Math.round(camYawOf(S.pose.R) * M.R2D * 10) / 10,
             at: Date.now(),
             source,
             errCm: estimatedErrorCm(dist)
         };
+        if (kind === 'object') {
+            const prev = spatial.objects[id] || {};
+            rec.label = prev.label || (S.placing && S.placing.label) || ('Đồ vật test ' + (Object.keys(spatial.objects).length + 1));
+            spatial.objects[id] = rec;
+        } else {
+            spatial.anchors[id] = rec;
+        }
         try { S.bridge && S.bridge.persist && S.bridge.persist(); } catch (e) { }
-        toast(`📍 Đã gắn "${anchorTitle(id)}" vào không gian thật.`);
+        toast(kind === 'object'
+            ? `📦 Đã đặt "${rec.label}" — app sẽ nhớ đúng vị trí này.`
+            : `📍 Đã gắn "${anchorTitle(id)}" vào không gian thật.`);
         setPlacing(id, false);
         renderSheet();
         renderPins();
         setTimeout(() => {
-            if (S.open) captureReference('anchor:' + id, { anchorId: id });
+            if (!S.open) return;
+            if (kind === 'object') captureReference('object:' + id, { objectId: id });
+            else captureReference('anchor:' + id, { anchorId: id });
         }, 350);
+    }
+
+    function saveAnchorPos(id, P, source) {
+        savePlacedPos(id, P, source);
+    }
+
+    function startNewObject() {
+        if (!S.pose) {
+            toast('Chưa khóa không gian — hãy chờ nhận dạng khung cảnh hoặc quét mã neo.');
+            return;
+        }
+        const n = Object.keys(objectsMap()).length + 1;
+        const id = 'obj_' + Date.now().toString(36);
+        setPlacing(id, true, 'object', 'Đồ vật test ' + n);
+        toast('📦 Chạm vào vị trí muốn đặt đồ vật, hoặc ngắm tâm rồi bấm “Đặt tại tâm ngắm”.');
     }
 
     function removeAnchorPos(id) {
@@ -1328,28 +1401,86 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         renderPins();
     }
 
+    function removeObject(id) {
+        if (!S.spatial || !S.spatial.objects || !S.spatial.objects[id]) return;
+        const label = S.spatial.objects[id].label || 'Đồ vật test';
+        delete S.spatial.objects[id];
+        const V = visualApi();
+        const ref = S.visual.refs.find(r => r.tag === 'object:' + id);
+        if (ref && V) {
+            try { V.deleteRef(ref.id); } catch (e) { }
+            S.visual.refs = S.visual.refs.filter(r => r.id !== ref.id);
+        }
+        try { S.bridge && S.bridge.persist && S.bridge.persist(); } catch (e) { }
+        toast(`Đã xoá "${label}".`);
+        renderSheet();
+        renderPins();
+    }
+
+    /* ---------------- recall self-test ---------------- */
+    function recallTest() {
+        if (!S.pose) return { ok: false, reason: 'Chưa khóa được không gian' };
+        if (!S.visual.refs.length) return { ok: false, reason: 'Chưa có khung cảnh nào được ghi nhớ' };
+        const truth = {
+            R: S.pose.R.map(r => r.slice()),
+            C: S.pose.C.slice(),
+            source: S.pose.source
+        };
+        S.pose = null;
+        S.poseLock = null;
+        S.poseLockSource = null;
+        S.visual.lockedOnce = false;
+        S.visual.trackFrame = null;
+        S.visual.trackPoseR = null;
+        const t0 = performance.now();
+        tryVisualRelocalize(true);
+        const ms = Math.round(performance.now() - t0);
+        if (!S.pose) return { ok: false, reason: 'Không nhận lại được khung cảnh đã nhớ', ms };
+        const errCm = Math.hypot(
+            truth.C[0] - S.pose.C[0],
+            truth.C[1] - S.pose.C[1],
+            truth.C[2] - S.pose.C[2]
+        );
+        const deg = Math.abs(M.normalizeAngle(camYawOf(truth.R) - camYawOf(S.pose.R))) * M.R2D;
+        return {
+            ok: true,
+            ms,
+            errCm: Math.round(errCm * 10) / 10,
+            deg: Math.round(deg * 10) / 10,
+            inliers: S.visual.lastInliers,
+            source: S.pose.source,
+            objects: objectList().length,
+            anchors: Object.keys((S.spatial && S.spatial.anchors) || {}).length
+        };
+    }
+
     /* ---------------- detail card ---------------- */
     function openDetail(id) {
-        const a = anchorList().find(x => x.id === id) || { id, title: anchorTitle(id) };
+        const obj = objectsMap()[id];
+        const a = obj ? { id, title: obj.label || 'Đồ vật test', summary: 'Đồ vật test gắn vào không gian thật.' } : (anchorList().find(x => x.id === id) || { id, title: anchorTitle(id) });
         S.detailId = id;
         const card = $('lsa-detail');
-        const rec = S.spatial.anchors[id];
-        const pano = (S.bridge && S.bridge.getPanoMarker) ? S.bridge.getPanoMarker(id) : null;
+        const rec = recOf(id);
+        const pano = (!obj && S.bridge && S.bridge.getPanoMarker) ? S.bridge.getPanoMarker(id) : null;
+        let distTxt = '';
+        if (rec && S.pose) {
+            distTxt = `Vị trí AR: cách camera ${(Math.hypot(rec.world[0] - S.pose.C[0], rec.world[1] - S.pose.C[1], rec.world[2] - S.pose.C[2]) / 100).toFixed(1)} m · sai số ±${rec.errCm || '—'} cm`;
+        }
         card.innerHTML = `
             <button class="x" id="lsa-detail-x">✕</button>
             <h3>${esc(a.title || 'Mốc')}</h3>
             ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
             ${(a.keyPoints && a.keyPoints.length) ? `<ul>${a.keyPoints.map(k => `<li>${esc(k)}</li>`).join('')}</ul>` : ''}
-            ${rec ? `<p style="color:#7dd3fc;font-size:11.5px">Vị trí AR: cách camera ${(Math.hypot(rec.world[0] - S.pose.C[0], rec.world[1] - S.pose.C[1], rec.world[2] - S.pose.C[2]) / 100).toFixed(1)} m · sai số ±${rec.errCm || '—'} cm</p>` : `<p style="color:#fcd34d;font-size:11.5px">Mốc này chưa có vị trí trong không gian thật.</p>`}
+            ${rec ? `<p style="color:#7dd3fc;font-size:11.5px">${distTxt || 'Đã lưu vị trí trong không gian thật.'}</p>` : `<p style="color:#fcd34d;font-size:11.5px">Chưa có vị trí trong không gian thật.</p>`}
             <div class="lsa-row">
                 <button class="lsa-btn ok" id="lsa-detail-place">📍 Đặt lại vị trí</button>
                 ${pano ? `<button class="lsa-btn ghost" id="lsa-detail-pano">🖼 Xem ảnh 360</button>` : ''}
             </div>
-            ${rec ? `<div class="lsa-row"><button class="lsa-btn danger" id="lsa-detail-remove">🗑 Xoá vị trí AR</button></div>` : ''}
+            ${rec ? `<div class="lsa-row"><button class="lsa-btn danger" id="lsa-detail-remove">🗑 ${obj ? 'Xoá đồ vật' : 'Xoá vị trí AR'}</button></div>` : ''}
         `;
         card.classList.add('on');
         $('lsa-detail-x').onclick = closeDetail;
-        $('lsa-detail-place').onclick = () => { closeDetail(); setPlacing(id, true); };
+        $('lsa-detail-place').onclick = () => { closeDetail(); setPlacing(id, true, obj ? 'object' : 'anchor', obj ? a.title : null); };
         const panoBtn = $('lsa-detail-pano');
         if (panoBtn) panoBtn.onclick = () => {
             closeDetail();
@@ -1357,7 +1488,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             try { S.bridge.focusPanoMarker(id); } catch (e) { }
         };
         const rm = $('lsa-detail-remove');
-        if (rm) rm.onclick = () => { closeDetail(); removeAnchorPos(id); };
+        if (rm) rm.onclick = () => { closeDetail(); if (obj) removeObject(id); else removeAnchorPos(id); };
         renderPins();
     }
 
@@ -1386,10 +1517,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
 
     function renderAnchorsTab() {
         const anchors = anchorList();
-        const spatial = S.spatial || { anchors: {} };
-        if (!anchors.length) {
-            return `<p class="lsa-hint">Bài học này chưa có mốc nào. Hãy chọn chủ đề ở bảng "Mốc kiến thức" trong chế độ 360 trước.</p>`;
-        }
+        const spatial = S.spatial || { anchors: {}, objects: {} };
         const locked = !!S.pose;
         const rows = anchors.map((a, i) => {
             const rec = spatial.anchors[a.id];
@@ -1400,20 +1528,34 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 <span class="st">${rec ? '✓ AR' : '—'}</span>
             </div>`;
         }).join('');
+        const objs = objectList();
+        const objRows = objs.map((o, i) => {
+            const armed = !!(S.placing && S.placing.id === o.id);
+            return `<div class="lsa-item ${armed ? 'armed sel' : ''}" data-object="${esc(o.id)}">
+                <span class="n" style="background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.5)">◻</span>
+                <span class="t">${esc(o.label || ('Đồ vật test ' + (i + 1)))}<small>${o.world ? `Đã neo trong phòng · ±${o.errCm || '—'} cm` : 'Chưa có vị trí'}</small></span>
+                <span class="st">${armed ? 'Đang đặt' : '✓ AR'}</span>
+            </div>`;
+        }).join('');
 
-        const sel = S.placing ? anchors.find(a => a.id === S.placing.id) : null;
+        const sel = S.placing ? (S.placing.kind === 'object'
+            ? { id: S.placing.id, title: S.placing.label || labelOf(S.placing.id) }
+            : anchors.find(a => a.id === S.placing.id)) : null;
         return `
             <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : (S.visual.refs.length ? 'Đang tìm lại khung cảnh đã ghi nhớ — chiếu camera về khu vực đặt mốc. Không cần mã QR.' : 'Bấm “Ghi nhớ khung cảnh” ở tab ⚙ hoặc quét mã neo để khóa không gian trước khi gắn mốc.')}</p>
-            ${rows}
+            ${anchors.length ? rows : '<p class="lsa-hint">Bài học này chưa có mốc kiến thức nào.</p>'}
+            <div class="lsa-row" style="margin-top:10px"><button class="lsa-btn pri" id="lsa-add-object">➕ Đặt đồ vật test</button></div>
+            <p class="lsa-hint" style="margin:6px 0 8px">Đồ vật test để kiểm tra trí nhớ không gian: đặt một lần, đóng AR rồi mở lại — đồ vật phải hiện đúng chỗ cũ.</p>
+            ${objRows}
             ${sel ? `
-                <div class="lsa-field"><span>Khoảng cách tới mốc</span><b style="color:#7dd3fc">${(S.distanceCm / 100).toFixed(1)} m</b></div>
+                <div class="lsa-field"><span>Khoảng cách tới ${S.placing && S.placing.kind === 'object' ? 'đồ vật' : 'mốc'}</span><b style="color:#7dd3fc">${(S.distanceCm / 100).toFixed(1)} m</b></div>
                 <input class="lsa-range" type="range" id="lsa-dist" min="${PLACE_MIN_CM}" max="${PLACE_MAX_CM}" step="10" value="${S.distanceCm}">
                 <div class="lsa-row">
                     <button class="lsa-btn ok" id="lsa-place-center" ${locked ? '' : 'disabled'}>📍 Đặt tại tâm ngắm</button>
                     <button class="lsa-btn ghost" id="lsa-place-stand" ${locked ? '' : 'disabled'}>🧍 Tại chỗ đứng</button>
                 </div>
-                <div class="lsa-row"><button class="lsa-btn ghost" id="lsa-place-cancel" style="flex:1">Hủy chọn mốc</button></div>
-                <p class="lsa-hint" style="margin-top:8px">Chạm trực tiếp vào màn hình để đặt mốc đang chọn; kéo thanh khoảng cách nếu cần chỉnh xa/gần.</p>
+                <div class="lsa-row"><button class="lsa-btn ghost" id="lsa-place-cancel" style="flex:1">Hủy đặt</button></div>
+                <p class="lsa-hint" style="margin-top:8px">Chạm trực tiếp vào màn hình để đặt ${S.placing && S.placing.kind === 'object' ? 'đồ vật' : 'mốc'} đang chọn; kéo thanh khoảng cách nếu cần chỉnh xa/gần.</p>
             ` : ''}
         `;
     }
@@ -1463,6 +1605,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 </div>
             </div>
             <div class="lsa-field"><span>Tiêu cự ước lượng</span><b style="color:#7dd3fc">${(focalPx() / ((S.video && S.video.videoWidth) || 1)).toFixed(3)} × W</b></div>
+            <div class="lsa-field"><span>Đồ vật test đã neo</span><b style="color:#fcd34d">${objectList().length}</b></div>
+            <div class="lsa-row"><button class="lsa-btn pri" id="lsa-recall-test" style="flex:1">🧪 Test ghi nhớ vị trí</button></div>
+            <p class="lsa-hint" style="margin-top:6px">Test sẽ xóa định vị hiện tại rồi bắt app nhận lại khung cảnh từ dữ liệu đã lưu, sau đó báo sai lệch vị trí/góc. Đứng yên khi test để kết quả chính xác.</p>
             <p class="lsa-hint">Khung cảnh ghi nhớ chỉ lưu trên thiết bị này (ảnh xám + điểm đặc trưng), không gửi lên máy chủ. Mốc AR được lưu cùng không gian 360 và đồng bộ theo tài khoản Firebase.</p>
             ${S.visual.refs.length ? `<div class="lsa-row"><button class="lsa-btn ghost" id="lsa-forget-scenes" style="flex:1">🧠 Xoá ${S.visual.refs.length} khung cảnh đã nhớ</button></div>` : ''}
             <div class="lsa-row"><button class="lsa-btn danger" id="lsa-reset-ar" style="flex:1">🗑 Xoá toàn bộ dữ liệu AR của không gian</button></div>
@@ -1478,6 +1623,15 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
                 else setPlacing(id, true);
             };
         });
+        body.querySelectorAll('[data-object]').forEach(el => {
+            el.onclick = () => {
+                const id = el.dataset.object;
+                if (S.placing && S.placing.id === id) setPlacing(id, false);
+                else setPlacing(id, true, 'object', labelOf(id));
+            };
+        });
+        const addObj = $('lsa-add-object');
+        if (addObj) addObj.onclick = startNewObject;
         const dist = $('lsa-dist');
         if (dist) {
             const paint = () => {
@@ -1545,11 +1699,27 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             const v = Number(step.value);
             if (v >= 40 && v <= 110) S.stepCm = v;
         };
+        const recall = $('lsa-recall-test');
+        if (recall) recall.onclick = () => {
+            recall.disabled = true;
+            const r = recallTest();
+            recall.disabled = false;
+            setStatus(
+                r.ok ? `🧪 Nhớ lại OK · lệch ${r.errCm} cm / ${r.deg}°` : '🧪 Test thất bại',
+                r.ok
+                    ? `${r.inliers} điểm khớp · ${r.ms} ms · ${r.objects} đồ vật · ${r.anchors} mốc`
+                    : `${r.reason}${r.ms ? ' · ' + r.ms + ' ms' : ''}`
+            );
+            toast(r.ok
+                ? `🧪 Nhận lại khung cảnh: lệch ${r.errCm} cm, ${r.deg}° (${r.inliers} điểm khớp).`
+                : `🧪 ${r.reason}.`);
+        };
         const reset = $('lsa-reset-ar');
         if (reset) reset.onclick = () => {
             if (!confirm('Xoá toàn bộ mã neo, khung cảnh đã nhớ và vị trí AR của không gian này?')) return;
             S.spatial.calib = null;
             S.spatial.anchors = {};
+            S.spatial.objects = {};
             S.spatial.frameId = null;
             S.poseLock = null; S.pose = null; S.yawOffset = null;
             clearVisualRefs();
@@ -1752,6 +1922,9 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             placeAtCenter,
             placeAtStand,
             placeAtScreen,
+            startObject: startNewObject,
+            objects: () => objectList(),
+            recallTest,
             aimUv: () => S.aimUv,
             sheetCollapsed: () => $('lsa-sheet').classList.contains('collapsed'),
             select: id => setPlacing(id, true),
