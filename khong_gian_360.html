@@ -964,6 +964,85 @@
             cursor: pointer;
         }
 
+        /* Dẫn tuyến kiểu Google Maps: banner + mũi tên nhấp nháy chỉ chặng kế tiếp */
+        #route-banner {
+            position: absolute;
+            top: 126px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-6px);
+            display: none;
+            align-items: center;
+            gap: 9px;
+            z-index: 9;
+            max-width: 92%;
+            padding: 9px 12px 9px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(8, 47, 73, .95), rgba(30, 64, 175, .95));
+            border: 1px solid rgba(34, 211, 238, .45);
+            box-shadow: 0 10px 26px rgba(2, 132, 199, .35);
+            color: #e0f2fe;
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity .2s ease, transform .2s ease;
+        }
+
+        #route-banner.on {
+            display: flex;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #route-banner .rb-ico {
+            font-size: 15px;
+            line-height: 1;
+        }
+
+        #route-banner-t {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #route-banner button {
+            flex: none;
+            background: rgba(255, 255, 255, .14);
+            border: 1px solid rgba(255, 255, 255, .35);
+            color: #fff;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-weight: 700;
+            font-size: 11.5px;
+            cursor: pointer;
+        }
+
+        #route-banner button:active {
+            background: rgba(255, 255, 255, .28);
+        }
+
+        .marker.link.sv.on-route .arr {
+            background: linear-gradient(135deg, #22d3ee, #2563eb);
+            animation: routePulse 1.5s ease-in-out infinite;
+        }
+
+        .marker.link.sv.on-route .lab {
+            border-color: rgba(34, 211, 238, .8);
+            color: #e0f2fe;
+        }
+
+        @keyframes routePulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 4px rgba(34, 211, 238, .18), 0 8px 22px rgba(37, 99, 235, .4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 13px rgba(34, 211, 238, .06), 0 8px 28px rgba(37, 99, 235, .6);
+            }
+        }
+
         /* Mũi tên di chuyển kiểu Street View: chevron nằm nghiêng như bám trên sàn */
         .marker.link.sv .arr {
             width: 58px;
@@ -1946,6 +2025,11 @@
         <div id="nodebar"></div>
         <div id="minimap-box"><canvas id="minimap" width="136" height="136"></canvas></div>
         <div id="link-banner"><span id="link-banner-t"></span><button id="link-skip">Bỏ qua</button></div>
+        <div id="route-banner">
+            <span class="rb-ico">🧭</span>
+            <span id="route-banner-t"></span>
+            <button id="route-stop" type="button">Dừng</button>
+        </div>
         <div id="joystick">
             <div id="joy-knob"></div>
         </div>
@@ -1967,7 +2051,7 @@
                 style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; border: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); cursor: pointer;">🧊<span class="icon-btn-label"> Mô hình</span></button>
             <button class="icon-btn" id="v-addnode" title="Thêm điểm chụp để di chuyển trong không gian">➕</button>
             <button class="icon-btn" id="v-panel-toggle" title="Danh sách mốc">📍</button>
-            <button class="icon-btn" id="v-minimap" title="Bản đồ mini các điểm chụp" style="display:none">🗺️</button>
+            <button class="icon-btn" id="v-minimap" title="Bản đồ lối đi — chạm một điểm để được dẫn tuyến" style="display:none">🗺️</button>
         </div>
 
         <aside class="panel" id="panel" aria-label="Bảng điều khiển mốc kiến thức">
@@ -6345,9 +6429,11 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     if (!space.nodes || !space.nodes.length) space.nodes = [{ id: 'n0', name: 'Điểm 1', markers: space.markers || {}, links: [] }];
                     space.nodes.forEach(n => { n.markers = n.markers || {}; n.links = n.links || []; });
                     ensureNodePositions();
+                    normalizeWalkGraph();
                     space.nodes[0].markers = space.nodes[0].markers || space.markers || {};
                     curNode = 0; curImage = space.image; space.markers = space.nodes[0].markers;
                     linkMode = null; navBusy = false;
+                    stopRoute(true);
                     initThree();
                     show('viewer');
                     running = true;
@@ -6785,6 +6871,182 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     space.nodes.forEach((n, i) => { if (!n.pos) n.pos = { x: 0, z: -DEFAULT_NODE_DIST_CM * (i || 1) }; });
                 }
 
+                /* ===== MẠNG LỐI ĐI + DẪN TUYẾN KIỂU GOOGLE MAPS =====
+                   Các điểm chụp nối với nhau thành đồ thị đi bộ; di chuyển tới một điểm
+                   xa sẽ lần lượt bám theo từng chặng của tuyến ngắn nhất thay vì nhảy cóc. */
+                const route = { active: false, path: [], target: -1, step: -1 };
+
+                function nodeDistCm(a, b) {
+                    if (!a || !b || !a.pos || !b.pos) return DEFAULT_NODE_DIST_CM;
+                    const d = Math.hypot(b.pos.x - a.pos.x, b.pos.z - a.pos.z);
+                    return d > 1 ? d : DEFAULT_NODE_DIST_CM;
+                }
+
+                // Chuẩn hoá mạng lối đi: bỏ link hỏng/trùng, bảo đảm đi được cả hai chiều.
+                function normalizeWalkGraph() {
+                    if (!space || !Array.isArray(space.nodes) || space.nodes.length < 2) return;
+                    const exists = i => Number.isInteger(i) && i >= 0 && i < space.nodes.length;
+                    space.nodes.forEach((n, i) => {
+                        const seen = new Set();
+                        n.links = (n.links || []).filter(l => {
+                            if (!l || !exists(l.to) || l.to === i || seen.has(l.to)) return false;
+                            seen.add(l.to);
+                            return true;
+                        });
+                    });
+                    space.nodes.forEach((n, i) => {
+                        n.links.forEach(l => {
+                            const t = space.nodes[l.to];
+                            if (t && !t.links.some(x => x.to === i)) t.links.push({ to: i, auto: true });
+                        });
+                    });
+                    space.nodes.forEach(n => {
+                        n.links.forEach(l => {
+                            if (l.pos && Math.hypot(l.pos[0], l.pos[2]) > 0.05) return;
+                            const t = space.nodes[l.to];
+                            if (!t || !t.pos || !n.pos) return;
+                            const dx = t.pos.x - n.pos.x, dz = t.pos.z - n.pos.z;
+                            const L = Math.hypot(dx, dz) || 1;
+                            l.pos = [dx / L, 0, dz / L];
+                        });
+                    });
+                }
+
+                // Dijkstra trên mạng lối đi, trọng số là khoảng cách thật giữa hai điểm.
+                function findRoute(from, to) {
+                    if (!space || !space.nodes[from] || !space.nodes[to]) return null;
+                    if (from === to) return [];
+                    const N = space.nodes.length;
+                    const dist = new Array(N).fill(Infinity);
+                    const prev = new Array(N).fill(-1);
+                    const done = new Array(N).fill(false);
+                    dist[from] = 0;
+                    for (let k = 0; k < N; k++) {
+                        let u = -1, best = Infinity;
+                        for (let i = 0; i < N; i++) {
+                            if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
+                        }
+                        if (u < 0 || u === to) break;
+                        done[u] = true;
+                        (space.nodes[u].links || []).forEach(l => {
+                            const v = l.to;
+                            if (!space.nodes[v] || done[v]) return;
+                            const w = nodeDistCm(space.nodes[u], space.nodes[v]);
+                            if (dist[u] + w < dist[v]) {
+                                dist[v] = dist[u] + w;
+                                prev[v] = u;
+                            }
+                        });
+                    }
+                    if (!isFinite(dist[to])) return null;
+                    const path = [];
+                    let v = to;
+                    while (v !== from && v >= 0) {
+                        path.push(v);
+                        v = prev[v];
+                    }
+                    if (v !== from || !path.length) return null;
+                    return path.reverse();
+                }
+
+                function routeRemainingCm() {
+                    if (!route.active || !route.path.length || !space) return 0;
+                    let total = 0, prev = curNode;
+                    route.path.forEach(i => {
+                        total += nodeDistCm(space.nodes[prev], space.nodes[i]);
+                        prev = i;
+                    });
+                    return total;
+                }
+
+                function updateRouteBanner() {
+                    const box = $('route-banner');
+                    const txt = $('route-banner-t');
+                    if (!box || !txt) return;
+                    const on = route.active && route.path.length > 0 && !!(space && space.nodes[route.target]);
+                    box.classList.toggle('on', on);
+                    if (!on) { txt.textContent = ''; return; }
+                    const target = space.nodes[route.target];
+                    const left = routeRemainingCm();
+                    txt.textContent = `${target.name} · ${route.path.length} chặng · ${(left / 100).toFixed(1)} m`;
+                }
+
+                function stopRoute(silent) {
+                    if (!route.active) return;
+                    route.active = false;
+                    route.path = [];
+                    route.target = -1;
+                    route.step = -1;
+                    updateRouteBanner();
+                    renderLinks();
+                    if (miniOn) drawMinimap();
+                    if (!silent) toast('Đã dừng dẫn đường.');
+                }
+
+                function finishRoute() {
+                    const target = space && space.nodes[route.target];
+                    route.active = false;
+                    route.path = [];
+                    route.target = -1;
+                    route.step = -1;
+                    updateRouteBanner();
+                    renderLinks();
+                    if (miniOn) drawMinimap();
+                    toast(`🧭 Đã tới ${target ? target.name : 'điểm đích'}!`);
+                }
+
+                async function advanceRoute() {
+                    if (!route.active) return;
+                    if (!route.path.length) { finishRoute(); return; }
+                    const next = route.path[0];
+                    route.step = next;
+                    const ok = await goToNode(next);
+                    if (!route.active) return;
+                    if (ok === false) {
+                        toast('Không mở được điểm tiếp theo trên tuyến.');
+                        stopRoute(true);
+                        return;
+                    }
+                    route.path.shift();
+                    route.step = -1;
+                    if (!route.path.length) { finishRoute(); return; }
+                    updateRouteBanner();
+                    renderLinks();
+                    if (miniOn) drawMinimap();
+                    setTimeout(() => { if (route.active) advanceRoute(); }, 450);
+                }
+
+                async function navigateToNode(idx, lookPos) {
+                    if (!space || !space.nodes[idx] || navBusy) return;
+                    if (idx === curNode) { toast('Bạn đang đứng ở điểm này.'); return; }
+                    const path = findRoute(curNode, idx);
+                    if (!path || !path.length) {
+                        toast('Chưa có lối đi nối tới điểm này — đang chuyển thẳng.');
+                        return goToNode(idx, lookPos);
+                    }
+                    stopRoute(true);
+                    route.active = true;
+                    route.target = idx;
+                    route.path = path;
+                    route.step = -1;
+                    updateRouteBanner();
+                    renderLinks();
+                    if (miniOn) drawMinimap();
+                    if (path.length > 1) toast(`🧭 Tuyến đi qua ${path.length - 1} điểm trung gian.`);
+                    advanceRoute();
+                }
+
+                const routeStopBtn = $('route-stop');
+                if (routeStopBtn) routeStopBtn.onclick = () => stopRoute();
+
+                // API gỡ lỗi: xem mạng lối đi và tuyến đang chạy
+                window.LociWalkGraph = {
+                    nodes: () => (space && space.nodes) || [],
+                    route: () => ({ active: route.active, target: route.target, path: route.path.slice() }),
+                    findRoute: (a, b) => findRoute(a, b),
+                    navigateTo: i => navigateToNode(i)
+                };
+
                 // Nạp texture equirectangular mà không đụng vào sphere chính (dùng cho hiệu ứng chuyển điểm)
                 const loadTextureOnly = (src) => new Promise(res => {
                     new THREE.TextureLoader().load(src, t => {
@@ -6847,6 +7109,25 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         ctx.stroke();
                     }));
 
+                    // Tuyến đang dẫn đường: vẽ đậm từ điểm hiện tại qua các chặng còn lại
+                    if (route.active && route.path.length) {
+                        const seq = [curNode].concat(route.path);
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(34, 211, 238, .95)';
+                        ctx.lineWidth = 3.5;
+                        ctx.lineJoin = 'round';
+                        ctx.lineCap = 'round';
+                        ctx.shadowColor = 'rgba(34, 211, 238, .85)';
+                        ctx.shadowBlur = 7;
+                        ctx.beginPath();
+                        seq.forEach((i, k) => {
+                            const p = toPx((space.nodes[i] && space.nodes[i].pos) || { x: 0, z: 0 });
+                            if (k === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+                        });
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
                     pts.forEach((p, i) => {
                         const [x, y] = toPx(p);
                         const cur = i === curNode;
@@ -6865,6 +7146,16 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                             ctx.fillText(String(i + 1), x, y);
                         }
                     });
+
+                    // Điểm đích của tuyến: vòng tròn nhấp nháy quanh node
+                    if (route.active && space.nodes[route.target] && space.nodes[route.target].pos) {
+                        const tp = toPx(space.nodes[route.target].pos);
+                        ctx.beginPath();
+                        ctx.arc(tp[0], tp[1], 9, 0, Math.PI * 2);
+                        ctx.strokeStyle = '#22d3ee';
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                    }
 
                     // Nón hướng nhìn tại node hiện tại
                     const c = toPx(pts[curNode] || { x: 0, z: 0 });
@@ -6899,8 +7190,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     }
                     if (!best) return;
                     if (best.i === curNode) { toast('Bạn đang đứng ở điểm này.'); return; }
-                    toast(`Đang bay tới điểm ${best.i + 1}…`);
-                    goToNode(best.i);
+                    toast(`🧭 Dẫn tuyến tới điểm ${best.i + 1}…`);
+                    navigateToNode(best.i);
                 });
 
                 function loadPano(src) {
@@ -6957,6 +7248,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         startAddCapture();
                     } else {
                         space.nodes[linkMode.node].links.push({ to: linkMode.to, pos });
+                        normalizeWalkGraph();
                         setLinkMode(null);
                         persistCurrentSpace();
                         renderMarkersOnPano();
@@ -7000,7 +7292,8 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                 }
 
                 async function goToNode(idx, lookPos) {
-                    if (navBusy || idx === curNode || !space.nodes[idx]) return;
+                    if (navBusy || idx === curNode || !space.nodes[idx]) return false;
+                    if (route.active && route.step !== idx) stopRoute(true);
                     navBusy = true;
                     if (isWalkMode) await toggleWalkMode(false);
                     const fromNode = space.nodes[curNode];
@@ -7012,7 +7305,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     if (!img) {
                         toast('Không tìm thấy ảnh của điểm này!');
                         navBusy = false;
-                        return;
+                        return false;
                     }
 
                     // Vector di chuyển trong khung thế giới (cm)
@@ -7085,7 +7378,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         await applyNode(idx, img, true);
                         fovV = 58; targetFov = 75;
                         navBusy = false;
-                        return;
+                        return true;
                     }
 
                     // --- Fallback: fade truyền thống (thiếu dữ liệu hình học hoặc texture lỗi) ---
@@ -7098,6 +7391,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     $('fade').style.opacity = 0;
                     await sleep(300);
                     navBusy = false;
+                    return true;
                 }
 
                 async function addNodeFromCanvas(canvas) {
@@ -7146,7 +7440,7 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                     if (!space || !space.nodes || space.nodes.length < 2) { b.style.display = 'none'; return; }
                     b.style.display = 'flex';
                     b.innerHTML = space.nodes.map((n, i) => `<button class="nchip ${i === curNode ? 'on' : ''}" data-i="${i}" title="${esc(n.name)}" style="background-image:url('${i === 0 ? (space.thumb || '') : (n.thumb || '')}')">${i + 1}</button>`).join('');
-                    b.querySelectorAll('.nchip').forEach(c => c.onclick = () => goToNode(+c.dataset.i));
+                    b.querySelectorAll('.nchip').forEach(c => c.onclick = () => navigateToNode(+c.dataset.i));
                 }
 
                 function renderLinks() {
@@ -7173,8 +7467,10 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         const d = distCm != null ? Math.max(300, Math.min(1500, distCm)) : 480;
                         const el = document.createElement('div');
                         el.className = 'marker link sv';
+                        const onRoute = route.active && route.path.length > 0 && route.path[0] === l.to;
+                        if (onRoute) el.classList.add('on-route');
                         const distLab = distCm != null ? ` · ${(distCm / 100).toFixed(1)}m` : '';
-                        el.innerHTML = `<div class="arr">➤</div><div class="lab">${esc(target.name)}${distLab}</div>`;
+                        el.innerHTML = `<div class="arr">➤</div><div class="lab">${onRoute ? 'Theo tuyến' : esc(target.name)}${distLab}</div>`;
                         el.onclick = () => goToNode(l.to, [vx, 0, vz]);
                         box.appendChild(el);
                         linkEls.push({ el, vec: new THREE.Vector3(vx * d, -0.24 * d, vz * d) });
