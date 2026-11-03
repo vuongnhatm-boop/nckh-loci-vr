@@ -8,7 +8,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '1.3.0';
+    const VERSION = '1.4.0';
     if (window.LociSpatial && window.LociSpatial.__version === VERSION) return;
 
     const M = window.LociSpatialMath;
@@ -57,6 +57,7 @@
         tab: 'anchors',
         selectedId: null,
         placing: null,
+        tapPlace: false,
         distanceCm: PLACE_DEFAULT_CM,
         qrSizeCm: 15,
         calibDistanceCm: 150,
@@ -230,6 +231,17 @@
 .lsa-pin.obj .dot{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#fbbf24,#d97706);border-color:#fde68a;font-size:20px;animation:none;box-shadow:0 8px 24px rgba(217,119,6,.5),0 0 0 6px rgba(245,158,11,.14)}
 .lsa-pin.obj .lab{border-color:rgba(245,158,11,.45)}
 .lsa-pin.obj .meta{color:#fcd34d}
+.lsa-fab{position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:8;display:none;flex-direction:column;align-items:center;gap:4px;width:66px;padding:11px 6px;border-radius:20px;border:1px solid rgba(251,191,36,.55);background:linear-gradient(160deg,rgba(245,158,11,.96),rgba(217,119,6,.96));color:#fff;font-family:inherit;font-size:10.5px;font-weight:800;line-height:1.2;text-align:center;box-shadow:0 10px 26px rgba(217,119,6,.45);cursor:pointer}
+.lsa-root.on .lsa-fab{display:flex}
+.lsa-fab span{font-size:20px;line-height:1}
+.lsa-fab.on{background:linear-gradient(160deg,rgba(16,185,129,.96),rgba(5,150,105,.96));border-color:rgba(110,231,183,.65);box-shadow:0 10px 26px rgba(5,150,105,.45)}
+.lsa-fab:active{transform:translateY(-50%) scale(.94)}
+.lsa-tapbar{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom, 10px) + 78px);z-index:8;display:none;align-items:center;gap:8px;padding:9px 10px;border-radius:16px;background:rgba(2,6,23,.86);border:1px solid rgba(245,158,11,.45);box-shadow:0 10px 28px rgba(0,0,0,.45);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.lsa-tapbar.on{display:flex}
+.lsa-tapbar .txt{flex:1;min-width:0;font-size:11px;font-weight:700;line-height:1.35;color:#fde68a}
+.lsa-tapbar button{width:34px;height:34px;flex:0 0 34px;border-radius:11px;border:1px solid rgba(148,163,184,.3);background:rgba(30,41,59,.75);color:#f8fafc;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer}
+.lsa-tapbar .dist{font-size:12px;font-weight:800;color:#fcd34d;min-width:44px;text-align:center}
+.lsa-root.tap-mode .lsa-reticle{display:none!important}
 @keyframes lsaPulse{0%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 0 rgba(56,189,248,.5)}70%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 18px rgba(56,189,248,0)}100%{box-shadow:0 8px 22px rgba(2,132,199,.55),0 0 0 0 rgba(56,189,248,0)}}
 .lsa-reticle{position:absolute;left:50%;top:50%;width:74px;height:74px;transform:translate(-50%,-50%);z-index:5;pointer-events:none;display:none}
 .lsa-reticle.on{display:block}
@@ -321,6 +333,16 @@
                 <span class="lsa-badge" id="lsa-lock-badge">CHƯA KHÓA</span>
                 <button class="lsa-icon-btn" id="lsa-help">?</button>
             </div>
+            <button class="lsa-fab" id="lsa-fab-place" type="button" title="Bật/tắt chế độ chạm để đặt mốc">
+                <span>📌</span><b>Đặt mốc</b>
+            </button>
+            <div class="lsa-tapbar" id="lsa-tapbar">
+                <span class="txt" id="lsa-tapbar-txt">Chạm vào khung hình để đặt mốc</span>
+                <button type="button" id="lsa-tap-near" title="Gần hơn">−</button>
+                <b class="dist" id="lsa-tap-dist">2.0 m</b>
+                <button type="button" id="lsa-tap-far" title="Xa hơn">＋</button>
+                <button type="button" id="lsa-tap-exit" title="Thoát chế độ đặt mốc">✕</button>
+            </div>
             <div class="lsa-sheet" id="lsa-sheet">
                 <div class="lsa-grab" id="lsa-grab"></div>
                 <div class="lsa-tabs">
@@ -359,12 +381,12 @@
                 <div class="box">
                     <h3>Cách dùng mốc không gian thật</h3>
                     <ol class="lsa-help-list">
-                        <li><b>Tạo mã neo</b> (tab Mã neo) → in tờ QR và dán lên tường.</li>
-                        <li>Đứng cách mã <b>1,5 m</b>, mở tab Mã neo, nhập khoảng cách thật rồi quét mã. Khi báo "Đã khóa", điện thoại đã định vị được mình trong phòng.</li>
-                        <li>Chọn một mốc → ngắm tâm vào đúng vị trí thật → chỉnh khoảng cách → <b>Thả tại tâm ngắm</b>.</li>
-                        <li>Lần sau mở lại, chỉ cần quét mã neo: các mốc sẽ hiện lại đúng chỗ như Pokémon GO.</li>
+                        <li><b>Chạm đâu đặt đó:</b> bấm nút 📌 “Đặt mốc” → chạm vào bất kỳ điểm nào trong khung hình camera. Mỗi lần chạm tạo một mốc và app tự ghi nhớ khung cảnh.</li>
+                        <li><b>Kiểm tra trí nhớ:</b> lia camera sang chỗ khác rồi quay lại — mốc vẫn nằm đúng vị trí, kèm nhãn khoảng cách.</li>
+                        <li>Mốc được lưu cùng không gian 360°; lần sau mở lại chỉ cần chiếu camera về khu vực cũ, không cần mã QR.</li>
+                        <li><b>Mã neo QR (tuỳ chọn):</b> in tờ QR dán lên tường (tab Mã neo) nếu cần khóa vị trí chính xác tuyệt đối.</li>
                     </ol>
-                    <p style="margin-top:10px">Mẹo: giữ điện thoại dọc, đủ sáng, và quét mã khi đứng gần (0,8–2,5 m) để có sai số nhỏ nhất. Khi mã neo khuất khỏi camera, app chuyển sang bám theo cảm biến chuyển động.</p>
+                    <p style="margin-top:10px">Mẹo: giữ điện thoại dọc, đủ sáng, xoay camera chậm. Mốc càng gần khung cảnh đã ghi nhớ thì càng ít trôi.</p>
                     <button class="lsa-btn pri" id="lsa-help-close" style="width:100%">Đã hiểu</button>
                 </div>
             </div>
@@ -376,6 +398,10 @@
 
         $('lsa-close').onclick = close;
         $('lsa-help').onclick = () => $('lsa-help-modal').classList.add('on');
+        $('lsa-fab-place').onclick = () => enableTapPlace(!S.tapPlace);
+        $('lsa-tap-exit').onclick = () => enableTapPlace(false);
+        $('lsa-tap-near').onclick = () => nudgeTapDistance(-50);
+        $('lsa-tap-far').onclick = () => nudgeTapDistance(50);
         $('lsa-help-close').onclick = () => $('lsa-help-modal').classList.remove('on');
         (function bindSheetSwipe() {
             const grab = $('lsa-grab');
@@ -1063,7 +1089,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         if (e.alpha == null && e.beta == null) return;
         S.sensor.last = { alpha: e.alpha || 0, beta: e.beta || 0, gamma: e.gamma || 0 };
         S.sensor.at = performance.now();
-        if (isTrackingPose()) updateSensorPose();
+        if (S.poseLock && S.yawOffset == null) {
+            const sy = currentSensorYaw();
+            if (sy != null) S.yawOffset = M.normalizeAngle(S.poseLockYaw - sy);
+            updateSensorPose();
+        } else if (isTrackingPose()) updateSensorPose();
         refreshSensorUI();
     }
 
@@ -1265,7 +1295,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.placing = on ? { id, kind: kind || 'anchor', label: label || null } : null;
         if (!on) { S.aimUv = null; S.tapStart = null; }
         if (on) $('lsa-sheet').classList.add('collapsed');
-        else $('lsa-sheet').classList.remove('collapsed');
+        else if (!S.tapPlace) $('lsa-sheet').classList.remove('collapsed');
         renderSheet();
         updateReticle();
         renderPins();
@@ -1311,28 +1341,32 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         return true;
     }
 
+    const UI_SELECTOR = '.lsa-sheet,.lsa-top,.lsa-pin,.lsa-modal,.lsa-fallback,.lsa-detail,.lsa-fab,.lsa-tapbar';
+
     function onScenePointerDown(e) {
-        if (!S.placing) return;
-        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-pin,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        if (!S.placing && !S.tapPlace) return;
+        if (e.target.closest(UI_SELECTOR)) return;
         S.tapStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+        if (!S.placing) return;
         const { u, v, map } = screenToVideo(e.clientX, e.clientY);
         if (u >= 0 && u <= map.vw && v >= 0 && v <= map.vh) S.aimUv = [u, v];
     }
 
     function onScenePointerMove(e) {
         if (!S.placing || e.pointerType === 'mouse' && e.buttons === 0) return;
-        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        if (e.target.closest(UI_SELECTOR)) return;
         const { u, v, map } = screenToVideo(e.clientX, e.clientY);
         if (u >= 0 && u <= map.vw && v >= 0 && v <= map.vh) S.aimUv = [u, v];
     }
 
     function onScenePointerUp(e) {
-        if (!S.placing || !S.tapStart) return;
+        if ((!S.placing && !S.tapPlace) || !S.tapStart) return;
         const dx = e.clientX - S.tapStart.x, dy = e.clientY - S.tapStart.y;
         const dt = performance.now() - S.tapStart.t;
         S.tapStart = null;
         if (dx * dx + dy * dy > 100 || dt > 900) return;
-        if (e.target.closest('.lsa-sheet,.lsa-top,.lsa-pin,.lsa-modal,.lsa-fallback,.lsa-detail')) return;
+        if (e.target.closest(UI_SELECTOR)) return;
+        if (S.tapPlace) { placeTapMarker(e.clientX, e.clientY); return; }
         placeAtScreen(e.clientX, e.clientY);
     }
 
@@ -1364,8 +1398,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             spatial.anchors[id] = rec;
         }
         try { S.bridge && S.bridge.persist && S.bridge.persist(); } catch (e) { }
+        if (S.tapPlace) setStatus('Đã ghim mốc · chạm để đặt thêm', 'Lia camera đi rồi quay lại — mốc vẫn ở đúng chỗ');
         toast(kind === 'object'
-            ? `📦 Đã đặt "${rec.label}" — app sẽ nhớ đúng vị trí này.`
+            ? (S.tapPlace
+                ? `📌 Đã ghim "${rec.label}" — lia camera đi rồi quay lại, mốc vẫn nằm đúng chỗ.`
+                : `📦 Đã đặt "${rec.label}" — app sẽ nhớ đúng vị trí này.`)
             : `📍 Đã gắn "${anchorTitle(id)}" vào không gian thật.`);
         setPlacing(id, false);
         renderSheet();
@@ -1382,14 +1419,76 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
     }
 
     function startNewObject() {
-        if (!S.pose) {
-            toast('Chưa khóa không gian — hãy chờ nhận dạng khung cảnh hoặc quét mã neo.');
-            return;
-        }
+        if (!ensurePlacementPose()) return;
         const n = Object.keys(objectsMap()).length + 1;
         const id = 'obj_' + Date.now().toString(36);
         setPlacing(id, true, 'object', 'Đồ vật test ' + n);
         toast('📦 Chạm vào vị trí muốn đặt đồ vật, hoặc ngắm tâm rồi bấm “Đặt tại tâm ngắm”.');
+    }
+
+    /* ---------------- chạm đâu đặt đó ---------------- */
+    function ensurePlacementPose() {
+        if (S.pose) return true;
+        if (canInitFrame()) return initFromSensor(true) && !!S.pose;
+        if (S.visual.refs.length) {
+            tryVisualRelocalize(true);
+            if (S.pose) return true;
+        }
+        toast(S.visual.refs.length
+            ? 'Đưa camera về khu vực đã ghi nhớ để khóa lại không gian, rồi chạm để đặt mốc.'
+            : 'Đang dựng không gian — chờ một chút rồi chạm lại.');
+        return false;
+    }
+
+    function placeTapMarker(clientX, clientY) {
+        if (!ensurePlacementPose()) return false;
+        const id = 'obj_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+        setPlacing(id, true, 'object', 'Mốc thực tế ' + (Object.keys(objectsMap()).length + 1));
+        const ok = placeAtScreen(clientX, clientY);
+        if (!ok) setPlacing(id, false);
+        return ok;
+    }
+
+    function updateTapDistance() {
+        const txt = (S.distanceCm / 100).toFixed(1) + ' m';
+        const bar = $('lsa-tap-dist');
+        if (bar) bar.textContent = txt;
+        const chip = $('lsa-dist-chip');
+        if (chip) chip.textContent = txt;
+    }
+
+    function nudgeTapDistance(deltaCm) {
+        S.distanceCm = Math.max(PLACE_MIN_CM, Math.min(PLACE_MAX_CM, S.distanceCm + deltaCm));
+        const range = $('lsa-dist');
+        if (range) range.value = String(S.distanceCm);
+        updateTapDistance();
+    }
+
+    function enableTapPlace(on) {
+        S.tapPlace = !!on;
+        const fab = $('lsa-fab-place');
+        if (fab) {
+            fab.classList.toggle('on', S.tapPlace);
+            const lbl = fab.querySelector('b');
+            if (lbl) lbl.textContent = S.tapPlace ? 'Đang đặt' : 'Đặt mốc';
+        }
+        const bar = $('lsa-tapbar');
+        if (bar) bar.classList.toggle('on', S.tapPlace);
+        if (S.root) S.root.classList.toggle('tap-mode', S.tapPlace);
+        if (S.tapPlace) {
+            if (S.placing) setPlacing(S.placing.id, false);
+            $('lsa-sheet') && $('lsa-sheet').classList.add('collapsed');
+            updateTapDistance();
+            if (!S.pose) ensurePlacementPose();
+            if (S.pose) setStatus('Chạm vào khung hình để đặt mốc', 'Mỗi lần chạm một mốc · lia camera đi rồi quay lại, mốc vẫn đúng chỗ');
+            else setStatus('Đang tìm lại khung cảnh…', 'Chiếu camera về khu vực đã ghi nhớ, rồi chạm để đặt mốc');
+            toast('📌 Chạm vào bất kỳ điểm nào trong khung hình để ghim mốc.');
+        } else {
+            $('lsa-sheet') && $('lsa-sheet').classList.remove('collapsed');
+            setStatus(S.pose ? 'Camera đang bám không gian' : 'Chưa khóa không gian',
+                S.pose ? 'Lia camera để kiểm tra mốc đã ghim' : 'Dùng tab 🎯 Mã neo để khóa không gian');
+        }
+        renderSheet();
     }
 
     function removeAnchorPos(id) {
@@ -1506,7 +1605,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             const b = $('lsa-tab-' + t);
             if (b) b.classList.toggle('on', S.tab === t);
         });
-        $('lsa-sheet').classList.toggle('collapsed', !!S.placing);
+        $('lsa-sheet').classList.toggle('collapsed', !!(S.placing || S.tapPlace));
         const body = $('lsa-body');
         if (S.tab === 'anchors') body.innerHTML = renderAnchorsTab();
         else if (S.tab === 'calib') body.innerHTML = renderCalibTab();
@@ -1542,7 +1641,11 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             ? { id: S.placing.id, title: S.placing.label || labelOf(S.placing.id) }
             : anchors.find(a => a.id === S.placing.id)) : null;
         return `
-            <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : (S.visual.refs.length ? 'Đang tìm lại khung cảnh đã ghi nhớ — chiếu camera về khu vực đặt mốc. Không cần mã QR.' : 'Bấm “Ghi nhớ khung cảnh” ở tab ⚙ hoặc quét mã neo để khóa không gian trước khi gắn mốc.')}</p>
+            <div class="lsa-row" style="margin-top:0">
+                <button class="lsa-btn pri" id="lsa-tap-mode" style="flex:1">📌 Chạm đâu đặt đó (mốc thực tế)</button>
+            </div>
+            <p class="lsa-hint" style="margin-top:6px">Bật chế độ này rồi chạm trực tiếp vào bất kỳ điểm nào trong khung camera — mỗi lần chạm tạo một mốc, lia camera đi rồi quay lại mốc vẫn nằm đúng chỗ.</p>
+            <p class="lsa-hint">${locked ? 'Chọn mốc → chạm vào đúng chỗ trên màn hình để đặt (hoặc ngắm tâm rồi bấm nút).' : (S.visual.refs.length ? 'Đang tìm lại khung cảnh đã ghi nhớ — chiếu camera về khu vực đặt mốc. Không cần mã QR.' : 'Bấm “Ghi nhớ khung cảnh” ở tab 🎯 hoặc quét mã neo để khóa không gian trước khi gắn mốc.')}</p>
             ${anchors.length ? rows : '<p class="lsa-hint">Bài học này chưa có mốc kiến thức nào.</p>'}
             <div class="lsa-row" style="margin-top:10px"><button class="lsa-btn pri" id="lsa-add-object">➕ Đặt đồ vật test</button></div>
             <p class="lsa-hint" style="margin:6px 0 8px">Đồ vật test để kiểm tra trí nhớ không gian: đặt một lần, đóng AR rồi mở lại — đồ vật phải hiện đúng chỗ cũ.</p>
@@ -1632,6 +1735,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         });
         const addObj = $('lsa-add-object');
         if (addObj) addObj.onclick = startNewObject;
+        const tapMode = $('lsa-tap-mode');
+        if (tapMode) tapMode.onclick = () => enableTapPlace(true);
         const dist = $('lsa-dist');
         if (dist) {
             const paint = () => {
@@ -1761,6 +1866,14 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.scanMisses = 0;
         S.pdr.steps = 0;
         S.tab = 'anchors';
+        S.tapPlace = false;
+        if (S.root) {
+            S.root.classList.remove('tap-mode');
+            const fabEl = $('lsa-fab-place');
+            if (fabEl) fabEl.classList.remove('on');
+            const barEl = $('lsa-tapbar');
+            if (barEl) barEl.classList.remove('on');
+        }
         S.focalOverride = opts.focalNorm || 0;
         if (!S.calibDistanceCm) S.calibDistanceCm = 150;
         S.visual.busy = false;
@@ -1841,6 +1954,7 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         cancelAnimationFrame(S.rafId);
         S.rafId = requestAnimationFrame(tick);
         renderSheet();
+        if (opts.tapPlace) enableTapPlace(true);
     }
 
     function showFallback(err) {
@@ -1890,6 +2004,12 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
         S.placing = null;
         S.selectedId = null;
         S.pose = null;
+        S.tapPlace = false;
+        if (S.root) S.root.classList.remove('tap-mode');
+        $('lsa-fab-place') && $('lsa-fab-place').classList.remove('on');
+        $('lsa-tapbar') && $('lsa-tapbar').classList.remove('on');
+        const fabLabel = S.root && S.root.querySelector('#lsa-fab-place b');
+        if (fabLabel) fabLabel.textContent = 'Đặt mốc';
     }
 
     /* ---------------- public api ---------------- */
@@ -1913,6 +2033,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             steps: S.pdr.steps,
             distanceCm: S.distanceCm,
             placingId: S.placing && S.placing.id,
+            tapPlace: S.tapPlace,
+            objects: objectList(),
             visualRefs: S.visual.refs.length,
             visualInliers: S.visual.lastInliers
         }),
@@ -1924,6 +2046,8 @@ h1{font-size:18px;margin:0 0 6px}small{color:#64748b}</style></head><body>
             placeAtScreen,
             startObject: startNewObject,
             objects: () => objectList(),
+            tapMode: on => enableTapPlace(on === undefined ? true : on),
+            placeTap: (x, y) => placeTapMarker(x, y),
             recallTest,
             aimUv: () => S.aimUv,
             sheetCollapsed: () => $('lsa-sheet').classList.contains('collapsed'),

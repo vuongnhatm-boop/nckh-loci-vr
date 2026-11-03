@@ -1889,6 +1889,13 @@
                     <p>Mỗi ảnh là một điểm đứng. Ảnh 1 sẽ có <b>mũi tên bấm được</b> dẫn sang ảnh 2, chạm vào là
                         chuyển cảnh như Google Maps.</p>
                 </button>
+                <button class="opt glass" id="go-ar-live">
+                    <span class="tag">CAMERA THỰC TẾ</span>
+                    <span class="ic" style="background:linear-gradient(135deg,#fef3c7,#fde68a);color:#b45309">📌</span>
+                    <h3>Chạm đâu đặt đó — mốc thực tế</h3>
+                    <p>Mở camera căn phòng thật, <b>chạm vào bất kỳ điểm nào</b> trong khung hình để ghim mốc. Hệ
+                        thống nhớ vị trí: lia camera đi chỗ khác rồi quay lại, mốc vẫn nằm đúng chỗ.</p>
+                </button>
                 <input type="file" id="file" accept="image/*" hidden>
                 <input type="file" id="merge-files" accept="image/*" multiple hidden>
             </div>
@@ -2057,6 +2064,8 @@
                 style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, rgba(79, 70, 229, 0.92), rgba(14, 165, 233, 0.92)); color: #fff; border: none; box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35); cursor: pointer;">📷<span class="icon-btn-label"> AR</span></button>
             <button class="icon-btn" id="v-model-ar" title="Đặt mô hình 3D vào không gian thật (world tracking)"
                 style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #2563eb, #06b6d4); color: #fff; border: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); cursor: pointer;">🧊<span class="icon-btn-label"> Mô hình</span></button>
+            <button class="icon-btn" id="v-ar-tap" title="Chạm vào khung hình camera để đặt mốc thực tế"
+                style="width: auto; padding: 0 12px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95)); color: #fff; border: none; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35); cursor: pointer;">📌<span class="icon-btn-label"> Đặt mốc</span></button>
             <button class="icon-btn" id="v-addnode" title="Thêm điểm chụp để di chuyển trong không gian">➕</button>
             <button class="icon-btn" id="v-panel-toggle" title="Danh sách mốc">📍</button>
             <button class="icon-btn" id="v-minimap" title="Bản đồ lối đi — chạm một điểm để được dẫn tuyến" style="display:none">🗺️</button>
@@ -2314,7 +2323,7 @@
     <script src="app/qrcode.min.js"></script>
     <script src="app/spatial_math.js?v=20261103"></script>
     <script src="app/visual_recall.js?v=20261103"></script>
-    <script src="app/spatial_anchor.js?v=20261103b"></script>
+    <script src="app/spatial_anchor.js?v=20261103c"></script>
     <script type="module">
         import * as THREE from 'three';
 
@@ -2805,7 +2814,7 @@
                     } else if (e.target.dataset.ar || e.target.closest('[data-ar]')) {
                         e.stopPropagation();
                         const aid = e.target.dataset.ar || e.target.closest('[data-ar]').dataset.ar;
-                        window.openSpatialAr(aid);
+                        window.openSpatialAr(aid, { tapPlace: true });
                     } else if (e.target.dataset.share || e.target.closest('[data-share]')) {
                         e.stopPropagation();
                         const sid = e.target.dataset.share || e.target.closest('[data-share]').dataset.share;
@@ -2850,7 +2859,7 @@
             }
         }
 
-        window.openSpatialAr = function (id) {
+        window.openSpatialAr = function (id, opts) {
             if (!window.LociSpatial) { toast('Mô-đun AR chưa tải xong, vui lòng thử lại.'); return; }
             const m = loadMeta().find(x => x.id === id);
             if (!m) { toast('Không tìm thấy không gian này.'); return; }
@@ -2871,7 +2880,8 @@
                     persist: () => { persistArSpace(sp); return Promise.resolve(); },
                     setPaused: () => { },
                     toast
-                }
+                },
+                tapPlace: !!(opts && opts.tapPlace)
             });
         };
 
@@ -3020,6 +3030,21 @@
                 }
             }, 900);
         }
+
+        $('go-ar-live').onclick = async () => {
+            const m = loadMeta()[0];
+            if (!m) {
+                toast('Hãy tạo hoặc lưu một không gian 360° trước — mốc thực tế sẽ được gắn vào không gian đó.');
+                return;
+            }
+            let img = await dbGetImage(m.id);
+            if (!img && m.imageURL) img = m.imageURL;
+            if (!img && m.image) img = m.image;
+            if (!img && m.thumb) img = m.thumb;
+            if (!img) { toast('Không tìm thấy ảnh 360° của không gian này.'); return; }
+            await openViewer({ ...m, image: img });
+            setTimeout(() => window.openSpatialAr(m.id, { tapPlace: true }), 300);
+        };
 
         $('go-merge').onclick = () => $('merge-files').click();
         $('merge-files').onchange = async e => {
@@ -8336,6 +8361,14 @@ Trả về kết quả dưới dạng JSON thuần túy có định dạng sau:
                         if (!space) { toast('Hãy mở một không gian trước khi dùng mốc AR.'); return; }
                         if (!window.LociSpatial) { toast('Mô-đun AR chưa tải xong, vui lòng thử lại.'); return; }
                         window.LociSpatial.open({ bridge: window.Loci360Bridge });
+                    };
+                }
+                const arTapBtn = $('v-ar-tap');
+                if (arTapBtn) {
+                    arTapBtn.onclick = () => {
+                        if (!space) { toast('Hãy mở một không gian trước khi dùng mốc AR.'); return; }
+                        if (!window.LociSpatial) { toast('Mô-đun AR chưa tải xong, vui lòng thử lại.'); return; }
+                        window.LociSpatial.open({ bridge: window.Loci360Bridge, tapPlace: true });
                     };
                 }
     </script>
